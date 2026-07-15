@@ -134,6 +134,30 @@ CREATE TABLE public.user_favorites (
 - `title_id`: References titles(title_id)
 - `created_at`: When title was favorited
 
+### title_interests
+Buyer "Express Interest" requests on titles (team-mediated licensing intros).
+Writes go through the `express-interest` edge function (service role); buyers
+can SELECT only their own rows via RLS matched on `buyer_email`.
+
+```sql
+CREATE TABLE public.title_interests (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  title_id uuid NOT NULL REFERENCES public.titles(title_id) ON DELETE CASCADE,
+  buyer_email text NOT NULL,
+  buyer_name text,
+  buyer_company text,
+  note text,
+  status text NOT NULL DEFAULT 'new', -- new | contacted | in_discussion | closed
+  created_at timestamptz NOT NULL DEFAULT now(),
+  UNIQUE (title_id, buyer_email)
+);
+```
+
+**Fields**:
+- `buyer_email`: Lowercased buyer email (query key, per email-first convention)
+- `note`: Optional buyer note (project, format, timeline; max 2000 chars)
+- `status`: Team workflow state, managed manually for now
+
 ### user_onboarding
 User onboarding progress tracking
 

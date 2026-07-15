@@ -1,0 +1,28 @@
+{
+  "schemaVersion": 1,
+  "source": "pending",
+  "collectedAt": null,
+  "campaigns": [
+    {
+      "sendDate": "2026-06-17",
+      "delivered": null,
+      "uniqueClicks": null,
+      "knownHumanClicks": null,
+      "humanClickMethod": "pending"
+    },
+    {
+      "sendDate": "2026-06-24",
+      "delivered": null,
+      "uniqueClicks": null,
+      "knownHumanClicks": null,
+      "humanClickMethod": "pending"
+    },
+    {
+      "sendDate": "2026-07-08",
+      "delivered": null,
+      "uniqueClicks": null,
+      "knownHumanClicks": null,
+      "humanClickMethod": "pending"
+    }
+  ]
+}

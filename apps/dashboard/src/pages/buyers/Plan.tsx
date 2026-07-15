@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { BuyerLayout } from '@/components/layout/BuyerLayout';
 import { Icon } from '@iconify/react';
-import { trackPageView, trackCheckout, trackFeatureUsage } from '@/utils/analytics';
+import { trackPageView, trackFeatureUsage } from '@/utils/analytics';
 
 interface TierPlan {
   tier: 'basic' | 'pro';
@@ -86,9 +86,8 @@ export default function Plan() {
       return;
     }
 
-    // For Pro/Suite - redirect to checkout
-    // Track checkout started
-    trackCheckout('started', plan.tier, plan.tier === 'pro' ? 250 : 500);
+    // For Pro/Suite - redirect to checkout. The checkout outcome is tracked only
+    // after the server returns a valid Stripe Checkout session.
     console.log('Redirecting to checkout for', plan.tier, plan.priceId);
     navigate('/buyers/checkout?tier=' + plan.tier);
   };

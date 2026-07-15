@@ -689,6 +689,7 @@ export function OverviewTab({ title, pitchAnalysis, userTier }: OverviewTabProps
             <div className="h-full">
               <SecurePDFViewer
                 pdfUrl={title.pitch!}
+                titleId={title.title_id}
                 userTier={userTier}
                 maxPagesForBasic={5}
               />

@@ -2,6 +2,12 @@
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 import Stripe from 'https://esm.sh/stripe@14.21.0'
+import {
+  billingPeriodFromStripeInterval,
+  enqueueSubscriptionStarted,
+  getAnalyticsTrafficType,
+  subscriptionValueFromUnitAmount,
+} from '../_shared/analytics-outbox.ts'
 
 const stripe = new Stripe(Deno.env.get('STRIPE_SECRET_KEY') || '', {
   apiVersion: '2024-06-20',
@@ -316,7 +322,7 @@ const handler = async (request: Request): Promise<Response> => {
         let userId = session.metadata?.user_id || session.metadata?.supabase_user_id
 
         // Get target tier from session metadata (default to 'pro' for backward compatibility)
-        const targetTier = session.metadata?.target_tier || 'pro'
+        const targetTier = session.metadata?.target_tier === 'suite' ? 'suite' : 'pro'
 
         console.log('🔍 Checking for user_id in session metadata:', {
           user_id: session.metadata?.user_id,
@@ -502,6 +508,22 @@ const handler = async (request: Request): Promise<Response> => {
             )
           }
 
+          if (subscription.status === 'active') {
+            const price = subscription.items?.data[0]?.price
+            const trafficType = await getAnalyticsTrafficType(supabase, userId)
+            await enqueueSubscriptionStarted(supabase, {
+              stripeSubscriptionId: subscription.id,
+              userId,
+              accountType: 'buyer',
+              trafficType,
+              planType: targetTier,
+              billingPeriod: billingPeriodFromStripeInterval(price?.recurring?.interval),
+              currency: price?.currency || 'usd',
+              value: subscriptionValueFromUnitAmount(price?.unit_amount),
+              occurredAt: new Date(receivedEvent.created * 1000).toISOString(),
+            })
+          }
+
           // Send success notifications after tier update
           const priceAmount = subscription.items?.data[0]?.price?.unit_amount
             ? subscription.items.data[0].price.unit_amount / 100
@@ -582,7 +604,7 @@ const handler = async (request: Request): Promise<Response> => {
         // Update user tier based on subscription status
         let newTier = 'basic' // Default to basic
         if (subscription.status === 'active' || subscription.status === 'trialing') {
-          newTier = 'pro'
+          newTier = subscription.metadata?.target_tier === 'suite' ? 'suite' : 'pro'
         }
 
         const { error: tierError } = await supabase
@@ -613,6 +635,22 @@ const handler = async (request: Request): Promise<Response> => {
           )
         } else {
           console.log(`✅ User ${userId} tier updated to ${newTier}`)
+
+          if (subscription.status === 'active') {
+            const price = subscription.items?.data[0]?.price
+            const trafficType = await getAnalyticsTrafficType(supabase, userId)
+            await enqueueSubscriptionStarted(supabase, {
+              stripeSubscriptionId: subscription.id,
+              userId,
+              accountType: 'buyer',
+              trafficType,
+              planType: newTier as 'pro' | 'suite',
+              billingPeriod: billingPeriodFromStripeInterval(price?.recurring?.interval),
+              currency: price?.currency || 'usd',
+              value: subscriptionValueFromUnitAmount(price?.unit_amount),
+              occurredAt: new Date(receivedEvent.created * 1000).toISOString(),
+            })
+          }
 
           // Send success notifications for paid tier upgrades (pro or suite)
           if (newTier === 'pro' || newTier === 'suite') {

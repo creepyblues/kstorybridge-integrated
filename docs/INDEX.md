@@ -1,6 +1,6 @@
 # Documentation Index
 
-**Last Updated**: 2025-12-17
+**Last Updated**: 2026-07-14
 
 This is the master index of all active documentation for the KStoryBridge project.
 
@@ -20,6 +20,20 @@ This is the master index of all active documentation for the KStoryBridge projec
 | Document | Description |
 |----------|-------------|
 | **[AUTH_DOCUMENTATION.md](active/AUTH_DOCUMENTATION.md)** | Complete authentication system reference |
+| **[ANALYTICS_EVENT_CONTRACT.md](active/ANALYTICS_EVENT_CONTRACT.md)** | Canonical cross-app event names, triggers, parameters, ownership, and privacy rules |
+| **[ANALYTICS_FOUNDER_DECISION_BRIEF.md](active/ANALYTICS_FOUNDER_DECISION_BRIEF.md)** | Recommended north star, activation, retention, operating-model, and outcome-authority decisions awaiting founder approval |
+| **[ANALYTICS_BREVO_RECONCILIATION.md](active/ANALYTICS_BREVO_RECONCILIATION.md)** | Aggregate-only Brevo evidence intake, validation, privacy boundary, and post-cutover email-engagement acceptance |
+| **[GA4_PROPERTY_AUDIT_2026-07-13.md](active/GA4_PROPERTY_AUDIT_2026-07-13.md)** | Live GA property, stream, retention, custom-definition, key-event, and Brevo contamination audit |
+| **[ANALYTICS_WEEKLY_INTERIM_2026-07-13.md](active/ANALYTICS_WEEKLY_INTERIM_2026-07-13.md)** | Read-only weekly acquisition, app engagement, outcome, instrumentation-readiness, and data-quality analysis |
+| **[ANALYTICS_OPERATING_ARCHITECTURE.md](active/ANALYTICS_OPERATING_ARCHITECTURE.md)** | Operating data flow, responsibilities, release gates, schedules, alerts, and runbook |
+| **[ANALYTICS_PRODUCTION_RELEASE_SEQUENCE.md](active/ANALYTICS_PRODUCTION_RELEASE_SEQUENCE.md)** | Four-wave production rollout, scope boundaries, entry gates, acceptance evidence, and rollback controls |
+| **[ANALYTICS_RELIABILITY_EXECUTION_PLAN.md](active/ANALYTICS_RELIABILITY_EXECUTION_PLAN.md)** | Living analytics reliability plan, acceptance criteria, and progress log |
+| **[ANALYTICS_OUTCOME_SOURCE_MAP.md](active/ANALYTICS_OUTCOME_SOURCE_MAP.md)** | GA-to-Supabase/Stripe reconciliation keys, timestamps, confidence, and known truth gaps |
+| **[ANALYTICS_REPORT_DELIVERY_AUDIT_DESIGN.md](active/ANALYTICS_REPORT_DELIVERY_AUDIT_DESIGN.md)** | Secure scheduled-report authentication, idempotent delivery ledger, and two-run acceptance design |
+| **[migration-root-history-reconstruction-2026-07-13.md](active/migration-root-history-reconstruction-2026-07-13.md)** | Safe root Supabase history reconstruction, local acceptance evidence, and production-ledger reconciliation procedure |
+| **[migration-analytics-report-delivery-audit-2026-07-13.md](active/migration-analytics-report-delivery-audit-2026-07-13.md)** | Authenticated, idempotent report-delivery ledger and coordinated cron/function cutover |
+| **[migration-analytics-title-workflow-outbox-2026-07-13.md](active/migration-analytics-title-workflow-outbox-2026-07-13.md)** | Authoritative title approval/publication outbox, admin boundary, release order, and rollback |
+| **[rollback-analytics-report-delivery-audit-2026-07-13.sql](active/rollback-analytics-report-delivery-audit-2026-07-13.sql)** | Evidence-preserving emergency pause for the report-delivery cutover |
 | **[DATABASE_SCHEMA.md](active/DATABASE_SCHEMA.md)** | Database schema and query patterns |
 | **[DESIGN_SYSTEM.md](active/DESIGN_SYSTEM.md)** | UI/UX standards, components, color palette |
 | **[CACHE_POLICY.md](active/CACHE_POLICY.md)** | Session-based caching implementation |

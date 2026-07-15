@@ -125,7 +125,7 @@ export default function PublicTitlePage() {
   useEffect(() => {
     if (title && slug) {
       trackWebsiteEvent('title_page_view', {
-        title_slug: slug,
+        title_id: title.title_id,
         user_state: user ? 'loggedin' : 'anonymous',
       });
     }
@@ -202,7 +202,7 @@ export default function PublicTitlePage() {
 
   const handleCtaClick = (position: 'hero' | 'bottom' | 'adaptation' | 'format_fit' | 'rights') => {
     trackWebsiteEvent('title_cta_clicked', {
-      title_slug: slug,
+      title_id: title?.title_id,
       cta_position: position,
       user_state: user ? 'loggedin' : 'anonymous',
     });

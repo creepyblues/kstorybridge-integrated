@@ -8,6 +8,7 @@ import { render, screen, waitFor } from '@testing-library/react'
 import { BrowserRouter } from 'react-router-dom'
 import userEvent from '@testing-library/user-event'
 import QuickAddTitle from '../QuickAddTitle'
+import * as analytics from '@/utils/analytics'
 
 // Mock dependencies
 vi.mock('react-i18next', () => ({
@@ -82,9 +83,24 @@ vi.mock('@/services/draftService', () => ({
   },
 }))
 
+vi.mock('@/utils/analytics', () => ({
+  trackTitleDraftCreated: vi.fn(),
+  trackTitleSubmitted: vi.fn(),
+}))
+
 // Mock MainLayout
 vi.mock('@/components/layout/MainLayout', () => ({
   MainLayout: ({ children }: { children: React.ReactNode }) => <div data-testid="main-layout">{children}</div>,
+}))
+
+vi.mock('@/components/ui/AdminColumnHint', () => ({
+  LabelWithColumn: ({
+    htmlFor,
+    label,
+  }: {
+    htmlFor?: string
+    label: string
+  }) => <label htmlFor={htmlFor}>{label}</label>,
 }))
 
 // Mock RightsCheckboxGroup
@@ -274,6 +290,10 @@ describe('QuickAddTitle Page', () => {
 
       await waitFor(() => {
         expect(mockSubmitDraftById).toHaveBeenCalledWith('new-draft-id')
+        expect(analytics.trackTitleDraftCreated).toHaveBeenCalledWith('new-draft-id', 'quick_add')
+        expect(analytics.trackTitleSubmitted).toHaveBeenCalledWith('new-draft-id', 'quick_add')
+        expect(analytics.trackTitleDraftCreated).toHaveBeenCalledTimes(1)
+        expect(analytics.trackTitleSubmitted).toHaveBeenCalledTimes(1)
       })
     })
 
@@ -378,6 +398,8 @@ describe('QuickAddTitle Page', () => {
           variant: 'destructive',
         }))
       })
+      expect(analytics.trackTitleDraftCreated).not.toHaveBeenCalled()
+      expect(analytics.trackTitleSubmitted).not.toHaveBeenCalled()
     })
 
     it('should not navigate on submission failure', async () => {

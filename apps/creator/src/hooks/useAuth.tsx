@@ -1,7 +1,11 @@
 import { createContext, useContext, useEffect, useState } from 'react'
 import { User, Session } from '@supabase/supabase-js'
 import { supabase } from '@/lib/supabase'
-import { setAnalyticsUser, clearAnalyticsUser } from '@/utils/analytics'
+import {
+  setAnalyticsUser,
+  clearAnalyticsUser,
+  isInternalTrafficMetadata,
+} from '@/utils/analytics'
 
 interface AuthContextType {
   user: User | null
@@ -56,7 +60,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
         // Set GA4 user ID for cross-session tracking
         if (session?.user) {
-          setAnalyticsUser(session.user.id, { type: 'creator' })
+          setAnalyticsUser(session.user.id, {
+            type: 'creator',
+            internal: isInternalTrafficMetadata(session.user.app_metadata),
+          })
+        } else {
+          clearAnalyticsUser()
         }
       })
     }
@@ -73,7 +82,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       // Update GA4 user tracking on auth state change
       if (session?.user) {
-        setAnalyticsUser(session.user.id, { type: 'creator' })
+        setAnalyticsUser(session.user.id, {
+          type: 'creator',
+          internal: isInternalTrafficMetadata(session.user.app_metadata),
+        })
       } else {
         clearAnalyticsUser()
       }

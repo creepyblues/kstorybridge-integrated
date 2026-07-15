@@ -1,23 +1,46 @@
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+import {
+  isServiceRoleRequest,
+  validateInvocationKey,
+} from '../_shared/analytics-report-auth.ts'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Allow-Headers': 'authorization, content-type',
 }
 
 interface AnalyticsReportPayload {
   reportType: 'daily' | 'weekly' | 'funnel' | 'sources' | 'realtime'
   reportDate: string
   reportMarkdown: string
+  reportRunId?: string
+  auditReportType?: 'daily' | 'weekly' | 'funnel' | 'sources' | 'realtime' | 'progress'
+  invocationKey?: string
   alerts?: string[]
   sendSlack?: boolean
 }
 
 interface AdminRecord {
+  id: string
   email: string
   full_name: string
 }
+
+interface DeliveryRecord {
+  admin_id: string | null
+  channel: 'email' | 'slack'
+  status: 'pending' | 'sent' | 'failed'
+}
+
+type DeliveryErrorCode =
+  | 'resend_http_error'
+  | 'resend_network_error'
+  | 'resend_not_configured'
+  | 'admin_recipient_missing'
+  | 'slack_http_error'
+  | 'slack_network_error'
+  | 'slack_not_configured'
 
 // Helper function to add delay between API calls
 function delay(ms: number): Promise<void> {
@@ -349,13 +372,55 @@ serve(async (req) => {
       )
     }
 
+    const supabaseUrl = Deno.env.get('SUPABASE_URL') ?? ''
+    const serviceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
+    if (!supabaseUrl || !serviceRoleKey) {
+      console.error('[send-analytics-report] Required server configuration is missing')
+      return new Response(
+        JSON.stringify({ error: 'Service unavailable' }),
+        {
+          status: 503,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        }
+      )
+    }
+
+    if (!isServiceRoleRequest(req.headers.get('Authorization'), serviceRoleKey)) {
+      return new Response(
+        JSON.stringify({ error: 'Forbidden' }),
+        {
+          status: 403,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        }
+      )
+    }
+
     // Parse request body
     const payload: AnalyticsReportPayload = await req.json()
-    const { reportType, reportDate, reportMarkdown, alerts, sendSlack = true } = payload
+    const {
+      reportType,
+      reportDate,
+      reportMarkdown,
+      reportRunId: requestedReportRunId,
+      auditReportType = reportType,
+      invocationKey: requestedInvocationKey,
+      alerts,
+      sendSlack = true,
+    } = payload
 
-    if (!reportType || !reportDate || !reportMarkdown) {
+    if (
+      !reportType
+      || !reportDate
+      || !reportMarkdown
+      || !['daily', 'weekly', 'funnel', 'sources', 'realtime'].includes(reportType)
+      || !['daily', 'weekly', 'funnel', 'sources', 'realtime', 'progress'].includes(auditReportType)
+      || (requestedReportRunId !== undefined
+        && !/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(requestedReportRunId))
+      || (requestedInvocationKey !== undefined && !validateInvocationKey(requestedInvocationKey))
+      || (requestedReportRunId !== undefined && requestedInvocationKey !== undefined)
+    ) {
       return new Response(
-        JSON.stringify({ error: 'Missing required fields: reportType, reportDate, reportMarkdown' }),
+        JSON.stringify({ error: 'Missing or invalid report delivery fields' }),
         {
           status: 400,
           headers: { ...corsHeaders, 'Content-Type': 'application/json' }
@@ -365,10 +430,10 @@ serve(async (req) => {
 
     console.log(`[send-analytics-report] Processing ${reportType} report for ${reportDate}`)
 
-    // Create Supabase admin client
+    // Create a server-only Supabase client after exact credential validation.
     const supabaseAdmin = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '',
+      supabaseUrl,
+      serviceRoleKey,
       {
         auth: {
           autoRefreshToken: false,
@@ -377,142 +442,261 @@ serve(async (req) => {
       }
     )
 
-    // Track results
-    const results = {
-      emailsSent: 0,
-      emailsFailed: 0,
-      slackSent: false,
-      errors: [] as string[],
+    let reportRunId = requestedReportRunId
+    if (!reportRunId) {
+      const invocationKey = validateInvocationKey(requestedInvocationKey)
+        ?? `manual-${auditReportType}:${new Date().toISOString().slice(0, 10)}:${crypto.randomUUID()}`
+      const { data: claimRows, error: claimError } = await supabaseAdmin.rpc(
+        'claim_analytics_report_run',
+        {
+          p_invocation_key: invocationKey,
+          p_report_type: auditReportType,
+          p_trigger_kind: 'manual',
+          p_window_start: null,
+          p_window_end: null,
+        }
+      )
+      if (claimError || !claimRows?.[0]?.report_run_id) {
+        throw new Error('manual_report_run_claim_failed')
+      }
+      reportRunId = claimRows[0].report_run_id
+      if (!claimRows[0].should_execute) {
+        return new Response(
+          JSON.stringify({
+            success: claimRows[0].run_status === 'succeeded',
+            duplicate: true,
+            reportRunId,
+            status: claimRows[0].run_status,
+          }),
+          {
+            status: 200,
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          }
+        )
+      }
     }
 
-    // Get active admins
-    const { data: admins, error: adminError } = await supabaseAdmin
+    const { data: reportRun, error: reportRunError } = await supabaseAdmin
+      .from('analytics_report_runs')
+      .select('report_type, status, expected_email_count, emails_sent, emails_failed, slack_sent')
+      .eq('id', reportRunId)
+      .single()
+    if (reportRunError || !reportRun || reportRun.report_type !== auditReportType) {
+      return new Response(
+        JSON.stringify({ error: 'Report run does not match payload' }),
+        {
+          status: 409,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        }
+      )
+    }
+    if (reportRun.status === 'succeeded') {
+      return new Response(
+        JSON.stringify({
+          success: true,
+          duplicate: true,
+          reportRunId,
+          status: reportRun.status,
+          results: {
+            emailsSent: reportRun.emails_sent,
+            emailsFailed: reportRun.emails_failed,
+            slackSent: reportRun.slack_sent,
+          },
+        }),
+        {
+          status: 200,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        }
+      )
+    }
+    if (reportRun.status !== 'generating') {
+      return new Response(
+        JSON.stringify({
+          error: 'Report run must be claimed before delivery',
+          reportRunId,
+          status: reportRun.status,
+        }),
+        {
+          status: 409,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        }
+      )
+    }
+
+    const { data: activeAdmins, error: adminError } = await supabaseAdmin
       .from('admin')
-      .select('email, full_name')
+      .select('id, email, full_name')
       .eq('active', true) as { data: AdminRecord[] | null; error: Error | null }
 
     if (adminError) {
-      console.error('[send-analytics-report] Error fetching admins:', adminError)
-      results.errors.push(`Failed to fetch admins: ${adminError.message}`)
+      await supabaseAdmin.rpc('fail_analytics_report_run', {
+        p_report_run_id: reportRunId,
+        p_error_code: 'report_delivery_request_failed',
+      })
+      throw new Error('active_admin_query_failed')
     }
 
-    // Convert markdown to HTML
-    const reportHtml = markdownToHtml(reportMarkdown)
-
-    // Send emails to all active admins
-    const resendApiKey = Deno.env.get('RESEND_API_KEY')
-    if (resendApiKey && admins && admins.length > 0) {
-      const emailHtml = generateEmailHtml({
-        reportType,
-        reportDate,
-        reportHtml,
-        alerts,
-      })
-      const emailText = generateEmailText({
-        reportType,
-        reportDate,
-        reportMarkdown,
-        alerts,
-      })
-      const subject = getEmailSubject(reportType, reportDate)
-
-      for (let i = 0; i < admins.length; i++) {
-        const admin = admins[i]
-        try {
-          const emailResponse = await fetch('https://api.resend.com/emails', {
-            method: 'POST',
-            headers: {
-              'Authorization': `Bearer ${resendApiKey}`,
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-              from: 'KStoryBridge Analytics <noreply@kstorybridge.com>',
-              to: admin.email,
-              subject,
-              html: emailHtml,
-              text: emailText,
-            }),
-          })
-
-          if (emailResponse.ok) {
-            console.log(`[send-analytics-report] Email sent to: ${admin.email}`)
-            results.emailsSent++
-          } else {
-            const errorText = await emailResponse.text()
-            console.error(`[send-analytics-report] Email failed for ${admin.email}:`, errorText)
-            results.emailsFailed++
-            results.errors.push(`Email to ${admin.email} failed: ${errorText}`)
-          }
-        } catch (emailError) {
-          console.error(`[send-analytics-report] Email error for ${admin.email}:`, emailError)
-          results.emailsFailed++
-          results.errors.push(`Email to ${admin.email} error: ${emailError}`)
-        }
-
-        // Add 500ms delay between emails to avoid Resend rate limit (2 req/sec)
-        if (i < admins.length - 1) {
-          await delay(500)
-        }
+    const { error: prepareError } = await supabaseAdmin.rpc(
+      'prepare_analytics_report_deliveries',
+      {
+        p_report_run_id: reportRunId,
+        p_admin_ids: (activeAdmins ?? []).map(admin => admin.id),
+        p_send_slack: sendSlack,
       }
-    } else if (!resendApiKey) {
-      console.warn('[send-analytics-report] RESEND_API_KEY not configured')
-      results.errors.push('Email service not configured')
-    } else if (!admins || admins.length === 0) {
-      console.warn('[send-analytics-report] No active admins found')
-      results.errors.push('No active admins found')
+    )
+    if (prepareError) throw new Error('delivery_prepare_failed')
+
+    const { data: deliveryRows, error: deliveryRowsError } = await supabaseAdmin
+      .from('analytics_report_recipient_deliveries')
+      .select('admin_id, channel, status')
+      .eq('report_run_id', reportRunId) as {
+        data: DeliveryRecord[] | null
+        error: Error | null
+      }
+    if (deliveryRowsError) throw new Error('delivery_state_query_failed')
+
+    const emailAdminIds = (deliveryRows ?? [])
+      .filter(delivery => delivery.channel === 'email' && delivery.admin_id)
+      .map(delivery => delivery.admin_id as string)
+
+    let recipientAdmins: AdminRecord[] = []
+    if (emailAdminIds.length > 0) {
+      const { data, error } = await supabaseAdmin
+        .from('admin')
+        .select('id, email, full_name')
+        .in('id', emailAdminIds) as { data: AdminRecord[] | null; error: Error | null }
+      if (error) throw new Error('recipient_admin_query_failed')
+      recipientAdmins = data ?? []
+    }
+    const adminsById = new Map(recipientAdmins.map(admin => [admin.id, admin]))
+
+    const recordDelivery = async (
+      adminId: string | null,
+      channel: 'email' | 'slack',
+      status: 'sent' | 'failed',
+      errorCode: DeliveryErrorCode | null
+    ) => {
+      const { error } = await supabaseAdmin.rpc('record_analytics_report_delivery', {
+        p_report_run_id: reportRunId,
+        p_admin_id: adminId,
+        p_channel: channel,
+        p_status: status,
+        p_error_code: errorCode,
+      })
+      if (error) throw new Error('delivery_result_record_failed')
     }
 
-    // Send Slack notification
-    const slackWebhookUrl = Deno.env.get('SLACK_WEBHOOK_URL')
-    if (sendSlack && slackWebhookUrl) {
-      try {
-        const summary = extractSummary(reportMarkdown)
-        const slackMessage = generateSlackMessage({
-          reportType,
-          reportDate,
-          alerts,
-          summary,
-        })
+    const claimDelivery = async (
+      adminId: string | null,
+      channel: 'email' | 'slack'
+    ): Promise<boolean> => {
+      const { data, error } = await supabaseAdmin.rpc('claim_analytics_report_delivery', {
+        p_report_run_id: reportRunId,
+        p_admin_id: adminId,
+        p_channel: channel,
+      })
+      if (error) throw new Error('delivery_claim_failed')
+      return data?.[0]?.should_send === true
+    }
 
-        const slackResponse = await fetch(slackWebhookUrl, {
+    const reportHtml = markdownToHtml(reportMarkdown)
+    const emailHtml = generateEmailHtml({ reportType, reportDate, reportHtml, alerts })
+    const emailText = generateEmailText({ reportType, reportDate, reportMarkdown, alerts })
+    const subject = getEmailSubject(reportType, reportDate)
+    const resendApiKey = Deno.env.get('RESEND_API_KEY')
+    let attemptedEmailCount = 0
+
+    for (const delivery of (deliveryRows ?? []).filter(row => row.channel === 'email')) {
+      if (!delivery.admin_id || !(await claimDelivery(delivery.admin_id, 'email'))) continue
+      if (attemptedEmailCount > 0) await delay(500)
+      attemptedEmailCount += 1
+
+      const admin = adminsById.get(delivery.admin_id)
+      if (!admin) {
+        await recordDelivery(delivery.admin_id, 'email', 'failed', 'admin_recipient_missing')
+        continue
+      }
+      if (!resendApiKey) {
+        await recordDelivery(delivery.admin_id, 'email', 'failed', 'resend_not_configured')
+        continue
+      }
+
+      try {
+        const emailResponse = await fetch('https://api.resend.com/emails', {
           method: 'POST',
           headers: {
+            'Authorization': `Bearer ${resendApiKey}`,
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            text: slackMessage,
+            from: 'KStoryBridge Analytics <noreply@kstorybridge.com>',
+            to: admin.email,
+            subject,
+            html: emailHtml,
+            text: emailText,
           }),
         })
-
-        if (slackResponse.ok) {
-          console.log('[send-analytics-report] Slack notification sent')
-          results.slackSent = true
-        } else {
-          const errorText = await slackResponse.text()
-          console.error('[send-analytics-report] Slack notification failed:', errorText)
-          results.errors.push(`Slack notification failed: ${errorText}`)
-        }
-      } catch (slackError) {
-        console.error('[send-analytics-report] Slack error:', slackError)
-        results.errors.push(`Slack error: ${slackError}`)
+        await recordDelivery(
+          delivery.admin_id,
+          'email',
+          emailResponse.ok ? 'sent' : 'failed',
+          emailResponse.ok ? null : 'resend_http_error'
+        )
+      } catch {
+        await recordDelivery(delivery.admin_id, 'email', 'failed', 'resend_network_error')
       }
-    } else if (sendSlack && !slackWebhookUrl) {
-      console.warn('[send-analytics-report] SLACK_WEBHOOK_URL not configured')
-      results.errors.push('Slack service not configured')
     }
 
-    console.log('[send-analytics-report] Report delivery complete:', results)
+    const slackDelivery = (deliveryRows ?? []).find(row => row.channel === 'slack')
+    if (slackDelivery && await claimDelivery(null, 'slack')) {
+      const slackWebhookUrl = Deno.env.get('SLACK_WEBHOOK_URL')
+      if (!slackWebhookUrl) {
+        await recordDelivery(null, 'slack', 'failed', 'slack_not_configured')
+      } else {
+        try {
+          const slackResponse = await fetch(slackWebhookUrl, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              text: generateSlackMessage({
+                reportType,
+                reportDate,
+                alerts,
+                summary: extractSummary(reportMarkdown),
+              }),
+            }),
+          })
+          await recordDelivery(
+            null,
+            'slack',
+            slackResponse.ok ? 'sent' : 'failed',
+            slackResponse.ok ? null : 'slack_http_error'
+          )
+        } catch {
+          await recordDelivery(null, 'slack', 'failed', 'slack_network_error')
+        }
+      }
+    }
 
-    // Return success even if some notifications failed
+    const { data: finalizedRows, error: finalizeError } = await supabaseAdmin.rpc(
+      'finalize_analytics_report_run',
+      { p_report_run_id: reportRunId }
+    )
+    if (finalizeError || !finalizedRows?.[0]) throw new Error('delivery_finalize_failed')
+    const finalized = finalizedRows[0]
+
+    console.log(`[send-analytics-report] Delivery finalized with status ${finalized.run_status}`)
     return new Response(
       JSON.stringify({
-        success: true,
+        success: finalized.run_status === 'succeeded',
+        reportRunId,
+        status: finalized.run_status,
         results: {
-          emailsSent: results.emailsSent,
-          emailsFailed: results.emailsFailed,
-          slackSent: results.slackSent,
+          emailsSent: finalized.emails_sent,
+          emailsFailed: finalized.emails_failed,
+          slackSent: finalized.slack_sent,
         },
-        warnings: results.errors.length > 0 ? results.errors : undefined,
+        warnings: finalized.error_codes?.length > 0 ? finalized.error_codes : undefined,
       }),
       {
         status: 200,
@@ -520,12 +704,11 @@ serve(async (req) => {
       }
     )
 
-  } catch (error) {
-    console.error('[send-analytics-report] Unexpected error:', error)
+  } catch {
+    console.error('[send-analytics-report] Request failed with a controlled internal error')
     return new Response(
       JSON.stringify({
         error: 'Internal server error',
-        details: error instanceof Error ? error.message : String(error)
       }),
       {
         status: 500,

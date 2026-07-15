@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { Menu, X } from 'lucide-react';
 import LanguageSelector from './header/LanguageSelector';
 import SignInDropdown from './header/SignInDropdown';
+import { trackAudiencePathSelected } from '../utils/analytics';
 
 const UniversalHeader = () => {
   const navigate = useNavigate();
@@ -41,7 +42,10 @@ const UniversalHeader = () => {
             {/* Desktop Navigation */}
             <div className="hidden md:flex items-center space-x-8">
               <button
-                onClick={() => navigate('/creators')}
+                onClick={() => {
+                  trackAudiencePathSelected('creator', 'header_desktop');
+                  navigate('/creators');
+                }}
                 className={`font-medium transition-colors ${
                   isActive('/creators')
                     ? 'text-hanok-teal'
@@ -51,7 +55,10 @@ const UniversalHeader = () => {
                 {t('nav.creators').toUpperCase()}
               </button>
               <button
-                onClick={() => navigate('/producers')}
+                onClick={() => {
+                  trackAudiencePathSelected('buyer', 'header_desktop');
+                  navigate('/producers');
+                }}
                 className={`font-medium transition-colors ${
                   isActive('/producers')
                     ? 'text-hanok-teal'
@@ -116,6 +123,7 @@ const UniversalHeader = () => {
             <div className="space-y-1">
               <button
                 onClick={() => {
+                  trackAudiencePathSelected('creator', 'header_mobile');
                   navigate('/creators');
                   setMobileMenuOpen(false);
                 }}
@@ -129,6 +137,7 @@ const UniversalHeader = () => {
               </button>
               <button
                 onClick={() => {
+                  trackAudiencePathSelected('buyer', 'header_mobile');
                   navigate('/producers');
                   setMobileMenuOpen(false);
                 }}

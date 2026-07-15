@@ -50,6 +50,7 @@ export function PitchDeckSection({ titleId, titleName, pitchUrl, userTier }: Pit
             <div className="h-full">
               <SecurePDFViewer
                 pdfUrl={pitchUrl}
+                titleId={titleId}
                 userTier={userTier}
                 maxPagesForBasic={5}
               />

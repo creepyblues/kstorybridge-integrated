@@ -247,27 +247,74 @@ export const triggerContactAttemptEmail = async (
 };
 
 /**
- * Trigger engagement email when user saves first title
- * Note: Currently disabled until email templates are implemented in edge function
+ * Trigger engagement email when user saves first title.
+ * Non-blocking, deduped per browser via localStorage.
  */
 export const triggerFirstSaveEmail = async (
-  userId: string,
+  _userId: string,
   userEmail: string,
-  userName: string
+  userName: string,
+  titleName?: string
 ) => {
-  // Log for now (will be enabled in future with proper email templates)
-  console.log('🚫 Engagement email (first_save):', {
-    type: 'first_save',
-    userEmail,
-    userName,
-    userId
+  const dedupKey = `first_save_email_sent_${userEmail.toLowerCase()}`;
+  try {
+    if (typeof window !== 'undefined' && localStorage.getItem(dedupKey)) {
+      return { success: true, error: 'Already sent' };
+    }
+  } catch {
+    // localStorage unavailable - proceed
+  }
+
+  const dashboardUrl = typeof window !== 'undefined'
+    ? `${window.location.origin}/buyers/saved`
+    : 'https://dashboard.kstorybridge.com/buyers/saved';
+  const escapeHtml = (value: string): string =>
+    value
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+  const firstName = escapeHtml(userName?.split(' ')[0] || 'there');
+  const safeTitleName = titleName ? escapeHtml(titleName) : undefined;
+
+  const result = await emailService.sendEmail({
+    to: userEmail.toLowerCase(),
+    subject: titleName
+      ? `${titleName} is on your shortlist 🎬`
+      : 'Your first title is saved 🎬',
+    from: 'KStoryBridge <noreply@kstorybridge.com>',
+    html: `
+      <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 32px 24px; color: #111827;">
+        <h2 style="margin: 0 0 16px;">Nice pick, ${firstName}!</h2>
+        <p style="font-size: 16px; line-height: 1.6; color: #374151;">
+          ${safeTitleName ? `<strong>${safeTitleName}</strong> is` : 'Your first title is'} now on your shortlist.
+          When you're ready, hit <strong>Express Interest</strong> on any title and our team
+          will connect you with the rights holder.
+        </p>
+        <p style="margin: 24px 0;">
+          <a href="${dashboardUrl}" style="display: inline-block; background: #000; color: #fff; padding: 12px 24px; border-radius: 9999px; text-decoration: none; font-weight: 500;">
+            View your shortlist
+          </a>
+        </p>
+        <p style="font-size: 14px; color: #6b7280; line-height: 1.6;">
+          Tip: run a comps search with a show you love and we'll surface more Korean IP like it.
+        </p>
+      </div>
+    `,
   });
 
-  // Return success to not block user flow
-  return { success: true, error: 'Engagement emails will be enabled in a future update' };
+  if (result.success) {
+    try {
+      if (typeof window !== 'undefined') {
+        localStorage.setItem(dedupKey, new Date().toISOString());
+      }
+    } catch {
+      // ignore
+    }
+  }
 
-  // TODO: Implement engagement email when templates are ready
-  // This will send a celebration email when a user saves their first title
+  return result;
 };
 
 /**

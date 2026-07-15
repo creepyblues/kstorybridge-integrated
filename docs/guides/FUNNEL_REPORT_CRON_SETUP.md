@@ -7,8 +7,11 @@ This guide explains how to set up the automated weekly funnel report that runs e
 The funnel report cron system consists of:
 
 1. **Edge Function**: `funnel-report-cron` - Fetches GA4 data and generates the report
-2. **pg_cron Job**: Triggers the edge function on schedule
-3. **Email Delivery**: Uses existing `send-analytics-report` to email admins
+2. **pg_cron Job**: Uses a dedicated Vault-backed secret to trigger the edge function
+3. **Delivery ledger**: Claims one logical run and each admin/Slack delivery idempotently
+4. **Email Delivery**: Uses service-role-only `send-analytics-report` to email admins
+
+Anon and normal authenticated-user tokens are rejected by both report endpoints. Do not deploy either strict function independently from the audit schema, secure cron command, and caller-secret updates.
 
 ## Prerequisites
 
@@ -57,25 +60,81 @@ The cron job needs a Google Service Account with access to the GA4 Data API.
 npx supabase secrets set GOOGLE_SERVICE_ACCOUNT_JSON='<paste entire JSON content here>'
 ```
 
+The signup reconciliation remains in `Instrumentation pending` mode until the canonical auth contract has been live for a complete reporting window. After both the buyer dashboard and creator app are released to production, set this secret to the later of the two deployment timestamps:
+
+```bash
+npx supabase secrets set ANALYTICS_AUTH_CONTRACT_LIVE_AT='2026-07-13T00:00:00Z'
+```
+
+Use the actual production timestamp, not the example above. The report starts enforcing the 5% GA-to-Supabase reconciliation tolerance only when that timestamp predates the full report window. Until then, GA zeros are labeled as incomplete instrumentation and do not trigger false zero-signup alerts.
+
+Creator title workflow reconciliation uses separate client and server cutovers. Set the client timestamp after the creator app containing `title_draft_created` and `title_submitted` reaches production. Do not set the server timestamp until `title_approved` and `title_published` are emitted by the authoritative admin workflow:
+
+```bash
+npx supabase secrets set ANALYTICS_TITLE_CLIENT_CONTRACT_LIVE_AT='ACTUAL_CREATOR_DEPLOYMENT_TIMESTAMP'
+npx supabase secrets set ANALYTICS_TITLE_SERVER_CONTRACT_LIVE_AT='ACTUAL_SERVER_EVENT_DEPLOYMENT_TIMESTAMP'
+```
+
+Publication remains a labeled catalog-creation proxy until `title_drafts` durably stores its published title ID. A coincidental equality between approval and catalog counts must not be called a reconciliation.
+
+Buyer-interest reconciliation starts enforcement only after the canonical dashboard event has covered a full reporting window:
+
+```bash
+npx supabase secrets set ANALYTICS_INTEREST_CONTRACT_LIVE_AT='ACTUAL_DASHBOARD_DEPLOYMENT_TIMESTAMP'
+```
+
+Leave the secret unset until the updated dashboard is in production. The authoritative count comes from newly created `title_interests` rows; duplicate requests that merely refresh a note are not additional outcomes.
+
+Authenticated buyer-product reporting and canonical commercial signals use independent cutovers. Set each value only after every event represented by that report section is live in production:
+
+```bash
+npx supabase secrets set ANALYTICS_PRODUCT_CONTRACT_LIVE_AT='ACTUAL_DASHBOARD_DEPLOYMENT_TIMESTAMP'
+npx supabase secrets set ANALYTICS_COMMERCIAL_CONTRACT_LIVE_AT='ACTUAL_LATER_WEBHOOK_OR_CLIENT_DEPLOYMENT_TIMESTAMP'
+```
+
+If a reporting window starts before a cutover, the section remains labeled instrumentation pending. The report never fills canonical counts by adding obsolete aliases such as `comps_search` or `checkout_completed`. Public-trial events remain separate because they describe the unauthenticated trial flow rather than the authenticated product contract.
+
 **Important**: The JSON must be on a single line. You can use:
 ```bash
 # Convert multi-line JSON to single line
 cat /Users/sungholee/Downloads/kstorybridge-605470d9e4d4.json | jq -c . | pbcopy
 ```
 
-### 2. Deploy the Edge Function
+### 2. Prepare report authentication
+
+Generate one random value outside version control and store the same value in Supabase Vault and the `funnel-report-cron` Edge Function environment. Do not paste it into a migration, cron command, report, log, or client environment.
+
+```bash
+CRON_SECRET="$(openssl rand -hex 32)"
+npx supabase secrets set ANALYTICS_FUNNEL_CRON_SECRET="$CRON_SECRET"
+
+# DATABASE_URL must be the explicitly approved target database.
+printf '%s\n' "SELECT vault.create_secret(:'cron_secret', 'analytics_funnel_cron_secret', 'Authenticates the weekly analytics cron');" \
+  | psql "$DATABASE_URL" --set=cron_secret="$CRON_SECRET"
+unset CRON_SECRET
+```
+
+Add `SUPABASE_SERVICE_ROLE_KEY` to the GitHub Actions encrypted secret store before activating `.github/workflows/analytics-progress.yml`. Provide the same variable to the local fallback cron through a user-only secure environment source. Never add it to a tracked `.env` file. Once the audit RPC is live, the progress script fails closed if that key is absent.
+
+### 3. Coordinated deployment
 
 ```bash
 cd /Users/sungholee/code/kstorybridge
 
-# Deploy the funnel report cron function
+# Follow the approved migration-history reconciliation and backup runbook first.
+npx supabase db push
+
+# Deploy both strict boundaries in the same maintenance window.
+npx supabase functions deploy send-analytics-report
 npx supabase functions deploy funnel-report-cron
 
 # Verify deployment
 npx supabase functions list
 ```
 
-### 3. Enable pg_cron Extension
+The production database is shared by the staging app domains. A staging-domain deployment is not an isolated database rehearsal.
+
+### 4. Enable pg_cron Extension
 
 pg_cron should already be enabled in your Supabase project. If not, run the migration:
 
@@ -84,7 +143,7 @@ pg_cron should already be enabled in your Supabase project. If not, run the migr
 CREATE EXTENSION IF NOT EXISTS pg_cron WITH SCHEMA extensions;
 ```
 
-### 4. Create the Cron Job
+### 5. Create the Cron Job
 
 Apply the migration to create the cron job:
 
@@ -92,7 +151,7 @@ Apply the migration to create the cron job:
 npx supabase db push
 ```
 
-Or run manually in the SQL editor:
+The prepared migration replaces the old job with this no-secret-in-source command:
 
 ```sql
 -- Schedule funnel report for Monday 6am PST (14:00 UTC)
@@ -104,7 +163,15 @@ SELECT cron.schedule(
     url := 'https://dlrnrgcoguxlkkcitlpd.supabase.co/functions/v1/funnel-report-cron',
     headers := jsonb_build_object(
       'Content-Type', 'application/json',
-      'Authorization', 'Bearer ' || current_setting('app.settings.anon_key')
+      'X-Analytics-Cron-Secret', coalesce(
+        (
+          SELECT decrypted_secret
+          FROM vault.decrypted_secrets
+          WHERE name = 'analytics_funnel_cron_secret'
+          LIMIT 1
+        ),
+        ''
+      )
     ),
     body := '{"days": 7}'::jsonb
   ) AS request_id;
@@ -129,10 +196,12 @@ To always get 6am Pacific regardless of DST, you would need to update the cron t
 
 ```bash
 curl -X POST "https://dlrnrgcoguxlkkcitlpd.supabase.co/functions/v1/funnel-report-cron" \
-  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRscm5yZ2NvZ3V4bGtrY2l0bHBkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MjA4NTM3NzMsImV4cCI6MjAzNjQyOTc3M30.y0KTfJlcWRLLKsJMqSjDLMsohDX7KLByQK2xwzwMHaE" \
+  -H "Authorization: Bearer $SUPABASE_SERVICE_ROLE_KEY" \
   -H "Content-Type: application/json" \
-  -d '{"days": 7}'
+  -d '{"days":7,"invocationKey":"manual-funnel:YYYY-MM-DD:operator-check-v1"}'
 ```
+
+Reuse the same invocation key for an operator retry. The ledger returns the existing run and never resends completed recipients.
 
 ### Check Cron Job Status
 
@@ -153,7 +222,15 @@ LIMIT 10;
 SELECT cron.schedule('test-funnel-now', 'NOW', $$
   SELECT net.http_post(
     url := 'https://dlrnrgcoguxlkkcitlpd.supabase.co/functions/v1/funnel-report-cron',
-    headers := jsonb_build_object('Content-Type', 'application/json'),
+    headers := jsonb_build_object(
+      'Content-Type', 'application/json',
+      'X-Analytics-Cron-Secret', (
+        SELECT decrypted_secret
+        FROM vault.decrypted_secrets
+        WHERE name = 'analytics_funnel_cron_secret'
+        LIMIT 1
+      )
+    ),
     body := '{"days": 7}'::jsonb
   );
 $$);
@@ -171,12 +248,15 @@ SELECT cron.unschedule('test-funnel-now');
 npx supabase functions logs funnel-report-cron --limit 50
 ```
 
-### Check Email Delivery
+### Check durable delivery status
 
-The function calls `send-analytics-report` which logs:
-- Emails sent count
-- Slack notification status
-- Any errors
+Use the privacy-safe RPC; it exposes aggregate counts and controlled error codes but no admin identity, report content, provider response, URL, or secret:
+
+```sql
+SELECT * FROM public.get_analytics_report_delivery_status(2);
+```
+
+Only two consecutive `scheduled` rows with `status='succeeded'`, every expected email sent, zero email failures, and `slack_sent=true` satisfy `AR-405`. Manual, local-progress, and GitHub-progress rows never count toward that streak.
 
 ## Customization
 
@@ -227,7 +307,15 @@ body := '{"days": 14}'::jsonb  -- 14-day report instead of 7
 
 1. Check `admin` table has active admins with email addresses
 2. Verify `RESEND_API_KEY` is configured
-3. Check Resend dashboard for delivery status
+3. Query `get_analytics_report_delivery_status(2)` for controlled delivery errors
+4. Check Resend only when the ledger reports a provider failure
+
+### HTTP 403 from report functions
+
+1. Confirm manual calls use the exact service-role key, never the anon key or a user JWT.
+2. Confirm the cron uses `X-Analytics-Cron-Secret` from `vault.decrypted_secrets`.
+3. Confirm Vault and `ANALYTICS_FUNNEL_CRON_SECRET` contain the same value without printing either value.
+4. Do not relax function authorization or restore the anon proxy.
 
 ### Cron not running
 

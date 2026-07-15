@@ -1,11 +1,16 @@
 import { Button } from '@kstorybridge/ui';
 import { useTranslation } from 'react-i18next';
 import { getDashboardUrl } from '../../../config/urls';
-import { trackButtonClick } from '../../../utils/analytics';
+import {
+  trackSignupCtaClicked,
+  trackTrialCtaClicked,
+  type WebsiteFeature,
+} from '../../../utils/analytics';
 import { ScrollReveal } from './ScrollReveal';
 
 interface FinalCTASectionProps {
   accentColor?: 'teal' | 'purple';
+  featureName: WebsiteFeature;
 }
 
 /**
@@ -16,7 +21,7 @@ interface FinalCTASectionProps {
  * - Primary and secondary CTAs
  * - Trust signals
  */
-export function FinalCTASection({ accentColor = 'teal' }: FinalCTASectionProps) {
+export function FinalCTASection({ accentColor = 'teal', featureName }: FinalCTASectionProps) {
   const { t } = useTranslation('features');
 
   const colorClasses = {
@@ -51,7 +56,7 @@ export function FinalCTASection({ accentColor = 'teal' }: FinalCTASectionProps) 
                 size="lg"
                 className={`${colors.primaryBtn} text-white px-8 sm:px-12 py-4 sm:py-6 text-base sm:text-lg rounded-full font-medium shadow-lg hover:shadow-xl transition-all duration-300`}
                 onClick={() => {
-                  trackButtonClick('feature-final-trial', 'final_cta_section');
+                  trackTrialCtaClicked('final_cta', featureName);
                   window.location.href = `${getDashboardUrl()}/trial`;
                 }}
               >
@@ -62,7 +67,7 @@ export function FinalCTASection({ accentColor = 'teal' }: FinalCTASectionProps) 
                 variant="outline"
                 className={`${colors.secondaryBtn} px-8 sm:px-12 py-4 sm:py-6 text-base sm:text-lg rounded-full font-medium transition-all duration-300`}
                 onClick={() => {
-                  trackButtonClick('feature-final-signup', 'final_cta_section');
+                  trackSignupCtaClicked('final_cta', featureName);
                   window.location.href = `${getDashboardUrl()}/signup`;
                 }}
               >

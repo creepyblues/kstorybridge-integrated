@@ -8,6 +8,7 @@ import { Icon } from '@iconify/react';
 import { omdbService, OMDBSearchResult } from '@/services/omdbService';
 import { useOMDBAutocomplete } from '@/hooks/useOMDBAutocomplete';
 import { trackHomeCtaClicked, trackHomeSearchInitiated, trackExternalLinkClicked } from '@/utils/analytics';
+import { completeOnboardingStep } from '@/utils/onboarding';
 import { HERO_SAMPLES } from '@/data/examplesData';
 
 // Use centralized sample data from examplesData.ts
@@ -34,7 +35,8 @@ export function HeroSection() {
 
   const handleSelectSuggestion = (result: OMDBSearchResult) => {
     // Track search initiated with autocomplete selection
-    trackHomeSearchInitiated('show_comp', result.Title, 'autocomplete');
+    trackHomeSearchInitiated('show_comp', 'autocomplete');
+    completeOnboardingStep(2);
     setShowDropdown(false);
 
     // Navigate to comps-navigator with the selected show
@@ -44,7 +46,8 @@ export function HeroSection() {
   const handleShowCompSubmit = () => {
     if (showInput.trim()) {
       // Track search initiated via manual input
-      trackHomeSearchInitiated('show_comp', showInput.trim(), 'manual');
+      trackHomeSearchInitiated('show_comp', 'manual');
+    completeOnboardingStep(2);
 
       navigate(`/buyers/comps-navigator?show=${encodeURIComponent(showInput.trim())}`);
     }
@@ -53,7 +56,8 @@ export function HeroSection() {
   const handleBriefSubmit = () => {
     if (briefInput.trim()) {
       // Track brief search initiated
-      trackHomeSearchInitiated('brief', briefInput.trim(), 'manual');
+      trackHomeSearchInitiated('brief', 'manual');
+    completeOnboardingStep(2);
 
       navigate(`/buyers/mandates?brief=${encodeURIComponent(briefInput.trim())}`);
     }
@@ -62,6 +66,7 @@ export function HeroSection() {
   const handleSampleShowClick = () => {
     // Track sample CTA click
     trackHomeCtaClicked('show_comp_sample', SAMPLE_SHOW);
+    completeOnboardingStep(2);
 
     navigate(`/buyers/comps-navigator?show=${encodeURIComponent(SAMPLE_SHOW)}`);
   };
@@ -69,6 +74,7 @@ export function HeroSection() {
   const handleSampleBriefClick = () => {
     // Track sample CTA click
     trackHomeCtaClicked('brief_sample', SAMPLE_BRIEF);
+    completeOnboardingStep(2);
 
     navigate(`/buyers/mandates?brief=${encodeURIComponent(SAMPLE_BRIEF)}`);
   };
@@ -76,7 +82,8 @@ export function HeroSection() {
   const handleChatSubmit = () => {
     if (chatInput.trim()) {
       // Track AI chat search initiated
-      trackHomeSearchInitiated('ai_chat', chatInput.trim(), 'manual');
+      trackHomeSearchInitiated('ai_chat', 'manual');
+    completeOnboardingStep(2);
 
       navigate(`/buyers/chat?q=${encodeURIComponent(chatInput.trim())}`);
     }
@@ -85,6 +92,7 @@ export function HeroSection() {
   const handleSampleChatClick = () => {
     // Track sample CTA click
     trackHomeCtaClicked('ai_chat_sample', SAMPLE_CHAT);
+    completeOnboardingStep(2);
 
     navigate(`/buyers/chat?q=${encodeURIComponent(SAMPLE_CHAT)}`);
   };

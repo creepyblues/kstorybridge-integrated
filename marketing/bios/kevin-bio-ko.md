@@ -29,7 +29,7 @@ Sungho bio is a separate file (TBD); this page can link to it from the closing o
 **Name:** Kevin Nicklaus
 
 **Roles:**
-Co-Founder & Partner, KStoryBridge
+Founding Partner, KStoryBridge
 
 **Headline:**
 **한국 콘텐츠가 할리우드에서 통하는 문법을  

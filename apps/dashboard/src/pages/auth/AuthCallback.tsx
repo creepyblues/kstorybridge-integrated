@@ -5,6 +5,7 @@ import { supabase } from '@/lib/supabase';
 import { checkBuyerProfileExists } from '@/lib/auth';
 import { Icon } from '@iconify/react';
 import { notifyUserSignin } from '@/utils/slack';
+import { trackSignin, trackSignup } from '@/utils/analytics';
 
 // 🚨 AUTH ISOLATION BOUNDARY
 // This page handles OAuth callback only - no business logic
@@ -36,14 +37,15 @@ export default function AuthCallback() {
     handleOAuthCallback().finally(() => {
       clearTimeout(timeoutId);
     });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   async function handleOAuthCallback() {
+    const accountType = sessionStorage.getItem('oauth_account_type');
+    const flow = sessionStorage.getItem('oauth_flow');
+
     try {
       // 🚨 CRITICAL: Only use sessionStorage (no URL parameters per CLAUDE.md)
-      const accountType = sessionStorage.getItem('oauth_account_type');
-      const flow = sessionStorage.getItem('oauth_flow');
-
       console.log('🔄 OAuth callback processing', { accountType, flow });
 
       // Wait for Supabase's detectSessionInUrl to process the hash fragment
@@ -55,6 +57,11 @@ export default function AuthCallback() {
 
       if (sessionError || !session) {
         console.error('❌ OAuth session error:', sessionError);
+        if (flow === 'signup') {
+          trackSignup('failed', 'google', { failure_reason: 'oauth_session_failed' });
+        } else {
+          trackSignin('failed', 'google', { failure_reason: 'oauth_session_failed' });
+        }
         clearOAuthStorage();
         setError('Authentication failed. Please try again.');
         return;
@@ -76,6 +83,7 @@ export default function AuthCallback() {
         const profileExists = await checkBuyerProfileExists(user.id);
 
         if (!profileExists) {
+          trackSignin('failed', 'google', { failure_reason: 'profile_not_found' });
           clearOAuthStorage();
           toast({
             title: 'Account Not Found',
@@ -88,6 +96,7 @@ export default function AuthCallback() {
         }
 
         // Profile exists - redirect to homepage
+        trackSignin('completed', 'google');
         clearOAuthStorage();
 
         // Send Slack notification (non-blocking)
@@ -117,6 +126,11 @@ export default function AuthCallback() {
       }
     } catch (error: any) {
       console.error('❌ OAuth callback error', error);
+      if (flow === 'signup') {
+        trackSignup('failed', 'google', { failure_reason: 'oauth_callback_failed' });
+      } else {
+        trackSignin('failed', 'google', { failure_reason: 'oauth_callback_failed' });
+      }
       clearOAuthStorage();
       setError(error.message || 'Authentication failed');
     }

@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { signUpWithEmail, signInWithOAuth } from '@/lib/auth'
@@ -8,7 +8,7 @@ import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { useToast } from '@/hooks/use-toast'
 import { supabase } from '@/lib/supabase'
-import { trackSignup, trackAuthError } from '@/utils/analytics'
+import { trackSignup } from '@/utils/analytics'
 
 export default function SignUp() {
   const { t } = useTranslation(['auth', 'common'])
@@ -29,6 +29,10 @@ export default function SignUp() {
     newsletter_consent: true,
   })
 
+  useEffect(() => {
+    trackSignup('viewed', 'email')
+  }, [])
+
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     setFormData({
       ...formData,
@@ -39,20 +43,24 @@ export default function SignUp() {
   const handleEmailSignUp = async (e: React.FormEvent) => {
     e.preventDefault()
     setError(null)
+    trackSignup('attempted', 'email')
 
     // Validation
     if (!formData.email || !formData.password || !formData.full_name || !formData.pen_name) {
       setError('Please fill in all required fields')
+      trackSignup('failed', 'email', 'validation_required_fields')
       return
     }
 
     if (formData.password !== formData.confirmPassword) {
       setError('Passwords do not match')
+      trackSignup('failed', 'email', 'validation_password_mismatch')
       return
     }
 
     if (formData.password.length < 6) {
       setError('Password must be at least 6 characters')
+      trackSignup('failed', 'email', 'validation_password_length')
       return
     }
 
@@ -73,7 +81,7 @@ export default function SignUp() {
       console.log('✅ Signup successful, showing confirmation message')
 
       // Track successful signup
-      trackSignup('email')
+      trackSignup('completed', 'email')
 
       // Show success toast
       toast({
@@ -89,7 +97,7 @@ export default function SignUp() {
     } catch (err: any) {
       console.error('❌ Signup error:', err)
       setError(err.message || 'Failed to sign up. Please try again.')
-      trackAuthError(err.message || 'Failed to sign up', 'email')
+      trackSignup('failed', 'email', 'auth_rejected')
     } finally {
       setLoading(false)
     }
@@ -98,6 +106,7 @@ export default function SignUp() {
   const handleOAuthSignUp = async () => {
     setError(null)
     setLoading(true)
+    trackSignup('attempted', 'google')
 
     try {
       await signInWithOAuth('signup')
@@ -106,7 +115,7 @@ export default function SignUp() {
     } catch (err: any) {
       console.error('❌ OAuth signup error:', err)
       setError(err.message || 'Failed to initiate Google signup')
-      trackAuthError(err.message || 'Failed to initiate Google signup', 'google')
+      trackSignup('failed', 'google', 'oauth_start_failed')
       setLoading(false)
     }
   }

@@ -11,6 +11,7 @@ import { trackSignup } from '@/utils/analytics';
 import { sendWelcomeEmail } from '@/services/emailService';
 import { notifyBuyerSignup } from '@/utils/slack';
 import { getTrialSessionId } from '@/contexts/TrialContext';
+import { completeOnboardingStep } from '@/utils/onboarding';
 
 export default function SignUp() {
   const navigate = useNavigate();
@@ -38,7 +39,7 @@ export default function SignUp() {
 
   // Track form viewed on mount
   useEffect(() => {
-    trackSignup('form_viewed', 'email');
+    trackSignup('viewed', 'email');
   }, []);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
@@ -100,7 +101,7 @@ export default function SignUp() {
       // Get trial session ID if user came from trial
       const trialSessionId = getTrialSessionId();
 
-      await signUpWithEmail(formData.email, formData.password, {
+      const { session } = await signUpWithEmail(formData.email, formData.password, {
         full_name: formData.full_name,
         buyer_company: formData.buyer_company || undefined,
         buyer_role: formData.buyer_role || undefined,
@@ -128,23 +129,41 @@ export default function SignUp() {
         userEmail: formData.email.toLowerCase(),
         accountType: 'buyer',
         dashboardUrl: `${window.location.origin}/buyers/home`,
-        loginUrl: `${window.location.origin}/signin`,
+        loginUrl: `${window.location.origin}/buyers/home`,
       }).catch((err) => {
         // Log but don't block - welcome email is not critical
         console.warn('Welcome email failed:', err);
       });
 
-      toast({
-        title: 'Check your email',
-        description: 'We sent you a verification link. Please verify your email to sign in.',
-      });
+      completeOnboardingStep(1);
 
-      setTimeout(() => {
-        navigate('/signin');
-      }, 2000);
+      if (session) {
+        // Email confirmation disabled: user is already signed in, land them activated
+        const redirectUrl = sessionStorage.getItem('redirect_after_login');
+        sessionStorage.removeItem('redirect_after_login');
+
+        toast({
+          title: 'Welcome to KStoryBridge!',
+          description: 'Your account is ready.',
+          variant: 'success',
+        });
+
+        navigate(redirectUrl || '/buyers/home?first_run=1');
+      } else {
+        // Email confirmation required: verification link lands on /auth/callback,
+        // which restores redirect_after_login
+        toast({
+          title: 'Check your email',
+          description: 'We sent you a verification link. Click it and you\'ll land right in your dashboard.',
+        });
+
+        setTimeout(() => {
+          navigate('/signin');
+        }, 2000);
+      }
     } catch (error: any) {
       // Track signup error
-      trackSignup('error', 'email', { error: error.message?.substring(0, 50) });
+      trackSignup('failed', 'email', { failure_reason: 'auth_rejected' });
 
       toast({
         title: 'Sign Up Failed',
@@ -166,7 +185,7 @@ export default function SignUp() {
       // Note: 'completed' tracking happens in AuthCallback
     } catch (error: any) {
       // Track OAuth error
-      trackSignup('error', 'google', { error: error.message?.substring(0, 50) });
+      trackSignup('failed', 'google', { failure_reason: 'oauth_start_failed' });
 
       toast({
         title: 'OAuth Sign Up Failed',

@@ -257,6 +257,7 @@ export function MaterialsTab({ title, userTier }: MaterialsTabProps) {
             <div className="h-full">
               <SecurePDFViewer
                 pdfUrl={currentPdfUrl}
+                titleId={title.title_id}
                 userTier={userTier}
                 maxPagesForBasic={5}
               />

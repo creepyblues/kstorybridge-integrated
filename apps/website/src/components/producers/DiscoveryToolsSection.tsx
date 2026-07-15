@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { Bot, Film, Target, ArrowRight } from 'lucide-react';
 import { Card, CardContent } from '../ui/card';
 import { ScrollReveal } from '../features/shared/ScrollReveal';
+import { trackFeaturePromoSelected, type WebsiteFeature } from '../../utils/analytics';
 
 /**
  * DiscoveryToolsSection Component
@@ -28,6 +29,7 @@ export function DiscoveryToolsSection() {
       title: t('discoveryTools.chatbot.title'),
       description: t('discoveryTools.chatbot.description'),
       link: '/features/chatbot',
+      featureName: 'chatbot' as WebsiteFeature,
       preview: <ChatbotPreview />
     },
     {
@@ -35,6 +37,7 @@ export function DiscoveryToolsSection() {
       title: t('discoveryTools.comps.title'),
       description: t('discoveryTools.comps.description'),
       link: '/features/comps-navigator',
+      featureName: 'comps_navigator' as WebsiteFeature,
       preview: <CompsPreview />
     },
     {
@@ -42,6 +45,7 @@ export function DiscoveryToolsSection() {
       title: t('discoveryTools.mandates.title'),
       description: t('discoveryTools.mandates.description'),
       link: '/features/mandate-matcher',
+      featureName: 'mandate_matcher' as WebsiteFeature,
       preview: <MandatePreview />
     }
   ];
@@ -63,7 +67,11 @@ export function DiscoveryToolsSection() {
         <div className="grid lg:grid-cols-3 gap-6 lg:gap-8">
           {tools.map((tool, index) => (
             <ScrollReveal key={index} delay={index * 100}>
-              <Link to={tool.link} className="block h-full group">
+              <Link
+                to={tool.link}
+                className="block h-full group"
+                onClick={() => trackFeaturePromoSelected(tool.featureName)}
+              >
                 <Card className="bg-white border-gray-300 shadow-none rounded-2xl hover:shadow-lg transition-all duration-300 h-full overflow-hidden flex flex-col">
                   <CardContent className="p-0 flex flex-col flex-grow">
                     {/* Mini Preview */}

@@ -19,7 +19,7 @@ export default function SignIn() {
 
   // Track form viewed on mount
   useEffect(() => {
-    trackSignin('form_viewed', 'email');
+    trackSignin('viewed', 'email');
   }, []);
 
   const handleEmailSignIn = async (e: React.FormEvent) => {
@@ -40,7 +40,7 @@ export default function SignIn() {
       const profileExists = await checkBuyerProfileExists(user.id);
 
       if (!profileExists) {
-        trackSignin('error', 'email', { reason: 'profile_not_found' });
+        trackSignin('failed', 'email', { failure_reason: 'profile_not_found' });
 
         toast({
           title: 'Account Not Found',
@@ -74,7 +74,7 @@ export default function SignIn() {
       sessionStorage.removeItem('redirect_after_login');
       navigate(redirectUrl);
     } catch (error: any) {
-      trackSignin('error', 'email', { error: error.message?.substring(0, 50) });
+      trackSignin('failed', 'email', { failure_reason: 'auth_rejected' });
 
       toast({
         title: 'Sign In Failed',
@@ -95,7 +95,7 @@ export default function SignIn() {
       // User will be redirected to Google OAuth
       // Note: 'completed' tracking happens in AuthCallback
     } catch (error: any) {
-      trackSignin('error', 'google', { error: error.message?.substring(0, 50) });
+      trackSignin('failed', 'google', { failure_reason: 'oauth_start_failed' });
 
       toast({
         title: 'OAuth Sign In Failed',

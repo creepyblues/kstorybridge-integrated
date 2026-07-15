@@ -3,11 +3,12 @@
  * Tests for the 5-step Add Title survey form
  */
 
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
+import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen, waitFor } from '@testing-library/react'
 import { BrowserRouter } from 'react-router-dom'
 import userEvent from '@testing-library/user-event'
 import AddTitleSurvey from '../AddTitle'
+import * as analytics from '@/utils/analytics'
 
 // Mock dependencies
 vi.mock('react-i18next', () => ({
@@ -87,8 +88,9 @@ vi.mock('@/services/draftService', () => ({
 // Mock analytics
 vi.mock('@/utils/analytics', () => ({
   trackSurveyStepComplete: vi.fn(),
-  trackTitleCreate: vi.fn(),
+  trackTitleDraftCreated: vi.fn(),
   trackTitleSaveDraft: vi.fn(),
+  trackTitleSubmitted: vi.fn(),
 }))
 
 // Mock MainLayout
@@ -434,6 +436,10 @@ describe('AddTitle Survey Page', () => {
       await waitFor(() => {
         expect(mockCreateDraft).toHaveBeenCalled()
         expect(mockSubmitDraftById).toHaveBeenCalledWith('new-draft-id')
+        expect(analytics.trackTitleDraftCreated).toHaveBeenCalledWith('new-draft-id', 'full')
+        expect(analytics.trackTitleSubmitted).toHaveBeenCalledWith('new-draft-id', 'full')
+        expect(analytics.trackTitleDraftCreated).toHaveBeenCalledTimes(1)
+        expect(analytics.trackTitleSubmitted).toHaveBeenCalledTimes(1)
       })
     })
 
@@ -458,7 +464,7 @@ describe('AddTitle Survey Page', () => {
       })
     })
 
-    it('should show error alert on submission failure', async () => {
+    it('should emit no outcome events on submission failure', async () => {
       const user = userEvent.setup()
       mockCreateDraft.mockRejectedValue(new Error('Network error'))
 
@@ -475,9 +481,9 @@ describe('AddTitle Survey Page', () => {
 
       await user.click(screen.getByText('Submit Title'))
 
-      await waitFor(() => {
-        expect(alertSpy).toHaveBeenCalledWith('Failed to submit. Please try again.')
-      })
+      await waitFor(() => expect(mockCreateDraft).toHaveBeenCalled())
+      expect(analytics.trackTitleDraftCreated).not.toHaveBeenCalled()
+      expect(analytics.trackTitleSubmitted).not.toHaveBeenCalled()
     })
 
     it('should update existing draft before submitting if draftId exists', async () => {

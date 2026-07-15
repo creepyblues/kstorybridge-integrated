@@ -16,7 +16,6 @@ export default function MandateTitleCard({ match }: MandateTitleCardProps) {
     // Track mandate result click
     trackMandateResultClicked(
       match.title_id,
-      match.title_name_en || match.title_name_kr,
       match.match_score
     );
 

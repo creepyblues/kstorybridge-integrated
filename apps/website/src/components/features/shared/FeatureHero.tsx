@@ -2,7 +2,11 @@ import { ReactNode } from 'react';
 import { Button } from '@kstorybridge/ui';
 import { TypewriterText } from '../../TypewriterText';
 import { getDashboardUrl } from '../../../config/urls';
-import { trackButtonClick } from '../../../utils/analytics';
+import {
+  trackSignupCtaClicked,
+  trackTrialCtaClicked,
+  type WebsiteFeature,
+} from '../../../utils/analytics';
 
 interface FeatureHeroProps {
   headline: string;
@@ -11,6 +15,7 @@ interface FeatureHeroProps {
   secondaryCtaText: string;
   storageKey: string;
   accentColor?: 'teal' | 'purple';
+  featureName: WebsiteFeature;
   children: ReactNode; // Mini-demo slot
 }
 
@@ -29,6 +34,7 @@ export function FeatureHero({
   primaryCtaText,
   secondaryCtaText,
   storageKey,
+  featureName,
   accentColor = 'teal',
   children
 }: FeatureHeroProps) {
@@ -76,7 +82,7 @@ export function FeatureHero({
                 size="lg"
                 className={`${colors.primaryBtn} text-white px-8 py-4 text-base sm:text-lg rounded-full font-medium shadow-lg hover:shadow-xl transition-all duration-300`}
                 onClick={() => {
-                  trackButtonClick('feature-try-trial', 'hero_section');
+                  trackTrialCtaClicked('hero', featureName);
                   window.location.href = `${getDashboardUrl()}/trial`;
                 }}
               >
@@ -87,7 +93,7 @@ export function FeatureHero({
                 variant="outline"
                 className={`${colors.secondaryBtn} px-8 py-4 text-base sm:text-lg rounded-full font-medium transition-all duration-300`}
                 onClick={() => {
-                  trackButtonClick('feature-signup', 'hero_section');
+                  trackSignupCtaClicked('hero', featureName);
                   window.location.href = `${getDashboardUrl()}/signup`;
                 }}
               >

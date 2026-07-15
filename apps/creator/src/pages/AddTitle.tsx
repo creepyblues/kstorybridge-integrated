@@ -15,7 +15,12 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Icon } from '@iconify/react'
 import { supabase } from '@/lib/supabase'
-import { trackSurveyStepComplete, trackTitleCreate, trackTitleSaveDraft } from '@/utils/analytics'
+import {
+  trackSurveyStepComplete,
+  trackTitleDraftCreated,
+  trackTitleSaveDraft,
+  trackTitleSubmitted,
+} from '@/utils/analytics'
 
 // Layout
 import { MainLayout } from '@/components/layout/MainLayout'
@@ -167,6 +172,7 @@ export default function AddTitleSurvey() {
           current_step: currentStep,
         })
         setCurrentDraftId(newDraft.id)
+        trackTitleDraftCreated(newDraft.id, 'full')
         // Update URL with new draftId (without page reload)
         window.history.replaceState(null, '', `/titles/add-title?draftId=${newDraft.id}`)
         // Track first draft save
@@ -335,6 +341,7 @@ export default function AddTitleSurvey() {
           current_step: 5,
         })
         setCurrentDraftId(newDraft.id)
+        trackTitleDraftCreated(newDraft.id, 'full')
         submittedDraftId = newDraft.id
         // Submit the new draft
         await draftService.submitDraftById(newDraft.id)
@@ -356,8 +363,7 @@ export default function AddTitleSurvey() {
         console.warn('Admin notification failed (non-blocking):', err)
       })
 
-      // Track title creation (use the draft ID as title ID since it becomes the title)
-      trackTitleCreate(submittedDraftId, data.content_format)
+      trackTitleSubmitted(submittedDraftId, 'full')
       trackSurveyStepComplete(5, stepNames[5]) // Track final step completion
 
       // Navigate to titles list (submission will show as "Pending Approval")

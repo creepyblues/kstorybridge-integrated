@@ -37,6 +37,7 @@ const MandateMatcherFeaturePage = () => {
         secondaryCtaText={t('mandates.hero.secondaryCta')}
         storageKey="mandates-feature-hero"
         accentColor="teal"
+        featureName="mandate_matcher"
       >
         <MandateMiniDemo />
       </FeatureHero>
@@ -88,7 +89,7 @@ const MandateMatcherFeaturePage = () => {
       />
 
       {/* Final CTA */}
-      <FinalCTASection accentColor="teal" />
+      <FinalCTASection accentColor="teal" featureName="mandate_matcher" />
     </FeaturePageLayout>
   );
 };

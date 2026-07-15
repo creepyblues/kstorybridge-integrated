@@ -81,22 +81,21 @@ export default function CompsNavigator() {
 
   // Handle URL parameter for initial search
   useEffect(() => {
-    const showParam = searchParams.get('show');
-    if (showParam && !hasTriggeredInitialSearch.current && user?.email) {
+    const showParams = searchParams.getAll('show').filter(Boolean).slice(0, 3);
+    if (showParams.length > 0 && !hasTriggeredInitialSearch.current && user?.email) {
       hasTriggeredInitialSearch.current = true;
-      // Set the comp title and trigger search
-      const initialCompTitle: CompTitle = {
-        title: showParam,
+      // Set the comp titles and trigger search
+      setCompTitles(showParams.map((show) => ({
+        title: show,
         imdbID: '',
         year: '',
         type: 'movie' as const
-      };
-      setCompTitles([initialCompTitle]);
+      })));
       // Clear the URL parameter
       setSearchParams({}, { replace: true });
       // Trigger search after state is set
       setTimeout(() => {
-        handleSearchWithTitles([showParam]);
+        handleSearchWithTitles(showParams);
       }, 100);
     }
   }, [searchParams, user?.email]);
@@ -162,7 +161,7 @@ export default function CompsNavigator() {
       }
 
       // Track comps search
-      trackCompsSearch(titles, response.results.length, response.processing_time_ms);
+      trackCompsSearch(titles.length, 'comps_navigator');
 
       if (response.results.length > 0) {
         toast({

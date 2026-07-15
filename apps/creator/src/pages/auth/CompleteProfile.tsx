@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { trackProfileComplete, trackSignup } from '@/utils/analytics'
+import { trackCreatorProfileCompleted, trackSignup } from '@/utils/analytics'
 
 export default function CompleteProfile() {
   const { t } = useTranslation(['auth', 'common'])
@@ -57,8 +57,8 @@ export default function CompleteProfile() {
       console.log('✅ Profile completion successful')
 
       // Track successful OAuth signup completion
-      trackProfileComplete()
-      trackSignup('google')
+      trackCreatorProfileCompleted()
+      trackSignup('completed', 'google')
 
       // Set flag for AuthCallback to send welcome email
       // (Centralized welcome email logic in AuthCallback.tsx)
@@ -69,6 +69,7 @@ export default function CompleteProfile() {
     } catch (err: any) {
       console.error('❌ Profile completion error:', err)
       setError(err.message || 'Failed to complete profile. Please try again.')
+      trackSignup('failed', 'google', 'profile_creation_failed')
     } finally {
       setLoading(false)
     }

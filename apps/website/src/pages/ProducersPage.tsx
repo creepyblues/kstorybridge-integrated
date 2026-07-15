@@ -8,7 +8,7 @@ import { TypewriterText } from '../components/TypewriterText';
 import { DiscoveryToolsSection } from '../components/producers/DiscoveryToolsSection';
 import { useTranslation } from 'react-i18next';
 import { getDashboardUrl } from '../config/urls';
-import { trackButtonClick } from '../utils/analytics';
+import { trackSignupCtaClicked, trackTrialCtaClicked } from '../utils/analytics';
 import {
   Bot,
   Shield,
@@ -92,7 +92,7 @@ const ProducersPage = () => {
                 size="lg"
                 className="bg-hanok-teal hover:bg-hanok-teal-600 text-white px-8 sm:px-12 py-4 sm:py-6 text-base sm:text-lg rounded-full font-medium shadow-lg hover:shadow-xl transition-all duration-300"
                 onClick={() => {
-                  trackButtonClick('try-ai-trial', 'hero_section');
+                  trackTrialCtaClicked('hero', 'producers_page');
                   window.location.href = `${getDashboardUrl()}/trial`;
                 }}
               >
@@ -211,7 +211,7 @@ const ProducersPage = () => {
                 size="lg"
                 className="bg-hanok-teal hover:bg-hanok-teal-600 text-white px-8 sm:px-12 py-4 sm:py-6 text-base sm:text-lg rounded-full font-medium shadow-lg hover:shadow-xl transition-all duration-300"
                 onClick={() => {
-                  trackButtonClick('get-started-signup', 'final_cta_section');
+                  trackSignupCtaClicked('final_cta', 'producers_page');
                   window.location.href = `${getDashboardUrl()}/signup`;
                 }}
               >

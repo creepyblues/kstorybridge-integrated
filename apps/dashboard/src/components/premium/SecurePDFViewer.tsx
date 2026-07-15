@@ -23,12 +23,13 @@ debug.log('📄 SecurePDFViewer: Using centralized PDF.js worker configuration')
 
 interface SecurePDFViewerProps {
   pdfUrl: string;
+  titleId: string;
   title?: string;
   userTier?: 'basic' | 'invited' | 'pro' | 'suite' | null;
   maxPagesForBasic?: number;
 }
 
-export default function SecurePDFViewer({ pdfUrl, title, userTier, maxPagesForBasic = 5 }: SecurePDFViewerProps) {
+export default function SecurePDFViewer({ pdfUrl, titleId, title, userTier, maxPagesForBasic = 5 }: SecurePDFViewerProps) {
   const { user } = useAuth();
   const [numPages, setNumPages] = useState<number>(0);
   const [pageNumber, setPageNumber] = useState<number>(1);
@@ -50,6 +51,9 @@ export default function SecurePDFViewer({ pdfUrl, title, userTier, maxPagesForBa
   const maxPageViewedRef = useRef<number>(1);
   const pagesViewedCountRef = useRef<number>(0);
   const hasTrackedOpenRef = useRef<boolean>(false);
+  const pitchDeckAccessType = userTier === 'pro' || userTier === 'suite' || !userTier
+    ? 'full' as const
+    : 'preview' as const;
 
   // Extract title ID from URL for tracking
   const getTitleIdFromUrl = useCallback((): string => {
@@ -552,12 +556,8 @@ export default function SecurePDFViewer({ pdfUrl, title, userTier, maxPagesForBa
       pagesViewedCountRef.current = 1;
       maxPageViewedRef.current = 1;
 
-      trackPitchDeckOpened(
-        getTitleIdFromUrl(),
-        title || 'Unknown Title',
-        userTier || 'basic',
-        numPages
-      );
+      trackPitchDeckOpened(titleId, pitchDeckAccessType);
+      trackPitchDeckPageViewed(titleId, 1, pitchDeckAccessType);
     }
   };
 
@@ -579,14 +579,12 @@ export default function SecurePDFViewer({ pdfUrl, title, userTier, maxPagesForBa
   };
 
   const goToPrevPage = () => {
-    // Track time on current page before navigating
-    const timeOnCurrentPage = Date.now() - pageStartTimeRef.current;
-    trackPitchDeckPageViewed(getTitleIdFromUrl(), pageNumber, timeOnCurrentPage);
-
-    setPageNumber(prev => {
+    setPageNumber((prev) => {
       const newPage = Math.max(1, prev - 1);
+      if (newPage === prev) return prev;
       pageStartTimeRef.current = Date.now();
       pagesViewedCountRef.current += 1;
+      trackPitchDeckPageViewed(titleId, newPage, pitchDeckAccessType);
       return newPage;
     });
   };
@@ -594,16 +592,15 @@ export default function SecurePDFViewer({ pdfUrl, title, userTier, maxPagesForBa
   const goToNextPage = () => {
     const nextPage = pageNumber + 1;
 
-    // Track time on current page before navigating
-    const timeOnCurrentPage = Date.now() - pageStartTimeRef.current;
-    trackPitchDeckPageViewed(getTitleIdFromUrl(), pageNumber, timeOnCurrentPage);
-
     // If no tier provided, allow full access (creator/admin use case)
     if (!userTier) {
-      setPageNumber(Math.min(numPages, nextPage));
+      const visiblePage = Math.min(numPages, nextPage);
+      if (visiblePage === pageNumber) return;
+      setPageNumber(visiblePage);
       pageStartTimeRef.current = Date.now();
       pagesViewedCountRef.current += 1;
-      maxPageViewedRef.current = Math.max(maxPageViewedRef.current, Math.min(numPages, nextPage));
+      maxPageViewedRef.current = Math.max(maxPageViewedRef.current, visiblePage);
+      trackPitchDeckPageViewed(titleId, visiblePage, pitchDeckAccessType);
       return;
     }
 
@@ -636,6 +633,7 @@ export default function SecurePDFViewer({ pdfUrl, title, userTier, maxPagesForBa
     pageStartTimeRef.current = Date.now();
     pagesViewedCountRef.current += 1;
     maxPageViewedRef.current = Math.max(maxPageViewedRef.current, nextPage);
+    trackPitchDeckPageViewed(titleId, nextPage, pitchDeckAccessType);
   };
   const zoomIn = () => setScale(prev => {
     const currentScale = typeof prev === 'number' ? prev : 1;

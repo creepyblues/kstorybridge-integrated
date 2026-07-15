@@ -16,6 +16,7 @@
   "dependencies": {
     "@hookform/resolvers": "^3.9.0",
     "@iconify/react": "^6.0.2",
+    "@kstorybridge/analytics": "*",
     "@kstorybridge/auth": "^1.0.0",
     "@kstorybridge/tools": "^1.0.0",
     "@kstorybridge/ui": "^0.1.0",

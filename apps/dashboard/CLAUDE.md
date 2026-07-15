@@ -413,8 +413,22 @@ npx supabase secrets set DASHBOARD_URL=http://localhost:8081
 ### Buyer Signup
 1. Visit `/signup` → Enter email/password, company, role
 2. All email addresses accepted → Profile created via edge function
-3. Welcome email sent (non-blocking) → Redirect to `/signin`
-4. User verifies email → Sign in → `/buyers/home`
+3. Welcome email sent (non-blocking)
+4. If Supabase returns a session (email confirmation off): auto-login →
+   `redirect_after_login` or `/buyers/home?first_run=1` (first-run nudge banner)
+5. If email confirmation required: verification link lands on `/auth/callback`
+   (via `emailRedirectTo`), which restores `redirect_after_login`
+6. Trial users see a "Pick up where you left off" card on `/buyers/home`
+   that re-runs their last trial search (comps/mandate/chat)
+
+### Express Interest (buyer → team)
+1. Logged-in buyer clicks "Express Interest" on a title detail page
+   (`components/unified-title-detail/ExpressInterestButton.tsx`)
+2. Optional note → `express-interest` edge function → `title_interests` row
+   (upsert per buyer+title) + Slack + team email (team-mediated; no direct
+   creator contact)
+3. Button shows "Interest sent" state on revisit (RLS read via `interestService`)
+4. GA4: `title_contact_creator_clicked` (open) → `title_interest_submitted` (sent)
 
 ### OAuth Signup
 1. Click "Sign in with Google" → OAuth consent

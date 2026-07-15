@@ -228,6 +228,45 @@ export function useTrial() {
   return context;
 }
 
+// Export helper for post-signup continuity: the last trial search, as a
+// deep link into the matching tool with the query prefilled
+export function getTrialLastSearch(): { tool: 'comps' | 'mandates' | 'chat'; label: string; path: string } | null {
+  try {
+    const stored = localStorage.getItem(STORAGE_KEY);
+    if (!stored) return null;
+
+    const parsed = JSON.parse(stored) as TrialStorage;
+    if (parsed.version !== 2) return null;
+
+    if (parsed.last_comps_query && parsed.last_comps_query.length > 0) {
+      const shows = parsed.last_comps_query;
+      const showParams = shows.map((s) => `show=${encodeURIComponent(s)}`).join('&');
+      return {
+        tool: 'comps',
+        label: shows.join(' + '),
+        path: `/buyers/comps-navigator?${showParams}`,
+      };
+    }
+    if (parsed.last_mandate_query) {
+      return {
+        tool: 'mandates',
+        label: parsed.last_mandate_query,
+        path: `/buyers/mandates?brief=${encodeURIComponent(parsed.last_mandate_query)}`,
+      };
+    }
+    if (parsed.last_chat_query) {
+      return {
+        tool: 'chat',
+        label: parsed.last_chat_query,
+        path: `/buyers/chat?q=${encodeURIComponent(parsed.last_chat_query)}`,
+      };
+    }
+    return null;
+  } catch {
+    return null;
+  }
+}
+
 // Export helper to get session_id for signup flow
 export function getTrialSessionId(): string | null {
   try {

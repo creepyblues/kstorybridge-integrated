@@ -1,9 +1,11 @@
 import { useTranslation } from 'react-i18next';
+import { useNavigate } from 'react-router-dom';
 import UniversalHeader from '../components/UniversalHeader';
 import { Button } from '@kstorybridge/ui';
 import { Card, CardContent } from '../components/ui/card';
 import Footer from '../components/Footer';
 import { TypewriterText } from '../components/TypewriterText';
+import { trackAudiencePathSelected } from '../utils/analytics';
 import {
   Sparkles,
   ShieldCheck,
@@ -24,6 +26,7 @@ import {
 
 const HomePage = () => {
   const { t } = useTranslation('home');
+  const navigate = useNavigate();
 
   return (
     <div className="min-h-screen bg-white">
@@ -66,14 +69,20 @@ const HomePage = () => {
                 <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
                   <Button
                     className="bg-sunrise-coral hover:bg-sunrise-coral-600 text-white px-8 py-6 text-lg rounded-full"
-                    onClick={() => window.location.href = '/creators'}
+                    onClick={() => {
+                      trackAudiencePathSelected('creator', 'hero');
+                      navigate('/creators');
+                    }}
                   >
                     <BookOpen className="mr-2 h-5 w-5" />
                     {t('hero.ctaCreator')}
                   </Button>
                   <Button
                     className="bg-hanok-teal hover:bg-hanok-teal-600 text-white px-8 py-6 text-lg rounded-full"
-                    onClick={() => window.location.href = '/producers'}
+                    onClick={() => {
+                      trackAudiencePathSelected('buyer', 'hero');
+                      navigate('/producers');
+                    }}
                   >
                     <Film className="mr-2 h-5 w-5" />
                     {t('hero.ctaBuyer')}

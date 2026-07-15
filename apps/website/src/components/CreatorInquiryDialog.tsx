@@ -1,4 +1,8 @@
 import { useTranslation } from 'react-i18next';
+import {
+  trackCreatorInquiryFailed,
+  trackCreatorInquirySubmitted,
+} from '../utils/analytics';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -151,6 +155,8 @@ const CreatorInquiryDialog = ({ open, onOpenChange }: CreatorInquiryDialogProps)
         },
       });
 
+      trackCreatorInquirySubmitted();
+
       toast({
         className:
           'bg-white border border-gray-200 border-l-4 border-l-sunrise-coral rounded-2xl text-gray-900',
@@ -169,6 +175,7 @@ const CreatorInquiryDialog = ({ open, onOpenChange }: CreatorInquiryDialogProps)
       form.reset();
       onOpenChange(false);
     } catch (err) {
+      trackCreatorInquiryFailed();
       console.error('Failed to send creator inquiry:', err);
       toast({
         className:

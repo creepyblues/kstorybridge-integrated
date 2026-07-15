@@ -1,27 +1,68 @@
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+import {
+  buildCleanProductionFilter,
+  buildProductionHostFilter,
+} from '../_shared/analytics-filters.ts'
+import {
+  authenticatedBuyerEngagementRows,
+  SCHEDULED_REPORT_EVENTS,
+} from '../_shared/analytics-report-events.ts'
+import {
+  parseAnalyticsAppBreakdown,
+  type AnalyticsAppBreakdownRow,
+} from '../_shared/analytics-app-breakdown.ts'
+import { renderWeeklyOperatingScorecard } from '../_shared/analytics-operating-scorecard.ts'
+import {
+  acquisitionDeclineAlerts,
+  missingProductEventAlerts,
+  percentageChange,
+} from '../_shared/analytics-alerts.ts'
+import {
+  isInstrumentationLiveForWindow,
+  parseSignupUsersByHost,
+  reconcileSignupCounts,
+  type SignupCounts,
+  type SignupReconciliationRow,
+} from '../_shared/signup-reconciliation.ts'
+import {
+  previousReportingWindow,
+  REPORT_TIME_ZONE,
+  reportingWindow,
+  type ReportingWindow,
+} from '../_shared/reporting-window.ts'
+import {
+  TITLE_WORKFLOW_EVENTS,
+  parseTitleWorkflowEvents,
+  reconcileTitleWorkflow,
+  type TitleWorkflowCounts,
+  type TitleWorkflowReconciliationRow,
+} from '../_shared/title-workflow-reconciliation.ts'
+import {
+  parseOutcomeEventCount,
+  reconcileOutcome,
+  type OutcomeReconciliationRow,
+} from '../_shared/outcome-reconciliation.ts'
+import {
+  authorizeFunnelReportRequest,
+  scheduledFunnelInvocationKey,
+  validateInvocationKey,
+} from '../_shared/analytics-report-auth.ts'
+import {
+  missingWebsiteAcquisitionAlerts,
+  parseWebsiteAcquisitionEvents,
+  renderWebsiteAcquisitionSection,
+  websiteAcquisitionDimensionFilters,
+  type WebsiteAcquisitionMetrics,
+} from '../_shared/website-acquisition-report.ts'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Allow-Headers': 'authorization, x-analytics-cron-secret, content-type',
 }
 
 // GA4 Property Configuration
 const GA4_PROPERTY_ID = '496541587'
-
-// Funnel event names
-const FUNNEL_EVENTS = [
-  'first_visit',
-  'trial_page_view',
-  'trial_tool_selected',
-  'trial_comps_search',
-  'trial_mandate_search',
-  'trial_chat_message_sent',
-  'trial_search_completed',
-  'trial_limit_reached',
-  'trial_signup_cta_clicked',
-  'signup_completed',
-]
 
 const PAGE_PATHS = [
   '/trial',
@@ -70,6 +111,182 @@ interface SourceMetrics {
   newUsers: number
   sessions: number
   engagementRate: number
+}
+
+interface TrafficSummary {
+  activeUsers: number
+  newUsers: number
+  sessions: number
+  engagedSessions: number
+}
+
+interface AuditRpcClient {
+  rpc: (
+    functionName: string,
+    parameters?: Record<string, unknown>
+  ) => Promise<{ data: unknown; error: unknown }>
+}
+
+interface ReportRunClaim {
+  report_run_id: string
+  should_execute: boolean
+  run_status: string
+}
+
+async function getAuthoritativeSignupCounts(
+  supabaseUrl: string,
+  serviceRoleKey: string,
+  window: ReportingWindow
+): Promise<SignupCounts> {
+  const supabase = createClient(supabaseUrl, serviceRoleKey, {
+    auth: { autoRefreshToken: false, persistSession: false },
+  })
+  const { data: admins, error: adminError } = await supabase
+    .from('admin')
+    .select('email')
+    .eq('active', true)
+
+  if (adminError) throw new Error(`Failed to load active admins: ${adminError.message}`)
+  const adminEmails = (admins ?? [])
+    .map(admin => admin.email?.trim().toLowerCase())
+    .filter((email): email is string => Boolean(email))
+
+  const countExternalProfiles = async (
+    table: 'user_buyers' | 'user_creators'
+  ): Promise<number> => {
+    const baseQuery = () => supabase
+      .from(table)
+      .select('id', { count: 'exact', head: true })
+      .gte('created_at', window.start.toISOString())
+      .lt('created_at', window.endExclusive.toISOString())
+
+    const [allResult, adminResult] = await Promise.all([
+      baseQuery(),
+      adminEmails.length > 0
+        ? baseQuery().in('email', adminEmails)
+        : Promise.resolve({ count: 0, error: null }),
+    ])
+    if (allResult.error) throw new Error(`Failed to count ${table}: ${allResult.error.message}`)
+    if (adminResult.error) {
+      throw new Error(`Failed to exclude active admins from ${table}: ${adminResult.error.message}`)
+    }
+    return Math.max((allResult.count ?? 0) - (adminResult.count ?? 0), 0)
+  }
+
+  const [buyer, creator] = await Promise.all([
+    countExternalProfiles('user_buyers'),
+    countExternalProfiles('user_creators'),
+  ])
+
+  return { buyer, creator }
+}
+
+async function getAuthoritativeTitleWorkflowCounts(
+  supabaseUrl: string,
+  serviceRoleKey: string,
+  window: ReportingWindow
+): Promise<TitleWorkflowCounts> {
+  const supabase = createClient(supabaseUrl, serviceRoleKey, {
+    auth: { autoRefreshToken: false, persistSession: false },
+  })
+  const { data: admins, error: adminError } = await supabase
+    .from('admin')
+    .select('email')
+    .eq('active', true)
+  if (adminError) throw new Error(`Failed to load active admins: ${adminError.message}`)
+
+  const adminEmails = (admins ?? [])
+    .map(admin => admin.email?.trim().toLowerCase())
+    .filter((email): email is string => Boolean(email))
+  const { data: adminCreators, error: creatorError } = adminEmails.length > 0
+    ? await supabase.from('user_creators').select('id').in('email', adminEmails)
+    : { data: [], error: null }
+  if (creatorError) throw new Error(`Failed to resolve admin creator IDs: ${creatorError.message}`)
+  const adminCreatorIds = (adminCreators ?? []).map(creator => creator.id)
+
+  const countExternalOutcomes = async (
+    table: 'title_drafts' | 'titles',
+    timestamp: 'created_at' | 'submitted_at' | 'approved_at',
+    linkedOnly = false
+  ): Promise<number> => {
+    const baseQuery = () => {
+      let query = supabase
+        .from(table)
+        .select(table === 'titles' ? 'title_id' : 'id', { count: 'exact', head: true })
+        .gte(timestamp, window.start.toISOString())
+        .lt(timestamp, window.endExclusive.toISOString())
+      if (linkedOnly && table === 'title_drafts') {
+        query = query.not('published_title_id', 'is', null)
+      }
+      return query
+    }
+
+    const [allResult, adminResult] = await Promise.all([
+      baseQuery(),
+      adminCreatorIds.length > 0
+        ? baseQuery().in('creator_id', adminCreatorIds)
+        : Promise.resolve({ count: 0, error: null }),
+    ])
+    if (allResult.error) {
+      throw new Error(`Failed to count ${table}.${timestamp}: ${allResult.error.message}`)
+    }
+    if (adminResult.error) {
+      throw new Error(`Failed to exclude admins from ${table}.${timestamp}: ${adminResult.error.message}`)
+    }
+    return Math.max((allResult.count ?? 0) - (adminResult.count ?? 0), 0)
+  }
+
+  const [draftCreated, submitted, approved, published] = await Promise.all([
+    countExternalOutcomes('title_drafts', 'created_at'),
+    countExternalOutcomes('title_drafts', 'submitted_at'),
+    countExternalOutcomes('title_drafts', 'approved_at'),
+    countExternalOutcomes('title_drafts', 'approved_at', true),
+  ])
+
+  return {
+    draft_created: draftCreated,
+    submitted,
+    approved,
+    published,
+  }
+}
+
+async function getAuthoritativeInterestCount(
+  supabaseUrl: string,
+  serviceRoleKey: string,
+  window: ReportingWindow
+): Promise<number> {
+  const supabase = createClient(supabaseUrl, serviceRoleKey, {
+    auth: { autoRefreshToken: false, persistSession: false },
+  })
+  const { data: admins, error: adminError } = await supabase
+    .from('admin')
+    .select('email')
+    .eq('active', true)
+  if (adminError) throw new Error(`Failed to load active admins: ${adminError.message}`)
+
+  const adminEmails = (admins ?? [])
+    .map(admin => admin.email?.trim().toLowerCase())
+    .filter((email): email is string => Boolean(email))
+  const baseQuery = () => supabase
+    .from('title_interests')
+    .select('id', { count: 'exact', head: true })
+    .gte('created_at', window.start.toISOString())
+    .lt('created_at', window.endExclusive.toISOString())
+  const [allResult, adminResult] = await Promise.all([
+    baseQuery(),
+    adminEmails.length > 0
+      ? baseQuery().in('buyer_email', adminEmails)
+      : Promise.resolve({ count: 0, error: null }),
+  ])
+
+  if (allResult.error) {
+    throw new Error(`Failed to count title interests: ${allResult.error.message}`)
+  }
+  if (adminResult.error) {
+    throw new Error(`Failed to exclude admins from title interests: ${adminResult.error.message}`)
+  }
+  return Math.max((allResult.count ?? 0) - (adminResult.count ?? 0), 0)
 }
 
 // Generate JWT for Google API authentication
@@ -274,9 +491,21 @@ function parseTrafficSources(response: GA4Response): SourceMetrics[] {
   return metrics
 }
 
+function parseTrafficSummary(response: GA4Response): TrafficSummary {
+  const values = response.rows?.[0]?.metricValues || []
+
+  return {
+    activeUsers: parseInt(values[0]?.value || '0', 10),
+    newUsers: parseInt(values[1]?.value || '0', 10),
+    sessions: parseInt(values[2]?.value || '0', 10),
+    engagedSessions: parseInt(values[3]?.value || '0', 10),
+  }
+}
+
 // Generate progress bar
 function progressBar(percentage: number): string {
-  const filled = Math.round(percentage / 5)
+  const boundedPercentage = Math.max(0, Math.min(percentage, 100))
+  const filled = Math.round(boundedPercentage / 5)
   const empty = 20 - filled
   return '\u2588'.repeat(filled) + '\u2591'.repeat(empty)
 }
@@ -286,12 +515,61 @@ function formatPct(value: number): string {
   return `${(value * 100).toFixed(1)}%`
 }
 
+function formatReconciliationStatus(status: SignupReconciliationRow['status']): string {
+  const labels: Record<SignupReconciliationRow['status'], string> = {
+    matched: 'Matched',
+    drift: 'Drift detected',
+    instrumentation_pending: 'Instrumentation pending',
+    no_activity: 'No signup activity',
+  }
+  return labels[status]
+}
+
+function formatTitleWorkflowStatus(status: TitleWorkflowReconciliationRow['status']): string {
+  const labels: Record<TitleWorkflowReconciliationRow['status'], string> = {
+    matched: 'Matched',
+    drift: 'Drift detected',
+    no_activity: 'No activity',
+    instrumentation_pending: 'Client instrumentation pending',
+    server_event_pending: 'Server event pending',
+    linkage_pending: 'Draft-to-title linkage pending',
+  }
+  return labels[status]
+}
+
+function formatOutcomeStatus(status: OutcomeReconciliationRow['status']): string {
+  const labels: Record<OutcomeReconciliationRow['status'], string> = {
+    matched: 'Matched',
+    drift: 'Drift detected',
+    no_activity: 'No activity',
+    instrumentation_pending: 'Instrumentation pending',
+  }
+  return labels[status]
+}
+
 // Generate funnel report markdown
 function generateFunnelReport(
   funnel: FunnelMetrics,
+  websiteAcquisition: WebsiteAcquisitionMetrics,
+  websiteAcquisitionInstrumentationLive: boolean,
   pages: PageMetrics,
   landingPages: LandingPageMetrics[],
   sources: SourceMetrics[],
+  rawTraffic: TrafficSummary,
+  cleanTraffic: TrafficSummary,
+  previousCleanTraffic: TrafficSummary,
+  appBreakdown: AnalyticsAppBreakdownRow[],
+  previousAppBreakdown: AnalyticsAppBreakdownRow[],
+  signupReconciliation: SignupReconciliationRow[],
+  instrumentationLive: boolean,
+  titleWorkflowReconciliation: TitleWorkflowReconciliationRow[],
+  titleClientInstrumentationLive: boolean,
+  titleServerInstrumentationLive: boolean,
+  interestReconciliation: OutcomeReconciliationRow,
+  interestInstrumentationLive: boolean,
+  productInstrumentationLive: boolean,
+  commercialInstrumentationLive: boolean,
+  window: ReportingWindow,
   days: number
 ): { markdown: string; alerts: string[] } {
   const alerts: string[] = []
@@ -303,6 +581,10 @@ function generateFunnelReport(
   const searchCompleted = funnel['trial_search_completed'] || { eventCount: 0, totalUsers: 0 }
   const ctaClicked = funnel['trial_signup_cta_clicked'] || { eventCount: 0, totalUsers: 0 }
   const signupComplete = funnel['signup_completed'] || { eventCount: 0, totalUsers: 0 }
+  const signinComplete = funnel['signin_completed'] || { eventCount: 0, totalUsers: 0 }
+  const emailLandingEngaged = funnel['email_landing_engaged'] || { eventCount: 0, totalUsers: 0 }
+  const checkoutStarted = funnel['checkout_started'] || { eventCount: 0, totalUsers: 0 }
+  const subscriptionStarted = funnel['subscription_started'] || { eventCount: 0, totalUsers: 0 }
 
   // Tool breakdown
   const compsSearch = funnel['trial_comps_search'] || { eventCount: 0, totalUsers: 0 }
@@ -316,35 +598,224 @@ function generateFunnelReport(
   const ctaRate = searchCompleted.totalUsers > 0 ? (ctaClicked.totalUsers / searchCompleted.totalUsers) : 0
   const signupRate = ctaClicked.totalUsers > 0 ? (signupComplete.totalUsers / ctaClicked.totalUsers) : 0
   const overallRate = firstVisit.totalUsers > 0 ? (signupComplete.totalUsers / firstVisit.totalUsers) : 0
+  const excludedSessions = Math.max(rawTraffic.sessions - cleanTraffic.sessions, 0)
+  const excludedSessionRate = rawTraffic.sessions > 0 ? excludedSessions / rawTraffic.sessions : 0
+  const newUserChange = percentageChange(cleanTraffic.newUsers, previousCleanTraffic.newUsers)
+  const sessionChange = percentageChange(cleanTraffic.sessions, previousCleanTraffic.sessions)
+  const canonicalProductEvents = authenticatedBuyerEngagementRows(funnel)
+    .reduce((total, row) => total + row.eventCount, 0)
+  const buyerProfiles = signupReconciliation
+    .find(row => row.accountType === 'buyer')?.authoritativeProfiles || 0
+  const creatorProfiles = signupReconciliation
+    .find(row => row.accountType === 'creator')?.authoritativeProfiles || 0
+  const creatorTitleSubmissions = titleWorkflowReconciliation
+    .find(row => row.stage === 'submitted')?.authoritativeOutcomes || 0
+  const operatingScorecard = renderWeeklyOperatingScorecard({
+    currentTraffic: cleanTraffic,
+    previousTraffic: previousCleanTraffic,
+    currentApps: appBreakdown,
+    previousApps: previousAppBreakdown,
+    buyerProfiles,
+    creatorProfiles,
+    creatorTitleSubmissions,
+    buyerInterests: interestReconciliation.authoritativeCount,
+    checkoutStartedEvents: checkoutStarted.eventCount,
+    subscriptionStartedEvents: subscriptionStarted.eventCount,
+    canonicalProductEvents,
+    productInstrumentationLive,
+    commercialInstrumentationLive,
+  })
+  const websiteAcquisitionSection = renderWebsiteAcquisitionSection(
+    websiteAcquisition,
+    websiteAcquisitionInstrumentationLive
+  )
 
   // Check for alerts
-  if (overallRate < 0.01) {
-    alerts.push('Critical: Overall conversion rate <1%')
+  if (instrumentationLive && firstVisit.totalUsers > 0 && overallRate < 0.01) {
+    alerts.push('Conversion: overall first-visit to completed-signup rate is below 1%. Owner: Growth. Action: inspect the trial step table and authoritative signup reconciliation before changing the funnel.')
   }
-  if (ctaClicked.totalUsers > 0 && signupComplete.totalUsers === 0) {
-    alerts.push('Critical: Signup CTA clicks but 0% completion rate')
+  if (instrumentationLive && ctaClicked.totalUsers > 0 && signupComplete.totalUsers === 0) {
+    alerts.push('Conversion: signup CTA clicks produced zero completed signups. Owner: Product Engineering. Action: verify auth errors and profile writes before interpreting this as user abandonment.')
   }
-  if (trialRate < 0.05) {
-    alerts.push('Warning: First Visit to Trial rate <5%')
+  if (firstVisit.totalUsers > 0 && trialRate < 0.05) {
+    alerts.push('Acquisition journey: fewer than 5% of first visitors reached the trial. Owner: Growth. Action: review landing pages and trial entry points.')
   }
+  if (instrumentationLive) {
+    for (const row of signupReconciliation.filter(row => row.status === 'drift')) {
+      alerts.push(
+        `Reconciliation drift: ${row.accountType} signup tracking differs from the authoritative profile count by ${row.variance}. Owner: Engineering. Action: inspect the auth contract live-at boundary and failed profile/event paths.`
+      )
+    }
+  }
+  for (const row of titleWorkflowReconciliation.filter(row => row.status === 'drift')) {
+    alerts.push(
+      `Reconciliation drift: creator title ${row.stage} tracking differs from the authoritative count by ${row.variance}. Owner: Engineering. Action: compare the workflow timestamp and server/client event path.`
+    )
+  }
+  if (interestReconciliation.status === 'drift') {
+    alerts.push(
+      `Reconciliation drift: buyer interest tracking differs from authoritative interest rows by ${interestReconciliation.variance}. Owner: Engineering. Action: inspect express-interest dedupe responses and dashboard event delivery.`
+    )
+  }
+  if (excludedSessionRate > 0.1) {
+    alerts.push(`Scanner share: ${formatPct(excludedSessionRate)} of production-host sessions were excluded as known scanner traffic. Owner: Analytics Operations. Action: inspect source rows for a new redirect domain before changing the exclusion list.`)
+  }
+  alerts.push(...acquisitionDeclineAlerts(cleanTraffic, previousCleanTraffic))
+  alerts.push(...missingWebsiteAcquisitionAlerts({
+    contractLive: websiteAcquisitionInstrumentationLive,
+    websiteSessions: appBreakdown.find(row => row.app === 'website')?.sessions || 0,
+    metrics: websiteAcquisition,
+  }))
+  alerts.push(...missingProductEventAlerts({
+    contractLive: productInstrumentationLive,
+    dashboardSessions: appBreakdown.find(row => row.app === 'dashboard')?.sessions || 0,
+    eventMetrics: funnel,
+  }))
 
   // Check landing page bounce rates
   for (const lp of landingPages.slice(0, 5)) {
     if (lp.bounceRate > 0.6) {
-      alerts.push(`Warning: Landing page ${lp.landingPage} has ${formatPct(lp.bounceRate)} bounce rate`)
+      alerts.push(`Landing page: ${lp.landingPage} has ${formatPct(lp.bounceRate)} bounce rate. Owner: Growth. Action: review source quality and page-message alignment.`)
     }
   }
 
-  const endDate = new Date()
-  endDate.setDate(endDate.getDate() - 1)
-  const startDate = new Date()
-  startDate.setDate(startDate.getDate() - days)
+  const endDate = new Date(`${window.endDate}T12:00:00.000Z`)
+  const startDate = new Date(`${window.startDate}T12:00:00.000Z`)
 
-  const dateFormat = (d: Date) => d.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })
+  const dateFormat = (d: Date) => d.toLocaleDateString('en-US', {
+    timeZone: REPORT_TIME_ZONE,
+    month: 'long',
+    day: 'numeric',
+    year: 'numeric',
+  })
 
-  let markdown = `# KStoryBridge Signup Funnel Analysis
+  let markdown = `# KStoryBridge Weekly Operating Report
 
 **Period**: ${dateFormat(startDate)} - ${dateFormat(endDate)} (${days} days)
+
+---
+
+${operatingScorecard}
+
+---
+
+## Data Quality Guardrail
+
+| Metric | Raw production hosts | Clean external estimate | Excluded |
+|--------|---------------------:|------------------------:|---------:|
+| Sessions | ${rawTraffic.sessions} | ${cleanTraffic.sessions} | ${excludedSessions} (${formatPct(excludedSessionRate)}) |
+| Active Users | ${rawTraffic.activeUsers} | ${cleanTraffic.activeUsers} | ${Math.max(rawTraffic.activeUsers - cleanTraffic.activeUsers, 0)} |
+| New Users | ${rawTraffic.newUsers} | ${cleanTraffic.newUsers} | ${Math.max(rawTraffic.newUsers - cleanTraffic.newUsers, 0)} |
+| Engaged Sessions | ${rawTraffic.engagedSessions} | ${cleanTraffic.engagedSessions} | ${Math.max(rawTraffic.engagedSessions - cleanTraffic.engagedSessions, 0)} |
+
+The clean estimate includes only the three production hosts and excludes all observed Brevo/Sendinblue scanner referral domains. Legitimate email engagement is reconciled separately with Brevo campaign data.
+
+### Clean external activity by app
+
+| App | Production host | Active users | New users | Sessions | Engaged sessions | Engagement rate |
+|-----|-----------------|-------------:|----------:|---------:|-----------------:|----------------:|
+${appBreakdown.map(row => `| ${row.app === 'website' ? 'Website' : row.app === 'dashboard' ? 'Buyer dashboard' : 'Creator app'} | ${row.hostName} | ${row.activeUsers} | ${row.newUsers} | ${row.sessions} | ${row.engagedSessions} | ${formatPct(row.engagementRate)} |`).join('\n')}
+
+The rows use the same production-host and scanner exclusions as the clean KPI total. Active-user rows must not be added together as a cross-app unique-user total because the same person may use more than one app.
+
+### Acquisition trend versus previous comparable window
+
+| Clean external metric | Current | Previous | Change |
+|-----------------------|--------:|---------:|-------:|
+| New users | ${cleanTraffic.newUsers} | ${previousCleanTraffic.newUsers} | ${newUserChange === null ? 'New baseline' : formatPct(newUserChange)} |
+| Sessions | ${cleanTraffic.sessions} | ${previousCleanTraffic.sessions} | ${sessionChange === null ? 'New baseline' : formatPct(sessionChange)} |
+
+Acquisition decline alerts use clean external new users, a 20% decline threshold, and a minimum previous-window baseline of five users. Owner: Growth. The low-volume gate prevents a one-person change from becoming an executive alert.
+
+${websiteAcquisitionSection}
+
+### Authoritative signup reconciliation
+
+| Account type | Supabase profiles | GA completed users | Variance | Status |
+|--------------|------------------:|-------------------:|---------:|--------|
+${signupReconciliation.map(row => `| ${row.accountType === 'buyer' ? 'Buyer' : 'Creator'} | ${row.authoritativeProfiles} | ${row.gaCompletedUsers} | ${row.variance > 0 ? '+' : ''}${row.variance} | ${formatReconciliationStatus(row.status)} |`).join('\n')}
+
+Supabase profile creation is the signup source of truth. GA4 counts are used to validate behavioral instrumentation, not to determine how many accounts exist. Active admin accounts are excluded from the profile totals. Additional staff classification remains pending, so these totals are an external-user estimate.
+
+${instrumentationLive
+  ? 'The canonical auth event contract was live before this full reporting window, so differences are treated as tracking drift.'
+  : 'The canonical auth event contract was not live for this full reporting window. GA zeros are therefore **not** interpreted as zero signups, conversion alerts that depend on `signup_completed` are suppressed, and the comparison is informational only.'}
+
+### Creator title workflow reconciliation
+
+| Workflow stage | Authoritative outcomes | GA events | Variance | Status |
+|----------------|-----------------------:|----------:|---------:|--------|
+${titleWorkflowReconciliation.map(row => `| ${row.stage === 'draft_created' ? 'Draft created' : row.stage.charAt(0).toUpperCase() + row.stage.slice(1)} | ${row.authoritativeOutcomes} | ${row.gaEvents} | ${row.variance > 0 ? '+' : ''}${row.variance} | ${formatTitleWorkflowStatus(row.status)} |`).join('\n')}
+
+Draft creation, submission, and approval use \`title_drafts.created_at\`, \`submitted_at\`, and \`approved_at\` as their authoritative timestamps. GA event counts—not user counts—are compared because one creator may submit multiple titles. Active admin creators are excluded.
+
+${titleClientInstrumentationLive
+  ? 'The creator draft/submission contract was live before this full window, so client-event differences are enforceable.'
+  : 'The creator draft/submission contract was not live for this full window; those comparisons are informational and cannot be interpreted as creator inactivity.'}
+${titleServerInstrumentationLive
+  ? 'Approval and publication server events were live before this full window.'
+  : 'Approval and publication server events are not yet live, so authoritative database outcomes remain the only valid counts.'}
+
+Publication currently shows all external-creator catalog rows created in the window as an **unlinked proxy**, not a reconciled conversion. \`title_drafts\` has no \`published_title_id\`, so the report cannot prove which approved draft created which title. This stage remains \`Draft-to-title linkage pending\` regardless of matching totals.
+
+### Commercial outcome reconciliation
+
+| Outcome | Authoritative count | GA events | Variance | Status |
+|---------|--------------------:|----------:|---------:|--------|
+| Buyer interest submitted | ${interestReconciliation.authoritativeCount} | ${interestReconciliation.gaEventCount} | ${interestReconciliation.variance > 0 ? '+' : ''}${interestReconciliation.variance} | ${formatOutcomeStatus(interestReconciliation.status)} |
+
+\`title_interests.created_at\` is the source of truth for a newly created buyer-interest outcome. Active admin buyers are excluded. A duplicate submission can refresh its note but does not create another outcome, team notification, or GA event.
+
+${interestInstrumentationLive
+  ? 'The canonical buyer-interest event was live before this full window, so differences are treated as tracking drift.'
+  : 'The canonical buyer-interest event was not live for this full window. GA zeros are not interpreted as zero buyer interest.'}
+
+| Outcome currently unavailable for reconciliation | Reason |
+|--------------------------------------------------|--------|
+| Introduction requested | No authoritative introduction table or timestamp exists. |
+| Introduction completed | No authoritative introduction workflow exists. |
+| Buyer subscription started | Stripe is authoritative; the prepared local outbox timestamp is not available until its migration and webhook path are production-live. |
+| Buyer payment completed | No local buyer payment ledger exists; Stripe event time is external-only. |
+
+These rows are product/data-model gaps, not zero conversions. Creator subscriptions have a reliable local creation record. Privacy-safe server emission and a stable Supabase-user reconciliation identity are prepared on \`v2\`, but remain unavailable here until the outbox migration, webhooks, worker, secret, and schedule are production-validated.
+
+### Canonical commercial behavior signals
+
+| Outcome | Users | Events |
+|---------|------:|-------:|
+| Checkout started after server session creation | ${checkoutStarted.totalUsers} | ${checkoutStarted.eventCount} |
+| Active subscription confirmed by Stripe webhook | ${subscriptionStarted.totalUsers} | ${subscriptionStarted.eventCount} |
+
+${commercialInstrumentationLive
+  ? 'The canonical commercial contract was live before this full window. These GA behavior signals may be evaluated alongside their authoritative reconciliation rows.'
+  : 'The canonical commercial contract was not live for this full window. These values are informational and must not be interpreted as complete conversion totals.'}
+
+### Authenticated product engagement
+
+| Auth outcome across buyer and creator apps | Users | Events |
+|--------------------------------------------|------:|-------:|
+| Signup completed | ${signupComplete.totalUsers} | ${signupComplete.eventCount} |
+| Sign-in completed | ${signinComplete.totalUsers} | ${signinComplete.eventCount} |
+
+The sign-in row uses only \`signin_completed\`; views, attempts, failures, and the obsolete aggregate \`signin\` event are not combined with it.
+
+| Canonical buyer-product outcome | Users | Events |
+|---------------------------------|------:|-------:|
+${authenticatedBuyerEngagementRows(funnel).map(row => {
+  return `| ${row.label} | ${row.totalUsers} | ${row.eventCount} |`
+}).join('\n')}
+
+${productInstrumentationLive
+  ? 'The canonical authenticated buyer-product contract was live before this full window. Legacy aliases are not queried or combined with these outcomes.'
+  : 'The canonical authenticated buyer-product contract was not live for this full window. Legacy aliases are deliberately not added to these values, so zeros or partial counts are instrumentation-pending rather than evidence of no engagement.'}
+
+### Human email engagement
+
+| Signal | Users | Events |
+|--------|------:|-------:|
+| Trusted interaction after an email-attributed landing | ${emailLandingEngaged.totalUsers} | ${emailLandingEngaged.eventCount} |
+
+This is a conservative on-site signal: a tagged email landing must receive a trusted pointer, keyboard, or scroll interaction. A scanner page load alone does not count. Compare this total with Brevo's delivered and unique human-click totals; it is not a replacement for campaign-provider reporting.
 
 ---
 
@@ -456,18 +927,104 @@ serve(async (req) => {
     return new Response('ok', { headers: corsHeaders })
   }
 
+  let claimedRunId: string | null = null
+  let deliveryStarted = false
+  let auditClient: AuditRpcClient | null = null
+
   try {
-    console.log('[funnel-report-cron] Starting scheduled funnel report')
+    if (req.method !== 'POST') {
+      return new Response(
+        JSON.stringify({ error: 'Method not allowed' }),
+        {
+          status: 405,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        }
+      )
+    }
+
+    const supabaseUrl = Deno.env.get('SUPABASE_URL') ?? ''
+    const supabaseServiceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
+    const cronSecret = Deno.env.get('ANALYTICS_FUNNEL_CRON_SECRET')
+    if (!supabaseUrl || !supabaseServiceRoleKey || !cronSecret) {
+      console.error('[funnel-report-cron] Required server configuration is missing')
+      return new Response(
+        JSON.stringify({ error: 'Service unavailable' }),
+        {
+          status: 503,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        }
+      )
+    }
+
+    const authorization = authorizeFunnelReportRequest({
+      authorization: req.headers.get('Authorization'),
+      cronSecretHeader: req.headers.get('X-Analytics-Cron-Secret'),
+      serviceRoleKey: supabaseServiceRoleKey,
+      cronSecret,
+    })
+    if (!authorization.authorized) {
+      return new Response(
+        JSON.stringify({ error: 'Forbidden' }),
+        {
+          status: 403,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        }
+      )
+    }
+
+    console.log(`[funnel-report-cron] Starting ${authorization.triggerKind} funnel report`)
 
     // Parse request for optional days parameter (default 7)
     let days = 7
+    let requestedInvocationKey: string | null = null
     try {
       const body = await req.json()
-      if (body.days && typeof body.days === 'number') {
+      if (Number.isInteger(body.days) && body.days >= 1 && body.days <= 90) {
         days = body.days
       }
+      requestedInvocationKey = validateInvocationKey(body.invocationKey)
     } catch {
       // No body or invalid JSON, use default
+    }
+
+    const window = reportingWindow(days)
+    const previousWindow = previousReportingWindow(days, window)
+    const startDate = window.startDate
+    const endDate = window.endDate
+    const invocationKey = authorization.triggerKind === 'scheduled'
+      ? scheduledFunnelInvocationKey(startDate, endDate)
+      : requestedInvocationKey ?? `manual-funnel:${endDate}:${crypto.randomUUID()}`
+
+    auditClient = createClient(supabaseUrl, supabaseServiceRoleKey, {
+      auth: { autoRefreshToken: false, persistSession: false },
+    }) as unknown as AuditRpcClient
+    const { data: rawClaimRows, error: claimError } = await auditClient.rpc(
+      'claim_analytics_report_run',
+      {
+        p_invocation_key: invocationKey,
+        p_report_type: 'funnel',
+        p_trigger_kind: authorization.triggerKind,
+        p_window_start: startDate,
+        p_window_end: endDate,
+      }
+    )
+    const claimRows = rawClaimRows as ReportRunClaim[] | null
+    if (claimError || !claimRows?.[0]) throw new Error('report_run_claim_failed')
+    claimedRunId = claimRows[0].report_run_id
+
+    if (!claimRows[0].should_execute) {
+      return new Response(
+        JSON.stringify({
+          success: true,
+          duplicate: true,
+          reportRunId: claimedRunId,
+          status: claimRows[0].run_status,
+        }),
+        {
+          status: 200,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        }
+      )
     }
 
     // Get Google service account credentials
@@ -483,28 +1040,38 @@ serve(async (req) => {
     const accessToken = await getAccessToken(serviceAccount)
     console.log('[funnel-report-cron] Authentication successful')
 
-    // Calculate date range
-    const startDate = `${days}daysAgo`
-    const endDate = 'yesterday'
-
     // Run all queries in parallel
     console.log('[funnel-report-cron] Fetching GA4 data...')
 
-    const [funnelResponse, pagesResponse, landingResponse, sourcesResponse] = await Promise.all([
+    const [
+      funnelResponse,
+      pagesResponse,
+      landingResponse,
+      sourcesResponse,
+      rawTrafficResponse,
+      cleanTrafficResponse,
+      previousCleanTrafficResponse,
+      appBreakdownResponse,
+      previousAppBreakdownResponse,
+      signupByHostResponse,
+      titleWorkflowResponse,
+      interestResponse,
+      websiteAcquisitionResponse,
+    ] = await Promise.all([
       // Query 1: Funnel events
       runGA4Report(accessToken, {
         dateRanges: [{ startDate, endDate }],
         dimensions: ['eventName'],
         metrics: ['eventCount', 'totalUsers'],
-        dimensionFilter: {
+        dimensionFilter: buildCleanProductionFilter([{
           filter: {
             fieldName: 'eventName',
             inListFilter: {
-              values: FUNNEL_EVENTS,
+              values: [...SCHEDULED_REPORT_EVENTS],
               caseSensitive: true,
             },
           },
-        },
+        }]),
         orderBys: [{ metric: { metricName: 'eventCount' }, desc: true }],
       }),
 
@@ -513,7 +1080,7 @@ serve(async (req) => {
         dateRanges: [{ startDate, endDate }],
         dimensions: ['pagePath'],
         metrics: ['activeUsers', 'sessions', 'bounceRate', 'engagementRate'],
-        dimensionFilter: {
+        dimensionFilter: buildCleanProductionFilter([{
           filter: {
             fieldName: 'pagePath',
             inListFilter: {
@@ -521,7 +1088,7 @@ serve(async (req) => {
               caseSensitive: false,
             },
           },
-        },
+        }]),
         orderBys: [{ metric: { metricName: 'sessions' }, desc: true }],
       }),
 
@@ -530,6 +1097,7 @@ serve(async (req) => {
         dateRanges: [{ startDate, endDate }],
         dimensions: ['landingPage'],
         metrics: ['sessions', 'newUsers', 'engagementRate', 'bounceRate'],
+        dimensionFilter: buildCleanProductionFilter(),
         orderBys: [{ metric: { metricName: 'sessions' }, desc: true }],
         limit: 15,
       }),
@@ -539,8 +1107,139 @@ serve(async (req) => {
         dateRanges: [{ startDate, endDate }],
         dimensions: ['sessionSourceMedium'],
         metrics: ['newUsers', 'sessions', 'engagementRate'],
+        dimensionFilter: buildCleanProductionFilter(),
         orderBys: [{ metric: { metricName: 'newUsers' }, desc: true }],
         limit: 10,
+      }),
+
+      // Query 5: Raw traffic on production hosts, retained only for visibility
+      runGA4Report(accessToken, {
+        dateRanges: [{ startDate, endDate }],
+        dimensions: [],
+        metrics: ['activeUsers', 'newUsers', 'sessions', 'engagedSessions'],
+        dimensionFilter: buildProductionHostFilter(),
+      }),
+
+      // Query 6: Clean production traffic used by customer KPIs
+      runGA4Report(accessToken, {
+        dateRanges: [{ startDate, endDate }],
+        dimensions: [],
+        metrics: ['activeUsers', 'newUsers', 'sessions', 'engagedSessions'],
+        dimensionFilter: buildCleanProductionFilter(),
+      }),
+
+      // Query 7: Previous clean external window for acquisition comparison
+      runGA4Report(accessToken, {
+        dateRanges: [{
+          startDate: previousWindow.startDate,
+          endDate: previousWindow.endDate,
+        }],
+        dimensions: [],
+        metrics: ['activeUsers', 'newUsers', 'sessions', 'engagedSessions'],
+        dimensionFilter: buildCleanProductionFilter(),
+      }),
+
+      // Query 8: Clean external traffic split across the three production apps
+      runGA4Report(accessToken, {
+        dateRanges: [{ startDate, endDate }],
+        dimensions: ['hostName'],
+        metrics: ['activeUsers', 'newUsers', 'sessions', 'engagedSessions'],
+        dimensionFilter: buildCleanProductionFilter(),
+      }),
+
+      // Query 9: Previous clean external app split for engagement comparison
+      runGA4Report(accessToken, {
+        dateRanges: [{
+          startDate: previousWindow.startDate,
+          endDate: previousWindow.endDate,
+        }],
+        dimensions: ['hostName'],
+        metrics: ['activeUsers', 'newUsers', 'sessions', 'engagedSessions'],
+        dimensionFilter: buildCleanProductionFilter(),
+      }),
+
+      // Query 10: Canonical completed signups split into buyer and creator apps
+      runGA4Report(accessToken, {
+        dateRanges: [{ startDate, endDate }],
+        dimensions: ['hostName'],
+        metrics: ['totalUsers'],
+        dimensionFilter: buildCleanProductionFilter([{
+          filter: {
+            fieldName: 'eventName',
+            stringFilter: {
+              value: 'signup_completed',
+              matchType: 'EXACT',
+              caseSensitive: true,
+            },
+          },
+        }]),
+      }),
+
+      // Query 11: Canonical creator title workflow outcomes
+      runGA4Report(accessToken, {
+        dateRanges: [{ startDate, endDate }],
+        dimensions: ['eventName'],
+        metrics: ['eventCount'],
+        dimensionFilter: buildCleanProductionFilter([
+          {
+            filter: {
+              fieldName: 'hostName',
+              stringFilter: {
+                value: 'creator.kstorybridge.com',
+                matchType: 'EXACT',
+                caseSensitive: true,
+              },
+            },
+          },
+          {
+            filter: {
+              fieldName: 'eventName',
+              inListFilter: {
+                values: TITLE_WORKFLOW_EVENTS,
+                caseSensitive: true,
+              },
+            },
+          },
+        ]),
+      }),
+
+      // Query 12: Canonical buyer-interest outcomes
+      runGA4Report(accessToken, {
+        dateRanges: [{ startDate, endDate }],
+        dimensions: ['eventName'],
+        metrics: ['eventCount'],
+        dimensionFilter: buildCleanProductionFilter([
+          {
+            filter: {
+              fieldName: 'hostName',
+              stringFilter: {
+                value: 'dashboard.kstorybridge.com',
+                matchType: 'EXACT',
+                caseSensitive: true,
+              },
+            },
+          },
+          {
+            filter: {
+              fieldName: 'eventName',
+              stringFilter: {
+                value: 'interest_submitted',
+                matchType: 'EXACT',
+                caseSensitive: true,
+              },
+            },
+          },
+        ]),
+      }),
+
+      // Query 13: Canonical website acquisition handoffs
+      runGA4Report(accessToken, {
+        dateRanges: [{ startDate, endDate }],
+        dimensions: ['eventName'],
+        metrics: ['eventCount', 'totalUsers'],
+        dimensionFilter: buildCleanProductionFilter(
+          websiteAcquisitionDimensionFilters()
+        ),
       }),
     ])
 
@@ -551,19 +1250,113 @@ serve(async (req) => {
     const pageMetrics = parsePagePerformance(pagesResponse)
     const landingPages = parseLandingPages(landingResponse)
     const trafficSources = parseTrafficSources(sourcesResponse)
+    const rawTraffic = parseTrafficSummary(rawTrafficResponse)
+    const cleanTraffic = parseTrafficSummary(cleanTrafficResponse)
+    const previousCleanTraffic = parseTrafficSummary(previousCleanTrafficResponse)
+    const appBreakdown = parseAnalyticsAppBreakdown(appBreakdownResponse.rows)
+    const previousAppBreakdown = parseAnalyticsAppBreakdown(previousAppBreakdownResponse.rows)
+    const gaSignupCounts = parseSignupUsersByHost(signupByHostResponse.rows)
+    const gaTitleWorkflowCounts = parseTitleWorkflowEvents(titleWorkflowResponse.rows)
+    const gaInterestCount = parseOutcomeEventCount(
+      interestResponse.rows,
+      'interest_submitted'
+    )
+    const websiteAcquisition = parseWebsiteAcquisitionEvents(
+      websiteAcquisitionResponse.rows
+    )
+
+    const authoritativeSignupCounts = await getAuthoritativeSignupCounts(
+      supabaseUrl,
+      supabaseServiceRoleKey,
+      window
+    )
+    const instrumentationLive = isInstrumentationLiveForWindow(
+      Deno.env.get('ANALYTICS_AUTH_CONTRACT_LIVE_AT'),
+      window.start
+    )
+    const signupReconciliation = reconcileSignupCounts(
+      authoritativeSignupCounts,
+      gaSignupCounts,
+      instrumentationLive
+    )
+    const authoritativeTitleWorkflowCounts = await getAuthoritativeTitleWorkflowCounts(
+      supabaseUrl,
+      supabaseServiceRoleKey,
+      window
+    )
+    const titleClientInstrumentationLive = isInstrumentationLiveForWindow(
+      Deno.env.get('ANALYTICS_TITLE_CLIENT_CONTRACT_LIVE_AT'),
+      window.start
+    )
+    const titleServerInstrumentationLive = isInstrumentationLiveForWindow(
+      Deno.env.get('ANALYTICS_TITLE_SERVER_CONTRACT_LIVE_AT'),
+      window.start
+    )
+    const titleWorkflowReconciliation = reconcileTitleWorkflow(
+      authoritativeTitleWorkflowCounts,
+      gaTitleWorkflowCounts,
+      titleClientInstrumentationLive,
+      titleServerInstrumentationLive,
+      titleServerInstrumentationLive
+    )
+    const authoritativeInterestCount = await getAuthoritativeInterestCount(
+      supabaseUrl,
+      supabaseServiceRoleKey,
+      window
+    )
+    const interestInstrumentationLive = isInstrumentationLiveForWindow(
+      Deno.env.get('ANALYTICS_INTEREST_CONTRACT_LIVE_AT'),
+      window.start
+    )
+    const interestReconciliation = reconcileOutcome(
+      'interest_submitted',
+      authoritativeInterestCount,
+      gaInterestCount,
+      interestInstrumentationLive
+    )
+    const productInstrumentationLive = isInstrumentationLiveForWindow(
+      Deno.env.get('ANALYTICS_PRODUCT_CONTRACT_LIVE_AT'),
+      window.start
+    )
+    const commercialInstrumentationLive = isInstrumentationLiveForWindow(
+      Deno.env.get('ANALYTICS_COMMERCIAL_CONTRACT_LIVE_AT'),
+      window.start
+    )
+    const websiteAcquisitionInstrumentationLive = isInstrumentationLiveForWindow(
+      Deno.env.get('ANALYTICS_WEBSITE_ACQUISITION_CONTRACT_LIVE_AT'),
+      window.start
+    )
 
     // Generate report
     console.log('[funnel-report-cron] Generating funnel report...')
     const { markdown, alerts } = generateFunnelReport(
       funnelMetrics,
+      websiteAcquisition,
+      websiteAcquisitionInstrumentationLive,
       pageMetrics,
       landingPages,
       trafficSources,
+      rawTraffic,
+      cleanTraffic,
+      previousCleanTraffic,
+      appBreakdown,
+      previousAppBreakdown,
+      signupReconciliation,
+      instrumentationLive,
+      titleWorkflowReconciliation,
+      titleClientInstrumentationLive,
+      titleServerInstrumentationLive,
+      interestReconciliation,
+      interestInstrumentationLive,
+      productInstrumentationLive,
+      commercialInstrumentationLive,
+      window,
       days
     )
 
     // Get today's date for report
     const reportDate = new Date().toLocaleDateString('en-US', {
+      timeZone: REPORT_TIME_ZONE,
       weekday: 'long',
       year: 'numeric',
       month: 'long',
@@ -573,31 +1366,33 @@ serve(async (req) => {
     // Send report via send-analytics-report function
     console.log('[funnel-report-cron] Sending report to admins...')
 
-    const supabaseUrl = Deno.env.get('SUPABASE_URL')
-    const supabaseAnonKey = Deno.env.get('SUPABASE_ANON_KEY')
-
+    deliveryStarted = true
     const sendResponse = await fetch(`${supabaseUrl}/functions/v1/send-analytics-report`, {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${supabaseAnonKey}`,
+        'Authorization': `Bearer ${supabaseServiceRoleKey}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
         reportType: 'funnel',
         reportDate,
         reportMarkdown: markdown,
+        reportRunId: claimedRunId,
         alerts: alerts.length > 0 ? alerts : undefined,
         sendSlack: true,
       }),
     })
 
+    if (!sendResponse.ok) throw new Error('report_delivery_request_failed')
     const sendResult = await sendResponse.json()
-    console.log('[funnel-report-cron] Report delivery result:', sendResult)
+    console.log(`[funnel-report-cron] Report delivery status: ${sendResult.status ?? 'unknown'}`)
 
     return new Response(
       JSON.stringify({
-        success: true,
+        success: sendResult.success === true,
         message: `${days}-day funnel report generated and sent`,
+        reportRunId: claimedRunId,
+        triggerKind: authorization.triggerKind,
         reportDate,
         alertsTriggered: alerts.length,
         delivery: sendResult,
@@ -608,12 +1403,19 @@ serve(async (req) => {
       }
     )
 
-  } catch (error) {
-    console.error('[funnel-report-cron] Error:', error)
+  } catch {
+    if (claimedRunId && auditClient) {
+      await auditClient.rpc('fail_analytics_report_run', {
+        p_report_run_id: claimedRunId,
+        p_error_code: deliveryStarted
+          ? 'report_delivery_request_failed'
+          : 'report_generation_failed',
+      })
+    }
+    console.error('[funnel-report-cron] Request failed with a controlled internal error')
     return new Response(
       JSON.stringify({
         error: 'Failed to generate funnel report',
-        details: error instanceof Error ? error.message : String(error),
       }),
       {
         status: 500,

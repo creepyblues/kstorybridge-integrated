@@ -7,6 +7,18 @@
  * @module analytics
  */
 
+import {
+  ANALYTICS_EVENT_NAMES,
+  AUTH_EVENT_NAMES,
+  getAuthEventName,
+  normalizeFailureReason,
+  sanitizeAnalyticsEventParams,
+  type AuthFailureReason,
+  type AuthMethod,
+  type AuthStage,
+  type CreatorTitleEntryMethod,
+} from '@kstorybridge/analytics';
+
 declare global {
   interface Window {
     gtag?: (...args: unknown[]) => void;
@@ -17,7 +29,61 @@ declare global {
 // Environment-based configuration
 const GA_MEASUREMENT_ID = import.meta.env.VITE_GA_MEASUREMENT_ID || '';
 const IS_DEV = import.meta.env.DEV;
-const IS_ANALYTICS_ENABLED = !!GA_MEASUREMENT_ID;
+const PRODUCTION_ANALYTICS_HOSTS = new Set(['creator.kstorybridge.com']);
+const NON_PRODUCTION_OVERRIDE_KEY = 'ksb_enable_non_production_analytics';
+
+export const isAnalyticsCollectionAllowed = (
+  hostname: string,
+  allowNonProduction = false
+): boolean => PRODUCTION_ANALYTICS_HOSTS.has(hostname.toLowerCase()) || allowNonProduction;
+
+const hasRuntimeAnalyticsOverride = (): boolean => {
+  if (typeof window === 'undefined') return false;
+
+  const requested = new URLSearchParams(window.location.search).get('analytics_debug') === '1';
+  if (requested) {
+    window.sessionStorage.setItem(NON_PRODUCTION_OVERRIDE_KEY, 'true');
+  }
+
+  return requested || window.sessionStorage.getItem(NON_PRODUCTION_OVERRIDE_KEY) === 'true';
+};
+
+const ALLOW_NON_PRODUCTION_ANALYTICS =
+  import.meta.env.VITE_ENABLE_NON_PRODUCTION_ANALYTICS === 'true' || hasRuntimeAnalyticsOverride();
+const IS_ANALYTICS_ENABLED =
+  !!GA_MEASUREMENT_ID &&
+  typeof window !== 'undefined' &&
+  isAnalyticsCollectionAllowed(window.location.hostname, ALLOW_NON_PRODUCTION_ANALYTICS);
+
+const isInternalHost = (): boolean =>
+  typeof window !== 'undefined' &&
+  (/^(localhost|127\.0\.0\.1)$/.test(window.location.hostname) ||
+    window.location.hostname.includes('-staging.'));
+
+export const isInternalTrafficMetadata = (
+  appMetadata?: Record<string, unknown> | null
+): boolean => appMetadata?.internal_traffic === true;
+
+type AnalyticsTrafficType = 'external' | 'internal';
+type PendingAnalyticsEvent = { eventName: string; params: Record<string, unknown> };
+
+let analyticsIdentityResolved = false;
+let analyticsTrafficType: AnalyticsTrafficType = isInternalHost() ? 'internal' : 'external';
+const pendingAnalyticsEvents: PendingAnalyticsEvent[] = [];
+const MAX_PENDING_ANALYTICS_EVENTS = 100;
+
+const flushPendingAnalyticsEvents = (): void => {
+  if (!IS_ANALYTICS_ENABLED || !analyticsIdentityResolved || typeof window.gtag !== 'function') {
+    return;
+  }
+
+  for (const event of pendingAnalyticsEvents.splice(0)) {
+    window.gtag('event', event.eventName, {
+      ...event.params,
+      traffic_type: analyticsTrafficType,
+    });
+  }
+};
 
 /**
  * Initialize Google Analytics 4
@@ -26,7 +92,11 @@ const IS_ANALYTICS_ENABLED = !!GA_MEASUREMENT_ID;
 export const initializeAnalytics = (): void => {
   if (!IS_ANALYTICS_ENABLED) {
     if (IS_DEV) {
-      console.log('[Analytics] GA4 not configured (VITE_GA_MEASUREMENT_ID not set)');
+      console.log('[Analytics] GA4 disabled for this environment', {
+        measurementConfigured: !!GA_MEASUREMENT_ID,
+        hostname: typeof window !== 'undefined' ? window.location.hostname : 'server',
+        overrideEnabled: ALLOW_NON_PRODUCTION_ANALYTICS,
+      });
     }
     return;
   }
@@ -48,7 +118,9 @@ export const initializeAnalytics = (): void => {
 
   window.gtag('js', new Date());
   window.gtag('config', GA_MEASUREMENT_ID, {
-    send_page_view: true,
+    // Route-level tracking sends page views after auth classification.
+    send_page_view: false,
+    traffic_type: analyticsTrafficType,
   });
 
   if (IS_DEV) {
@@ -71,6 +143,7 @@ export const setAnalyticsUser = (
   userProperties?: {
     tier?: string;
     type?: string;
+    internal?: boolean;
   }
 ): void => {
   if (!IS_ANALYTICS_ENABLED) {
@@ -81,9 +154,14 @@ export const setAnalyticsUser = (
   }
 
   if (typeof window !== 'undefined' && window.gtag) {
-    // Set GA4 User ID for cross-session tracking
+    analyticsTrafficType = userProperties?.internal ? 'internal' : 'external';
+    analyticsIdentityResolved = true;
+
+    // The Supabase UUID is non-PII. Internal classification comes from
+    // service-role-controlled app_metadata, never from an email in the bundle.
     window.gtag('config', GA_MEASUREMENT_ID, {
       user_id: userId,
+      traffic_type: analyticsTrafficType,
     });
 
     // Set user properties for segmentation in reports
@@ -97,6 +175,8 @@ export const setAnalyticsUser = (
     if (IS_DEV) {
       console.log(`[Analytics] User set: ${userId.substring(0, 8)}...`, userProperties);
     }
+
+    flushPendingAnalyticsEvents();
   }
 };
 
@@ -110,14 +190,19 @@ export const clearAnalyticsUser = (): void => {
   }
 
   if (typeof window !== 'undefined' && window.gtag) {
-    // Clear user ID by setting to undefined
+    analyticsTrafficType = isInternalHost() ? 'internal' : 'external';
+    analyticsIdentityResolved = true;
+
     window.gtag('config', GA_MEASUREMENT_ID, {
       user_id: undefined,
+      traffic_type: analyticsTrafficType,
     });
 
     if (IS_DEV) {
       console.log('[Analytics] User cleared');
     }
+
+    flushPendingAnalyticsEvents();
   }
 };
 
@@ -126,10 +211,10 @@ export const clearAnalyticsUser = (): void => {
  */
 const trackEvent = (eventName: string, params: Record<string, unknown>): void => {
   // Add app_section to all events for segmentation
-  const enrichedParams = {
+  const enrichedParams = sanitizeAnalyticsEventParams(eventName, {
     ...params,
     app_section: 'creator',
-  };
+  });
 
   if (IS_DEV) {
     console.log(`[Analytics] ${eventName}`, enrichedParams);
@@ -139,8 +224,18 @@ const trackEvent = (eventName: string, params: Record<string, unknown>): void =>
     return;
   }
 
+  if (!analyticsIdentityResolved) {
+    if (pendingAnalyticsEvents.length < MAX_PENDING_ANALYTICS_EVENTS) {
+      pendingAnalyticsEvents.push({ eventName, params: enrichedParams });
+    }
+    return;
+  }
+
   if (typeof window.gtag === 'function') {
-    window.gtag('event', eventName, enrichedParams);
+    window.gtag('event', eventName, {
+      ...enrichedParams,
+      traffic_type: analyticsTrafficType,
+    });
   }
 };
 
@@ -163,17 +258,31 @@ export const trackPageView = (path: string, title?: string): void => {
 // Authentication Events
 // ============================================
 
-export const trackSignup = (method: 'email' | 'google'): void => {
-  trackEvent('sign_up', {
-    method: method,
-    user_type: 'creator',
+export const trackSignup = (
+  stage: AuthStage,
+  method: AuthMethod,
+  failureReason?: AuthFailureReason
+): void => {
+  trackEvent(getAuthEventName('signup', stage), {
+    method,
+    account_type: 'creator',
+    ...(failureReason
+      ? { failure_reason: normalizeFailureReason(failureReason) }
+      : {}),
   });
 };
 
-export const trackLogin = (method: 'email' | 'google'): void => {
-  trackEvent('login', {
-    method: method,
-    user_type: 'creator',
+export const trackSignin = (
+  stage: AuthStage,
+  method: AuthMethod,
+  failureReason?: AuthFailureReason
+): void => {
+  trackEvent(getAuthEventName('signin', stage), {
+    method,
+    account_type: 'creator',
+    ...(failureReason
+      ? { failure_reason: normalizeFailureReason(failureReason) }
+      : {}),
   });
 };
 
@@ -191,10 +300,9 @@ export const trackOAuthComplete = (provider: string): void => {
   });
 };
 
-export const trackProfileComplete = (): void => {
-  trackEvent('profile_complete', {
-    event_category: 'authentication',
-    event_label: 'creator_profile_setup',
+export const trackCreatorProfileCompleted = (): void => {
+  trackEvent(AUTH_EVENT_NAMES.creatorProfileCompleted, {
+    account_type: 'creator',
   });
 };
 
@@ -206,6 +314,26 @@ export const trackTitleCreate = (titleId: string, format?: string): void => {
   trackEvent('title_create', {
     title_id: titleId,
     content_format: format,
+  });
+};
+
+export const trackTitleDraftCreated = (
+  draftId: string,
+  entryMethod: CreatorTitleEntryMethod
+): void => {
+  trackEvent(ANALYTICS_EVENT_NAMES.titleDraftCreated, {
+    draft_id: draftId,
+    entry_method: entryMethod,
+  });
+};
+
+export const trackTitleSubmitted = (
+  draftId: string,
+  entryMethod: CreatorTitleEntryMethod
+): void => {
+  trackEvent(ANALYTICS_EVENT_NAMES.titleSubmitted, {
+    draft_id: draftId,
+    entry_method: entryMethod,
   });
 };
 
@@ -264,20 +392,14 @@ export const trackPlanView = (): void => {
   });
 };
 
-export const trackCheckoutStart = (plan: string, billingPeriod: 'monthly' | 'yearly', titleId?: string): void => {
-  trackEvent('begin_checkout', {
-    plan_type: plan,
+export const trackCheckoutStart = (
+  planType: 'packaging' | 'premium',
+  billingPeriod: 'monthly' | 'yearly'
+): void => {
+  trackEvent(ANALYTICS_EVENT_NAMES.checkoutStarted, {
+    account_type: 'creator',
+    plan_type: planType,
     billing_period: billingPeriod,
-    title_id: titleId,
-  });
-};
-
-export const trackPaymentSuccess = (plan: string, billingPeriod: string, amount?: number): void => {
-  trackEvent('purchase', {
-    plan_type: plan,
-    billing_period: billingPeriod,
-    value: amount,
-    currency: 'USD',
   });
 };
 

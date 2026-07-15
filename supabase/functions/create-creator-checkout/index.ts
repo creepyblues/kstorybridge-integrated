@@ -222,11 +222,13 @@ serve(async (req) => {
       },
       subscription_data: {
         metadata: {
+          creator_id: user.id,
           title_id: title_id,
           title_name: titleData.title_name_kr,
           account_type: 'creator',
           creator_email: user.email,
           plan_type: plan_type,
+          billing_period: billing_period,
         },
       },
       // TODO: Add coupon support when coupons are ready

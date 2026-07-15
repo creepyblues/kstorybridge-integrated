@@ -12,9 +12,16 @@ interface CheckoutModalProps {
   onClose: () => void
   planType: 'packaging' | 'premium'
   billingPeriod: 'monthly'
+  redirectToCheckout?: (url: string) => void
 }
 
-export function CheckoutModal({ isOpen, onClose, planType, billingPeriod }: CheckoutModalProps) {
+export function CheckoutModal({
+  isOpen,
+  onClose,
+  planType,
+  billingPeriod,
+  redirectToCheckout = (url) => { window.location.href = url },
+}: CheckoutModalProps) {
   const { user } = useAuth()
   const [titles, setTitles] = useState<Title[]>([])
   const [selectedTitleId, setSelectedTitleId] = useState<string | null>(null)
@@ -86,12 +93,15 @@ export function CheckoutModal({ isOpen, onClose, planType, billingPeriod }: Chec
       }
 
       const { url } = await response.json()
+      if (typeof url !== 'string' || url.length === 0) {
+        throw new Error('No checkout URL returned')
+      }
 
       // Track checkout start
-      trackCheckoutStart(planType, billingPeriod, selectedTitleId)
+      trackCheckoutStart(planType, billingPeriod)
 
       // Redirect to Stripe Checkout
-      window.location.href = url
+      redirectToCheckout(url)
     } catch (err: any) {
       console.error('Checkout error:', err)
       setError(err.message || 'Failed to start checkout. Please try again.')

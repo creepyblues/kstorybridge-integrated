@@ -4,6 +4,7 @@ import { BrowserRouter } from 'react-router-dom'
 import SignUp from '../SignUp'
 import * as auth from '@/lib/auth'
 import * as supabaseLib from '@/lib/supabase'
+import * as analytics from '@/utils/analytics'
 
 // Mock modules
 vi.mock('@/lib/auth')
@@ -27,7 +28,6 @@ vi.mock('@/hooks/use-toast', () => ({
 // Mock analytics
 vi.mock('@/utils/analytics', () => ({
   trackSignup: vi.fn(),
-  trackAuthError: vi.fn(),
 }))
 
 // Mock i18n
@@ -235,6 +235,7 @@ describe('SignUp', () => {
         ip_owner_role: 'author',
         ip_owner_company: undefined,
         website_url: undefined,
+        newsletter_consent: true,
       })
 
       // Verify toast was shown
@@ -245,6 +246,10 @@ describe('SignUp', () => {
 
       // Verify signOut was called
       expect(mockSignOut).toHaveBeenCalled()
+
+      expect(analytics.trackSignup).toHaveBeenCalledWith('attempted', 'email')
+      expect(analytics.trackSignup).toHaveBeenCalledWith('completed', 'email')
+      expect(analytics.trackSignup.mock.calls.filter(([stage]) => stage === 'completed')).toHaveLength(1)
 
       // Verify navigation
       expect(mockNavigate).toHaveBeenCalledWith(
@@ -288,6 +293,9 @@ describe('SignUp', () => {
     await waitFor(() => {
       expect(screen.getByText(/signup failed/i)).toBeInTheDocument()
     })
+    expect(analytics.trackSignup).toHaveBeenCalledWith('failed', 'email', 'auth_rejected')
+    expect(analytics.trackSignup.mock.calls.filter(([stage]) => stage === 'failed')).toHaveLength(1)
+    expect(analytics.trackSignup.mock.calls.some(([stage]) => stage === 'completed')).toBe(false)
   })
 
   it('should show loading state during signup', async () => {

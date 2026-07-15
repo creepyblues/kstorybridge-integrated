@@ -7,7 +7,7 @@ import { supabase } from '@/lib/supabase';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Icon } from '@iconify/react';
-import { trackCheckout, trackCheckoutAbandoned } from '@/utils/analytics';
+import { trackCheckout, trackCheckoutAbandoned, trackCheckoutStarted } from '@/utils/analytics';
 
 // Initialize Stripe.js with publishable key
 const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || '');
@@ -36,6 +36,7 @@ export default function Checkout() {
   const pageStartTimeRef = useRef<number>(Date.now());
   const currentStepRef = useRef<string>('loading');
   const isRedirectingRef = useRef<boolean>(false);
+  const checkoutRequestKeyRef = useRef<string | null>(null);
 
   // Track checkout abandonment on page leave
   useEffect(() => {
@@ -67,6 +68,9 @@ export default function Checkout() {
       return;
     }
 
+    const requestKey = `${user.id}:${tier}`;
+    if (checkoutRequestKeyRef.current === requestKey) return;
+    checkoutRequestKeyRef.current = requestKey;
     createCheckoutSession();
   }, [tier, user]);
 
@@ -108,6 +112,7 @@ export default function Checkout() {
 
       console.log('✅ Redirecting to Stripe Checkout:', data.sessionId);
       currentStepRef.current = 'redirecting';
+      trackCheckoutStarted(tier, 'monthly');
 
       // Use direct URL redirect if available (more reliable), otherwise use Stripe.js
       if (data.url) {
@@ -138,7 +143,7 @@ export default function Checkout() {
       currentStepRef.current = 'error';
 
       // Track checkout error
-      trackCheckout('error', tier || 'unknown', undefined, { error: error.message?.substring(0, 50) });
+      trackCheckout('error', tier || 'unknown', { failure_reason: 'session_creation_failed' });
 
       toast({
         title: 'Checkout Error',

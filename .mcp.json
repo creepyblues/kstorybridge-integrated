@@ -12,7 +12,7 @@
       "command": "pipx",
       "args": ["run", "analytics-mcp"],
       "env": {
-        "GOOGLE_APPLICATION_CREDENTIALS": "/Users/sungholee/.config/gcloud/application_default_credentials.json"
+        "GOOGLE_APPLICATION_CREDENTIALS": "/Users/sungholee/.config/gcloud/kstorybridge-analytics-reader.json"
       }
     }
   }

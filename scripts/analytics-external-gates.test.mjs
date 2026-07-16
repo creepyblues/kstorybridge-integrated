@@ -10,6 +10,7 @@ import {
   summarizeDefaultBranchWorkflow,
   summarizeGaInternalFilterGate,
   summarizeReleasePrGate,
+  summarizeReleaseRecoveryEvidence,
   summarizeWwwCanonicalGate,
 } from './analytics-external-gates.mjs'
 import { REQUIRED_BREVO_SEND_DATES } from './brevo-campaign-evidence.mjs'
@@ -226,6 +227,30 @@ test('fails the release gate when Wave 1 scope drifts or cannot be fully invento
   })
   assert.equal(incomplete.status, 'UNAVAILABLE')
   assert.match(incomplete.summary, /1\/2 files loaded/)
+})
+
+test('reports an already-merged scope violation as a recovery incident', () => {
+  const result = summarizeReleasePrGate({
+    pr: { ...openPr, merged_at: '2026-07-15T23:31:31Z', changed_files: 1 },
+    checkRuns: [actionCheck(1, 'success')],
+    files: [{ filename: 'supabase/migrations/20260714011558_analytics_event_outbox.sql' }],
+  })
+  assert.equal(result.status, 'MERGED_SCOPE_DRIFT')
+  assert.match(result.summary, /^merged;/)
+  assert.match(result.alert, /mixed-release recovery audit/)
+})
+
+test('preserves tracked merged-scope evidence when live GitHub is unavailable', () => {
+  const tracked = summarizeReleaseRecoveryEvidence(
+    '<!-- analytics-release-recovery:status=RECOVERY_REQUIRED -->'
+  )
+  assert.equal(tracked.status, 'MERGED_SCOPE_DRIFT')
+  assert.match(tracked.summary, /live GitHub verification is unavailable/)
+
+  assert.equal(summarizeReleaseRecoveryEvidence(null).status, 'UNAVAILABLE')
+  assert.equal(summarizeReleaseRecoveryEvidence(
+    '<!-- analytics-release-recovery:status=RECOVERED -->'
+  ).status, 'UNAVAILABLE')
 })
 
 test('accepts a complete allowlisted Wave 1 scope before classifying CI', () => {

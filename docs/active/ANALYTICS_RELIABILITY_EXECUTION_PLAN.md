@@ -55,9 +55,9 @@ Recommended definitions and exact approval language are documented in [ANALYTICS
 - [x] `AR-011` Document the execution sequence, acceptance criteria, and progress log.
 - [x] `AR-012` Add a read-only progress-report script.
 - [x] `AR-013` Add a scheduled weekly progress audit and manual dispatch.
-- [ ] `AR-014` Merge the tracker workflow to the default branch so GitHub's schedule activates.
+- [x] `AR-014` Merge the tracker workflow to the default branch so GitHub's schedule activates.
 - [x] `AR-015` Install and verify a local weekly cron fallback until the default-branch workflow is active.
-- [ ] `AR-016` Restore GitHub Actions execution after the account-level billing lock, then rerun and pass the focused release checks.
+- [ ] `AR-016` Recover from merged PR #142: restore executable GitHub Actions, pass a focused client-build recovery PR, and reconcile the violated release boundary before further production mutation.
 
 ### Phase 0 acceptance criteria
 
@@ -68,7 +68,7 @@ Recommended definitions and exact approval language are documented in [ANALYTICS
 
 ### Progress scheduling state
 
-- Durable repository schedule: `.github/workflows/analytics-progress.yml`, Monday at 15:00 UTC, pending `AR-014` because GitHub only schedules workflows from the default branch.
+- Durable repository schedule: `.github/workflows/analytics-progress.yml`, Monday at 15:00 UTC, merged to `main` through PR #142. Its first successful scheduled run remains unproven because GitHub Actions billing is locked.
 - Active fallback: the macOS user crontab runs `scripts/run-analytics-progress-cron.zsh --send` Mondays at 08:05 local time.
 - Fallback log: `~/Library/Logs/KStoryBridge/analytics-progress-cron.log`.
 - The wrapper uses Node's `--env-file` parser rather than shell-sourcing `.env.local`, so secrets containing shell-sensitive characters are preserved exactly.
@@ -76,7 +76,7 @@ Recommended definitions and exact approval language are documented in [ANALYTICS
 - The host cron daemon (`com.vix.cron`) was verified running after installation, and the wrapper is executable.
 - Manual end-to-end verification succeeded on 2026-07-13: the wrapper parsed the plan and delivered to three admins plus Slack with zero failures.
 - The reporter performs best-effort repeated TLS and redirect probes against `www.kstorybridge.com`. An unavailable check is reported as an external-gate alert but does not prevent the checklist from rendering or being delivered.
-- The reporter also checks whether its workflow exists on `main` and classifies PR #141 GitHub Actions as healthy, pending, billing-locked, failed, unavailable, or closed. It uses read-only GitHub access, ignores external Vercel checks for CI classification, and never reruns or mutates checks.
+- The reporter checks whether its workflow exists on `main` and now inventories every changed-file page from actual release PR #142. A merged path outside the fixed Wave 1 allowlist is classified `MERGED_SCOPE_DRIFT`; GitHub access remains read-only and never reruns checks.
 - GitHub Actions uses its scoped `GITHUB_TOKEN`; the local reporter falls back to the existing authenticated `gh` credential only in process memory. This prevents unauthenticated annotation limits from misclassifying a billing lock as a code failure without printing or persisting the token.
 
 ## Phase 1: Clean measurement inputs
@@ -91,7 +91,7 @@ Recommended definitions and exact approval language are documented in [ANALYTICS
 - [x] `AR-107` Deploy the filtered funnel-report function and verify one manual production run before beginning `AR-106`.
 - [ ] `AR-108` Verify the GA Admin internal-traffic data filter exists and is in Testing mode before any decision to activate it.
 - [ ] `AR-109` After founder approval of `AR-005`, mark approved authenticated accounts with service-role-controlled `app_metadata.internal_traffic=true` and validate a test event.
-- [ ] `AR-110` Release and validate the conservative `email_landing_engaged` website event; implementation and automated tests are complete, but production website deployment is pending.
+- [ ] `AR-110` Validate the now-live website `email_landing_engaged` source at runtime; the July 15 website bundle contains the event, but trusted-interaction, privacy, GTM, and GA acceptance remain pending.
 - [x] `AR-111` Classify every active database administrator as internal traffic through protected auth metadata and verify the resulting state.
 - [x] `AR-112` Release dashboard and creator analytics gating to staging and verify committed bundle markers plus root/auth smoke tests.
 - [x] `AR-113` Prove runtime network behavior on all three staging/preview apps: zero analytics by default and intentional collection only with the diagnostic override.
@@ -133,7 +133,8 @@ Implemented 2026-07-13:
 - Active administrators must refresh their session or sign in again before the new claim is present in frontend analytics events. `AR-005` and `AR-109` remain open for any non-admin staff, contractor, investor, and automated-test accounts.
 - A read-only production audit on 2026-07-14 matched the official automated QA Auth identity but found `app_metadata.internal_traffic=false`. No metadata was changed, so that account remains external until the founder explicitly approves it.
 - `scripts/internal-traffic-approved-users.mjs` now provides the non-admin execution path. It accepts only an ephemeral list of approved Auth UUIDs, defaults to an aggregate-only dry run, preflights the complete list, preserves existing metadata, requires an explicit confirmation token for writes, and verifies every identity afterward. Eight internal-traffic script tests pass, including invalid-input, privacy, metadata-preservation, and refuse-partial-apply cases.
-- The exact approval, operator procedure, and production acceptance evidence are tracked in [ANALYTICS_INTERNAL_TRAFFIC_APPROVAL.md](ANALYTICS_INTERNAL_TRAFFIC_APPROVAL.md). `AR-102` and `AR-109` remain open because the QA identity and any additional non-admin identities are not founder-approved, no production write occurred, Wave 1 is not live, and `AR-108` remains unverified.
+- The exact approval, operator procedure, and production acceptance evidence are tracked in [ANALYTICS_INTERNAL_TRAFFIC_APPROVAL.md](ANALYTICS_INTERNAL_TRAFFIC_APPROVAL.md). `AR-102` and `AR-109` remain open because the QA identity and any additional non-admin identities are not founder-approved, no production write occurred, complete Wave 1 runtime acceptance is not met, and `AR-108` remains unverified.
+- PR #142 merged all `v2` source into `main` on 2026-07-15 without executable CI. The website deployed a current bundle, but dashboard and creator production aliases still serve July 7 builds after four Vercel attempts failed at the new shared-package boundary. [ANALYTICS_MIXED_RELEASE_RECOVERY_2026-07-16.md](ANALYTICS_MIXED_RELEASE_RECOVERY_2026-07-16.md) controls recovery; no database, Edge Function, remaining client, or GA mutation is authorized by the merge.
 - Dashboard and creator staging deployments for commit `60cd75b1` reached `READY`. Both custom-domain root and sign-in routes returned HTTP 200, and the served JavaScript bundles contain the app-specific production hostname, `analytics_debug`, the non-production override key, and `internal_traffic` handling.
 - The pre-existing creator build blocker was resolved by completing the Lezhin platform icon/detection mapping; the full creator TypeScript and Vite production build now passes.
 - Two initial clean website preview attempts appeared as `UNKNOWN` without build logs. Their processes and temporary worktree were cleaned up rather than treating either attempt as released.
@@ -162,7 +163,7 @@ Completed 2026-07-13:
 - The deployed July 13 function predates the source-only localhost/staging/Vercel-referrer extension. `AR-106` therefore has **not** started; the earlier proposed July 14–20 window is invalid and July 21 is not an honest close date.
 - The scheduled progress audit now requires a real `ANALYTICS_CLEAN_FILTER_LIVE_AT` timestamp. It starts the observation on the next Pacific calendar day, audits a fixed seven-complete-day GA window with the exact shared clean filter, and never requests GA credentials before cutover or the first complete day. Missing credentials/evidence is unavailable, any excluded-row leakage is degraded, and only seven audited days with zero leakage is healthy.
 - The local cron resolves the existing read-only analytics service-account path without printing or copying credentials. The repository schedule requires secret `GA4_SERVICE_ACCOUNT_JSON` and variable `ANALYTICS_CLEAN_FILTER_LIVE_AT`; neither is claimed configured on `main` while `AR-014` remains open. Six clean-window tests, 18 external-gate tests, four shared-filter tests, live token acquisition, and the report function type check pass.
-- The exact Wave 1 release delta is prepared as local release-branch commit `2881f7b8`: only `analytics-filters.ts` and its focused test change. Its generated filter matches canonical `v2` behavior exactly, four tests and the PR-version report function check pass, and both paths are already in the fixed Wave 1 allowlist. The commit is intentionally **not pushed**: local release head is `2881f7b8`, remote PR #141 head remains `75c4bc44`, and pushing would create new GitHub Actions runs while billing is locked without explicit rerun approval.
+- The former leaf-safe Wave 1 release commit `2881f7b8` and draft PR #141 are obsolete as release paths because PR #142 merged the complete source to `main`. The complete filter is present in source, but production `funnel-report-cron` remains the earlier version 27; `AR-106` still has no cutover timestamp and has not started.
 
 #### `AR-106` acceptance criteria
 
@@ -176,20 +177,20 @@ Completed 2026-07-13:
 
 ### Human email-engagement implementation
 
-Implemented in source on 2026-07-13; production release pending under `AR-110`:
+Implemented in source on 2026-07-13; website bundle released 2026-07-15, runtime acceptance pending under `AR-110`:
 
 - Email-attributed website landings are recognized only from campaign-level `utm_source`, `utm_medium`, and `utm_campaign` values.
 - `email_landing_engaged` fires only after a browser marks a pointer, keyboard, or scroll interaction as trusted. A redirect or scanner page load alone cannot emit the event.
 - Recipient identifiers, email addresses, `utm_content`, and arbitrary query parameters are neither retained nor sent to GA.
 - The scheduled funnel report now displays event and user totals for this conservative on-site signal so they can be compared with Brevo delivered and unique human-click totals.
-- Ten website analytics tests and the website production build pass. Reconciliation remains open under `AR-104` until the campaign totals requested in `AR-008` are available.
+- Ten website analytics tests and the website production build pass. The live bundle contains the conservative event, but no trusted production event, GTM mapping, or processed GA evidence has been validated. Reconciliation remains open under `AR-104` until that runtime evidence and the campaign totals requested in `AR-008` are available.
 - Analytics-scoped read access now confirms the three campaign dates produced 529 scanner-referral sessions: 180 on June 17, 180 on June 24, and 169 on July 8, with only three engaged sessions total. GA shows no email/newsletter-medium session and no `email_landing_engaged` event on those dates. No Brevo API credential is configured, so delivered/unique-click/human-click totals still require a Brevo export or read-only account access. See [GA4_PROPERTY_AUDIT_2026-07-13.md](GA4_PROPERTY_AUDIT_2026-07-13.md).
 - The aggregate-only [BREVO_CAMPAIGN_AGGREGATE_EVIDENCE.json](BREVO_CAMPAIGN_AGGREGATE_EVIDENCE.json) record now makes `AR-008` a scheduled fail-closed gate. It accepts exactly the three required dates, integer aggregates, controlled source/method provenance, and no unknown fields; missing values are pending and malformed or missing evidence is unavailable. The current record is valid with 0/3 campaigns complete.
 - [ANALYTICS_BREVO_RECONCILIATION.md](ANALYTICS_BREVO_RECONCILIATION.md) separates the historical provider-evidence task from `AR-104`: the three pre-cutover sends cannot retroactively prove `email_landing_engaged`. Closing `AR-104` requires a new tagged campaign after `AR-110`, provider aggregates, trusted-interaction runtime evidence, and an honest variance review without treating independent totals as an ordered funnel.
 
 ### Production release boundary
 
-[ANALYTICS_PRODUCTION_RELEASE_SEQUENCE.md](ANALYTICS_PRODUCTION_RELEASE_SEQUENCE.md) is the release-control source for the remaining instrumentation. Dependency inspection confirmed that the current privacy sink and weekly scorecard are not safe leaf cherry-picks onto PR #141: the former requires the canonical shared package/app contract, while the latter requires later report/reconciliation/live-at helpers; adjacent `v2` work also includes approval-gated database migrations. PR #141 therefore remains the migration-free collection foundation. Canonical clients, authoritative server outcomes/delivery security, and the operating report/GA configuration advance as three later waves with independent entry, acceptance, and rollback gates. The weekly progress audit now verifies PR #141's complete file inventory against the fixed Wave 1 allowlist and reports count-only `SCOPE_DRIFT` or `UNAVAILABLE` failures without exposing path details. No production release or CI rerun occurred during this sequencing audit.
+[ANALYTICS_PRODUCTION_RELEASE_SEQUENCE.md](ANALYTICS_PRODUCTION_RELEASE_SEQUENCE.md) remains the runtime acceptance boundary, with the [mixed-release recovery runbook](ANALYTICS_MIXED_RELEASE_RECOVERY_2026-07-16.md) taking precedence. PR #142 merged 217 files, including 194 paths outside Wave 1, 15 migration files, and 39 Edge Function files. Only website client source is currently evidenced live; dashboard/creator builds failed, the new analytics migrations are absent remotely, and later functions are absent. The weekly audit now watches PR #142 and fails the merged scope as a recovery incident rather than continuing to report obsolete draft PR #141.
 
 ## Phase 2: Define and normalize the event contract
 
@@ -401,6 +402,7 @@ All of the following must be true:
 | 2026-07-14 | Prepared the missing development-referrer exclusion as a leaf-safe Wave 1 release commit without touching the remote PR or CI. | Local release commit `2881f7b8` changes only the shared filter and test; generated filter behavior exactly matches `v2`; four focused tests and Deno checking pass. Remote PR #141 remains at `75c4bc44` with the same six zero-step billing failures. | Restore GitHub billing and explicitly approve the release-branch push/check run; then push the local commit, require green CI, merge/deploy Wave 1, record the real clean-filter cutover, and start `AR-106` the following Pacific day. |
 | 2026-07-14 | Audited the official automated QA identity and prepared a confirmation-gated path for approved non-admin internal users without changing production metadata. | The privacy-safe dry run matched 1/1 Auth identity and reported 0/1 already internal; eight tests prove UUID-only input, aggregate-only evidence, metadata preservation, verification, and pre-write refusal when any identity is missing. | Founder approves or rejects the official QA identity and supplies any additional Auth UUIDs; then run the confirmed update, refresh sessions, and validate internal versus external production events after Wave 1. |
 | 2026-07-14 | Converted missing Brevo provider totals into a machine-checked, privacy-safe scheduled evidence gate without inventing historical email behavior. | The tracked template covers exactly the June 17, June 24, and July 8 sends and currently reports 0/3 complete. Twenty-seven focused tests prove strict aggregate schema and timestamps, count ordering, human-click provenance, unknown-field/PII rejection, missing/malformed fail-closed behavior, and external-gate integration. | Supply aggregate-only Brevo evidence and verify `AR-008`; after `AR-110`, reconcile a new tagged campaign against the conservative on-site engagement event before closing `AR-104`. |
+| 2026-07-16 | Reconciled the unplanned PR #142 merge and isolated the mixed production state instead of treating `main` source as a completed rollout. | PR #142 merged 217 files with no review and no executable Actions evidence; 194 paths are outside Wave 1. The website bundle is current, dashboard/creator remain on July 7 after four clean-build failures, new analytics migrations are absent remotely, and later functions are absent. A clean clone reproduces direct-build `TS2307`; root Turbo builds both apps successfully. Thirty-six gate/build tests pass, and tracked evidence preserves the incident when GitHub is unavailable. | Land the focused Vercel build recovery, restore billing, correct explicit Ignored Build Step app arguments, verify GA filter state, then validate preview/staging before any remaining production or backend mutation. |
 
 ## Progress update procedure
 

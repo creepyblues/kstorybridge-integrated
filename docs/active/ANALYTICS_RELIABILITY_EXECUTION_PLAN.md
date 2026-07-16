@@ -76,7 +76,7 @@ Recommended definitions and exact approval language are documented in [ANALYTICS
 - The host cron daemon (`com.vix.cron`) was verified running after installation, and the wrapper is executable.
 - Manual end-to-end verification succeeded on 2026-07-13: the wrapper parsed the plan and delivered to three admins plus Slack with zero failures.
 - The reporter performs best-effort repeated TLS and redirect probes against `www.kstorybridge.com`. An unavailable check is reported as an external-gate alert but does not prevent the checklist from rendering or being delivered.
-- The reporter checks whether its workflow exists on `main` and now inventories every changed-file page from actual release PR #142. A merged path outside the fixed Wave 1 allowlist is classified `MERGED_SCOPE_DRIFT`; GitHub access remains read-only and never reruns checks.
+- The reporter checks whether its workflow exists on `main`, preserves the tracked PR #142 merged-scope incident, and inventories every changed-file page from focused recovery PR #144. Any path outside the nine-file recovery allowlist fails closed; GitHub access remains read-only and never reruns checks.
 - GitHub Actions uses its scoped `GITHUB_TOKEN`; the local reporter falls back to the existing authenticated `gh` credential only in process memory. This prevents unauthenticated annotation limits from misclassifying a billing lock as a code failure without printing or persisting the token.
 
 ## Phase 1: Clean measurement inputs
@@ -190,7 +190,7 @@ Implemented in source on 2026-07-13; website bundle released 2026-07-15, runtime
 
 ### Production release boundary
 
-[ANALYTICS_PRODUCTION_RELEASE_SEQUENCE.md](ANALYTICS_PRODUCTION_RELEASE_SEQUENCE.md) remains the runtime acceptance boundary, with the [mixed-release recovery runbook](ANALYTICS_MIXED_RELEASE_RECOVERY_2026-07-16.md) taking precedence. PR #142 merged 217 files, including 194 paths outside Wave 1, 15 migration files, and 39 Edge Function files. Only website client source is currently evidenced live; dashboard/creator builds failed, the new analytics migrations are absent remotely, and later functions are absent. The weekly audit now watches PR #142 and fails the merged scope as a recovery incident rather than continuing to report obsolete draft PR #141.
+[ANALYTICS_PRODUCTION_RELEASE_SEQUENCE.md](ANALYTICS_PRODUCTION_RELEASE_SEQUENCE.md) remains the runtime acceptance boundary, with the [mixed-release recovery runbook](ANALYTICS_MIXED_RELEASE_RECOVERY_2026-07-16.md) taking precedence. PR #142 merged 217 files, including 194 paths outside Wave 1, 15 migration files, and 39 Edge Function files. Only website client source is currently evidenced live; dashboard/creator builds failed, the new analytics migrations are absent remotely, and later functions are absent. The weekly audit preserves that incident and watches nine-file recovery PR #144, whose current Actions checks still have no executable evidence.
 
 ## Phase 2: Define and normalize the event contract
 

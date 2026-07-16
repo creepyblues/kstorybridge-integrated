@@ -210,14 +210,14 @@ test('reports a closed unmerged release PR as a release-path failure', () => {
   assert.match(result.alert, /closed without merge/)
 })
 
-test('fails the release gate when Wave 1 scope drifts or cannot be fully inventoried', () => {
+test('fails the release gate when recovery scope drifts or cannot be fully inventoried', () => {
   const drift = summarizeReleasePrGate({
     pr: { ...openPr, changed_files: 1 },
     checkRuns: [actionCheck(1, 'success')],
     files: [{ filename: 'supabase/migrations/20260715000000_unapproved.sql' }],
   })
   assert.equal(drift.status, 'SCOPE_DRIFT')
-  assert.match(drift.summary, /migration-free Wave 1 allowlist/)
+  assert.match(drift.summary, /focused recovery allowlist/)
   assert.doesNotMatch(drift.alert, /20260715000000/)
 
   const incomplete = summarizeReleasePrGate({
@@ -237,7 +237,7 @@ test('reports an already-merged scope violation as a recovery incident', () => {
   })
   assert.equal(result.status, 'MERGED_SCOPE_DRIFT')
   assert.match(result.summary, /^merged;/)
-  assert.match(result.alert, /mixed-release recovery audit/)
+  assert.match(result.alert, /repair the recovery scope/)
 })
 
 test('preserves tracked merged-scope evidence when live GitHub is unavailable', () => {
@@ -245,7 +245,7 @@ test('preserves tracked merged-scope evidence when live GitHub is unavailable', 
     '<!-- analytics-release-recovery:status=RECOVERY_REQUIRED -->'
   )
   assert.equal(tracked.status, 'MERGED_SCOPE_DRIFT')
-  assert.match(tracked.summary, /live GitHub verification is unavailable/)
+  assert.match(tracked.summary, /live verification is unavailable/)
 
   assert.equal(summarizeReleaseRecoveryEvidence(null).status, 'UNAVAILABLE')
   assert.equal(summarizeReleaseRecoveryEvidence(
@@ -253,13 +253,13 @@ test('preserves tracked merged-scope evidence when live GitHub is unavailable', 
   ).status, 'UNAVAILABLE')
 })
 
-test('accepts a complete allowlisted Wave 1 scope before classifying CI', () => {
+test('accepts a complete allowlisted recovery scope before classifying CI', () => {
   const result = summarizeReleasePrGate({
     pr: { ...openPr, changed_files: 2 },
     checkRuns: [actionCheck(1, 'success')],
     files: [
-      { filename: 'package.json' },
-      { filename: 'supabase/functions/funnel-report-cron/index.ts' },
+      { filename: 'apps/dashboard/vercel.json' },
+      { filename: 'scripts/vercel-build-contract.test.mjs' },
     ],
   })
   assert.equal(result.status, 'HEALTHY')

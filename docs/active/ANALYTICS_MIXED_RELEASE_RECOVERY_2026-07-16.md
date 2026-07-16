@@ -8,6 +8,8 @@
 
 **Actual main merge:** PR [#142](https://github.com/creepyblues/kstorybridge-integrated/pull/142), merge commit `43e49ea7`
 
+**Focused recovery:** Draft PR [#144](https://github.com/creepyblues/kstorybridge-integrated/pull/144), nine changed files
+
 ## What changed
 
 PR #142 merged the complete `v2` branch into `main` on 2026-07-15 at 23:31:31 UTC. This bypassed the documented four-wave boundary:
@@ -40,6 +42,8 @@ Dashboard and creator import the private workspace package `@kstorybridge/analyt
 Both app projects overrode Vercel's Turbo-aware build with direct `npm run build`. That bypassed `turbo.json`'s `^build` dependency, so TypeScript reached the app before the shared package existed. A clean-clone reproduction failed with the same `TS2307` error. The root filtered Turbo builds first compiled the shared package and then built both apps successfully.
 
 The recovery branch changes only the two app build commands to call the existing root `build:dashboard` and `build:creator` scripts. A regression test locks that dependency contract.
+
+Draft PR #144 is mergeable and contains exactly the nine documented recovery files. Its seven Actions checks are failed or skipped without executable test evidence while the account billing lock persists. It must remain draft and unmerged until real steps run and pass.
 
 The remote Ignored Build Step is also stale: it invokes `vercel-ignore-turbo.sh` from the repository root without an app argument, so the script detects `path0`, exits `1`, and always proceeds. This did not cause the TypeScript failure, but selective deployment will remain ineffective until each Vercel project passes its explicit app name.
 

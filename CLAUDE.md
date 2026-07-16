@@ -126,6 +126,7 @@ apps/{app}/src/
 - **AI/Search**: `chat-orchestrator/`, `comp-navigator/`, `comps-generator/`, `vector-search/`, `format-fit-engine/`, `title-intelligence/`
 - **Email/Notifications**: `send-email/`, `send-approval-email/`, `send-analytics-report/`, `slack-webhook-proxy/`, `notify-title-decision/`
 - **Content/Admin**: `generate-asset/`, `key-visuals-collector/`, `extract-pitch-test/`, `regenerate-embeddings/`, `approve-title/`, `trial-activity/`, `funnel-report-cron/`
+- **Reporting**: `funnel-report-cron/` (Mon 6am PT operating scorecard), `weekly-activity-digest/` (Sun 6am PT: named signups/returns + top pages, via `send-analytics-report`). Per-user page dwell logged to `page_view_events` by dashboard `PageViewLogger`.
 - **Shared**: `_shared/` (reusable utilities)
 
 ### Deployment

@@ -5,7 +5,7 @@
       "main": true
     }
   },
-  "buildCommand": "npm run build",
+  "buildCommand": "cd ../.. && npm run build:dashboard",
   "outputDirectory": "dist",
   "framework": "vite",
   "installCommand": "npm install",

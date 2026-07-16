@@ -16,15 +16,22 @@ const CANONICAL_HOST = 'kstorybridge.com'
 const CHECK_PATH = '/__analytics-progress-check?utm_source=analytics_progress'
 const DEFAULT_PROBE_COUNT = 5
 const DEFAULT_TIMEOUT_MS = 5_000
+const DEFAULT_GITHUB_TIMEOUT_MS = 15_000
 const GITHUB_API_URL = 'https://api.github.com'
 const GITHUB_REPOSITORY = 'creepyblues/kstorybridge-integrated'
-const RELEASE_PR_NUMBER = 141
+const RELEASE_PR_NUMBER = 142
+const RELEASE_GATE_NAME = `analytics release PR #${RELEASE_PR_NUMBER}`
+const RELEASE_PR_LABEL = `PR #${RELEASE_PR_NUMBER}`
 const GA_INTERNAL_FILTER_EVIDENCE_URL = new URL(
   '../docs/active/GA4_INTERNAL_TRAFFIC_FILTER_VERIFICATION.md',
   import.meta.url
 )
 const BREVO_CAMPAIGN_EVIDENCE_URL = new URL(
   '../docs/active/BREVO_CAMPAIGN_AGGREGATE_EVIDENCE.json',
+  import.meta.url
+)
+const RELEASE_RECOVERY_EVIDENCE_URL = new URL(
+  '../docs/active/ANALYTICS_MIXED_RELEASE_RECOVERY_2026-07-16.md',
   import.meta.url
 )
 const BILLING_LOCK_MESSAGE = 'The job was not started because your account is locked due to a billing issue.'
@@ -186,7 +193,7 @@ export async function checkWwwCanonicalGate({
 async function githubRequest(path, {
   fetchImpl = fetch,
   githubToken,
-  timeoutMs = DEFAULT_TIMEOUT_MS,
+  timeoutMs = DEFAULT_GITHUB_TIMEOUT_MS,
 } = {}) {
   try {
     const resolvedGithubToken = await resolveGithubToken(githubToken)
@@ -210,6 +217,21 @@ async function githubRequest(path, {
   } catch {
     return { status: 0, data: null }
   }
+}
+
+async function githubPaginatedArray(path, options = {}) {
+  const rows = []
+  for (let page = 1; page <= 10; page += 1) {
+    const separator = path.includes('?') ? '&' : '?'
+    const result = await githubRequest(
+      `${path}${separator}per_page=100&page=${page}`,
+      options
+    )
+    if (result.status !== 200 || !Array.isArray(result.data)) return null
+    rows.push(...result.data)
+    if (result.data.length < 100) return rows
+  }
+  return null
 }
 
 export function summarizeDefaultBranchWorkflow(status) {
@@ -370,7 +392,7 @@ export function summarizeReleasePrGate({
   if (!pr || !Array.isArray(checkRuns) || !Array.isArray(files)) {
     return {
       id: 'AR-016',
-      name: 'analytics release PR #141 CI',
+      name: RELEASE_GATE_NAME,
       status: 'UNAVAILABLE',
       summary: 'PR or GitHub Actions state could not be verified',
       alert: 'AR-016 release CI state was unavailable; verify GitHub API access',
@@ -390,7 +412,7 @@ export function summarizeReleasePrGate({
   if (Number.isInteger(changedFileCount) && changedFileCount !== files.length) {
     return {
       id: 'AR-016',
-      name: 'analytics release PR #141 CI',
+      name: RELEASE_GATE_NAME,
       status: 'UNAVAILABLE',
       summary: `PR scope could not be fully verified (${files.length}/${changedFileCount} files loaded)`,
       alert: 'AR-016 release scope inventory is incomplete; do not merge until every changed path is verified',
@@ -400,34 +422,37 @@ export function summarizeReleasePrGate({
     .map(file => file?.filename)
     .filter(path => typeof path !== 'string' || !WAVE_ONE_ALLOWED_RELEASE_PATHS.has(path))
   if (unexpectedPaths.length > 0) {
+    const merged = Boolean(pr.merged_at)
     return {
       id: 'AR-016',
-      name: 'analytics release PR #141 CI',
-      status: 'SCOPE_DRIFT',
-      summary: `${prState}; ${unexpectedPaths.length} changed path${unexpectedPaths.length === 1 ? '' : 's'} fall outside the migration-free Wave 1 allowlist`,
-      alert: `AR-016 PR #141 scope drift detected in ${unexpectedPaths.length} path${unexpectedPaths.length === 1 ? '' : 's'}; restore the documented Wave 1 boundary before CI rerun or merge`,
+      name: RELEASE_GATE_NAME,
+      status: merged ? 'MERGED_SCOPE_DRIFT' : 'SCOPE_DRIFT',
+      summary: `${merged ? 'merged' : prState}; ${unexpectedPaths.length} changed path${unexpectedPaths.length === 1 ? '' : 's'} fall outside the migration-free Wave 1 allowlist`,
+      alert: merged
+        ? `AR-016 ${RELEASE_PR_LABEL} merged with ${unexpectedPaths.length} path${unexpectedPaths.length === 1 ? '' : 's'} outside the Wave 1 boundary; pause further production mutations and execute the mixed-release recovery audit`
+        : `AR-016 ${RELEASE_PR_LABEL} scope drift detected in ${unexpectedPaths.length} path${unexpectedPaths.length === 1 ? '' : 's'}; restore the documented Wave 1 boundary before CI rerun or merge`,
     }
   }
 
   if (pr.merged_at) {
     return {
       id: 'AR-016',
-      name: 'analytics release PR #141 CI',
+      name: RELEASE_GATE_NAME,
       status: failures.length === 0 && pending.length === 0 ? 'HEALTHY' : 'MERGED_UNVERIFIED',
       summary: `PR merged; ${successes.length} passed, ${failures.length} failed, ${pending.length} pending GitHub Actions checks`,
       alert: failures.length === 0 && pending.length === 0
         ? null
-        : 'AR-016 PR #141 merged without a fully green verified GitHub Actions state',
+        : `AR-016 ${RELEASE_PR_LABEL} merged without a fully green verified GitHub Actions state`,
     }
   }
 
   if (pr.state !== 'open') {
     return {
       id: 'AR-016',
-      name: 'analytics release PR #141 CI',
+      name: RELEASE_GATE_NAME,
       status: 'CLOSED',
       summary: `PR is ${prState} and was not merged`,
-      alert: 'AR-016 analytics release PR #141 is closed without merge; choose a new production release path',
+      alert: `AR-016 analytics release ${RELEASE_PR_LABEL} is closed without merge; choose a new production release path`,
     }
   }
 
@@ -437,49 +462,78 @@ export function summarizeReleasePrGate({
   ) {
     return {
       id: 'AR-016',
-      name: 'analytics release PR #141 CI',
+      name: RELEASE_GATE_NAME,
       status: 'UNAVAILABLE',
       summary: `${prState}; failed-check annotations could not be fully verified`,
-      alert: 'AR-016 failed-check annotations are incomplete; do not classify or rerun PR #141 CI until GitHub evidence is available',
+      alert: `AR-016 failed-check annotations are incomplete; do not classify or rerun ${RELEASE_PR_LABEL} CI until GitHub evidence is available`,
     }
   }
 
   if (failures.length > 0 && billingLocked.length === failures.length) {
     return {
       id: 'AR-016',
-      name: 'analytics release PR #141 CI',
+      name: RELEASE_GATE_NAME,
       status: 'BILLING_LOCKED',
       summary: `${prState}; ${failures.length} failed checks ran zero steps because the account is billing locked`,
-      alert: `AR-016 GitHub Actions billing lock still blocks all ${failures.length} failed checks on PR #141; restore billing before rerunning`,
+      alert: `AR-016 GitHub Actions billing lock still blocks all ${failures.length} failed checks on ${RELEASE_PR_LABEL}; restore billing before rerunning`,
     }
   }
 
   if (failures.length > 0) {
     return {
       id: 'AR-016',
-      name: 'analytics release PR #141 CI',
+      name: RELEASE_GATE_NAME,
       status: 'FAILED',
       summary: `${prState}; ${failures.length} failed and ${pending.length} pending GitHub Actions checks`,
-      alert: `AR-016 PR #141 has ${failures.length} actionable or unclassified GitHub Actions failures; inspect logs before proposing a fix`,
+      alert: `AR-016 ${RELEASE_PR_LABEL} has ${failures.length} actionable or unclassified GitHub Actions failures; inspect logs before proposing a fix`,
     }
   }
 
   if (pending.length > 0 || successes.length === 0) {
     return {
       id: 'AR-016',
-      name: 'analytics release PR #141 CI',
+      name: RELEASE_GATE_NAME,
       status: 'PENDING',
       summary: `${prState}; ${successes.length} passed and ${pending.length} pending GitHub Actions checks`,
-      alert: `AR-016 PR #141 CI is pending: ${successes.length} passed and ${pending.length} still running or queued`,
+      alert: `AR-016 ${RELEASE_PR_LABEL} CI is pending: ${successes.length} passed and ${pending.length} still running or queued`,
     }
   }
 
   return {
     id: 'AR-016',
-    name: 'analytics release PR #141 CI',
+    name: RELEASE_GATE_NAME,
     status: 'HEALTHY',
     summary: `${prState}; ${successes.length} GitHub Actions checks passed with no failures or pending checks`,
     alert: null,
+  }
+}
+
+export function summarizeReleaseRecoveryEvidence(evidence) {
+  const marker = typeof evidence === 'string'
+    ? evidence.match(/<!--\s*analytics-release-recovery:status=(RECOVERY_REQUIRED|RECOVERED)\s*-->/)
+    : null
+  if (marker?.[1] === 'RECOVERY_REQUIRED') {
+    return {
+      id: 'AR-016',
+      name: RELEASE_GATE_NAME,
+      status: 'MERGED_SCOPE_DRIFT',
+      summary: 'tracked evidence records PR #142 merged outside Wave 1; live GitHub verification is unavailable',
+      alert: 'AR-016 tracked PR #142 merged-scope recovery remains required; GitHub live verification is unavailable',
+    }
+  }
+  return summarizeReleasePrGate({ pr: null, checkRuns: null })
+}
+
+async function releaseGateUnavailable({
+  readFileImpl = readFile,
+  recoveryEvidenceUrl = RELEASE_RECOVERY_EVIDENCE_URL,
+} = {}) {
+  try {
+    return summarizeReleaseRecoveryEvidence(
+      await readFileImpl(recoveryEvidenceUrl, 'utf8')
+    )
+  } catch {
+    return summarizeReleaseRecoveryEvidence(null)
   }
 }
 
@@ -489,26 +543,25 @@ export async function checkReleasePrGate(options = {}) {
     options
   )
   if (prResult.status !== 200 || !prResult.data?.head?.sha) {
-    return summarizeReleasePrGate({ pr: null, checkRuns: null })
+    return releaseGateUnavailable(options)
   }
 
-  const [checksResult, filesResult] = await Promise.all([
+  const [checksResult, files] = await Promise.all([
     githubRequest(
       `/repos/${GITHUB_REPOSITORY}/commits/${prResult.data.head.sha}/check-runs?per_page=100`,
       options
     ),
-    githubRequest(
-      `/repos/${GITHUB_REPOSITORY}/pulls/${RELEASE_PR_NUMBER}/files?per_page=100`,
+    githubPaginatedArray(
+      `/repos/${GITHUB_REPOSITORY}/pulls/${RELEASE_PR_NUMBER}/files`,
       options
     ),
   ])
   if (
     checksResult.status !== 200
     || !Array.isArray(checksResult.data?.check_runs)
-    || filesResult.status !== 200
-    || !Array.isArray(filesResult.data)
+    || !Array.isArray(files)
   ) {
-    return summarizeReleasePrGate({ pr: null, checkRuns: null })
+    return releaseGateUnavailable(options)
   }
 
   const failures = checksResult.data.check_runs.filter(check =>
@@ -530,7 +583,7 @@ export async function checkReleasePrGate(options = {}) {
   return summarizeReleasePrGate({
     pr: prResult.data,
     checkRuns: checksResult.data.check_runs,
-    files: filesResult.data,
+    files,
     annotationsById: new Map(annotationEntries),
   })
 }

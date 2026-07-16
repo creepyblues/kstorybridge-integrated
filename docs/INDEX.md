@@ -1,6 +1,6 @@
 # Documentation Index
 
-**Last Updated**: 2026-07-14
+**Last Updated**: 2026-07-16
 
 This is the master index of all active documentation for the KStoryBridge project.
 
@@ -27,6 +27,7 @@ This is the master index of all active documentation for the KStoryBridge projec
 | **[ANALYTICS_WEEKLY_INTERIM_2026-07-13.md](active/ANALYTICS_WEEKLY_INTERIM_2026-07-13.md)** | Read-only weekly acquisition, app engagement, outcome, instrumentation-readiness, and data-quality analysis |
 | **[ANALYTICS_OPERATING_ARCHITECTURE.md](active/ANALYTICS_OPERATING_ARCHITECTURE.md)** | Operating data flow, responsibilities, release gates, schedules, alerts, and runbook |
 | **[ANALYTICS_PRODUCTION_RELEASE_SEQUENCE.md](active/ANALYTICS_PRODUCTION_RELEASE_SEQUENCE.md)** | Four-wave production rollout, scope boundaries, entry gates, acceptance evidence, and rollback controls |
+| **[ANALYTICS_MIXED_RELEASE_RECOVERY_2026-07-16.md](active/ANALYTICS_MIXED_RELEASE_RECOVERY_2026-07-16.md)** | Authoritative PR #142 scope audit, mixed production state, Vercel build root cause, and recovery gates |
 | **[ANALYTICS_RELIABILITY_EXECUTION_PLAN.md](active/ANALYTICS_RELIABILITY_EXECUTION_PLAN.md)** | Living analytics reliability plan, acceptance criteria, and progress log |
 | **[ANALYTICS_OUTCOME_SOURCE_MAP.md](active/ANALYTICS_OUTCOME_SOURCE_MAP.md)** | GA-to-Supabase/Stripe reconciliation keys, timestamps, confidence, and known truth gaps |
 | **[ANALYTICS_REPORT_DELIVERY_AUDIT_DESIGN.md](active/ANALYTICS_REPORT_DELIVERY_AUDIT_DESIGN.md)** | Secure scheduled-report authentication, idempotent delivery ledger, and two-run acceptance design |

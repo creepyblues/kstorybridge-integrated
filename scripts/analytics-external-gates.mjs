@@ -19,8 +19,9 @@ const DEFAULT_TIMEOUT_MS = 5_000
 const DEFAULT_GITHUB_TIMEOUT_MS = 15_000
 const GITHUB_API_URL = 'https://api.github.com'
 const GITHUB_REPOSITORY = 'creepyblues/kstorybridge-integrated'
-const RELEASE_PR_NUMBER = 142
-const RELEASE_GATE_NAME = `analytics release PR #${RELEASE_PR_NUMBER}`
+const RELEASE_PR_NUMBER = 144
+const SOURCE_INCIDENT_PR_NUMBER = 142
+const RELEASE_GATE_NAME = `analytics recovery PR #${RELEASE_PR_NUMBER}`
 const RELEASE_PR_LABEL = `PR #${RELEASE_PR_NUMBER}`
 const GA_INTERNAL_FILTER_EVIDENCE_URL = new URL(
   '../docs/active/GA4_INTERNAL_TRAFFIC_FILTER_VERIFICATION.md',
@@ -357,30 +358,16 @@ const FAILURE_CONCLUSIONS = new Set([
   'timed_out',
 ])
 
-const WAVE_ONE_ALLOWED_RELEASE_PATHS = new Set([
-  '.github/workflows/analytics-progress.yml',
-  'apps/creator/src/components/tools/CollectButton.tsx',
-  'apps/creator/src/components/tools/IntelligenceResultsModal.tsx',
-  'apps/creator/src/hooks/useAuth.tsx',
-  'apps/creator/src/utils/analytics.ts',
-  'apps/creator/src/utils/analyticsEnvironment.test.ts',
-  'apps/dashboard/src/hooks/useAuth.test.tsx',
-  'apps/dashboard/src/hooks/useAuth.tsx',
-  'apps/dashboard/src/utils/analytics.ts',
-  'apps/dashboard/src/utils/analyticsEnvironment.test.ts',
-  'apps/website/index.html',
-  'apps/website/src/components/AnalyticsProvider.tsx',
-  'apps/website/src/utils/analytics.ts',
-  'apps/website/src/utils/analyticsEnvironment.test.ts',
+const RECOVERY_ALLOWED_PATHS = new Set([
+  'apps/creator/vercel.json',
+  'apps/dashboard/vercel.json',
+  'docs/INDEX.md',
+  'docs/active/ANALYTICS_MIXED_RELEASE_RECOVERY_2026-07-16.md',
+  'docs/active/ANALYTICS_PRODUCTION_RELEASE_SEQUENCE.md',
   'docs/active/ANALYTICS_RELIABILITY_EXECUTION_PLAN.md',
-  'package.json',
-  'scripts/analytics-progress-report.mjs',
-  'scripts/internal-traffic-admins.mjs',
-  'scripts/internal-traffic-admins.test.mjs',
-  'scripts/run-analytics-progress-cron.zsh',
-  'supabase/functions/_shared/analytics-filters.test.mjs',
-  'supabase/functions/_shared/analytics-filters.ts',
-  'supabase/functions/funnel-report-cron/index.ts',
+  'scripts/analytics-external-gates.mjs',
+  'scripts/analytics-external-gates.test.mjs',
+  'scripts/vercel-build-contract.test.mjs',
 ])
 
 export function summarizeReleasePrGate({
@@ -420,17 +407,17 @@ export function summarizeReleasePrGate({
   }
   const unexpectedPaths = files
     .map(file => file?.filename)
-    .filter(path => typeof path !== 'string' || !WAVE_ONE_ALLOWED_RELEASE_PATHS.has(path))
+    .filter(path => typeof path !== 'string' || !RECOVERY_ALLOWED_PATHS.has(path))
   if (unexpectedPaths.length > 0) {
     const merged = Boolean(pr.merged_at)
     return {
       id: 'AR-016',
       name: RELEASE_GATE_NAME,
       status: merged ? 'MERGED_SCOPE_DRIFT' : 'SCOPE_DRIFT',
-      summary: `${merged ? 'merged' : prState}; ${unexpectedPaths.length} changed path${unexpectedPaths.length === 1 ? '' : 's'} fall outside the migration-free Wave 1 allowlist`,
+      summary: `${merged ? 'merged' : prState}; ${unexpectedPaths.length} changed path${unexpectedPaths.length === 1 ? '' : 's'} fall outside the focused recovery allowlist`,
       alert: merged
-        ? `AR-016 ${RELEASE_PR_LABEL} merged with ${unexpectedPaths.length} path${unexpectedPaths.length === 1 ? '' : 's'} outside the Wave 1 boundary; pause further production mutations and execute the mixed-release recovery audit`
-        : `AR-016 ${RELEASE_PR_LABEL} scope drift detected in ${unexpectedPaths.length} path${unexpectedPaths.length === 1 ? '' : 's'}; restore the documented Wave 1 boundary before CI rerun or merge`,
+        ? `AR-016 ${RELEASE_PR_LABEL} merged with ${unexpectedPaths.length} path${unexpectedPaths.length === 1 ? '' : 's'} outside the recovery boundary; pause further production mutations and repair the recovery scope`
+        : `AR-016 ${RELEASE_PR_LABEL} scope drift detected in ${unexpectedPaths.length} path${unexpectedPaths.length === 1 ? '' : 's'}; restore the documented recovery boundary before CI rerun or merge`,
     }
   }
 
@@ -517,8 +504,8 @@ export function summarizeReleaseRecoveryEvidence(evidence) {
       id: 'AR-016',
       name: RELEASE_GATE_NAME,
       status: 'MERGED_SCOPE_DRIFT',
-      summary: 'tracked evidence records PR #142 merged outside Wave 1; live GitHub verification is unavailable',
-      alert: 'AR-016 tracked PR #142 merged-scope recovery remains required; GitHub live verification is unavailable',
+      summary: `tracked evidence records PR #${SOURCE_INCIDENT_PR_NUMBER} merged outside Wave 1; recovery PR #${RELEASE_PR_NUMBER} live verification is unavailable`,
+      alert: `AR-016 tracked PR #${SOURCE_INCIDENT_PR_NUMBER} merged-scope recovery remains required; recovery PR #${RELEASE_PR_NUMBER} live verification is unavailable`,
     }
   }
   return summarizeReleasePrGate({ pr: null, checkRuns: null })

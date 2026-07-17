@@ -16,7 +16,7 @@ const CANONICAL_HOST = 'kstorybridge.com'
 const CHECK_PATH = '/__analytics-progress-check?utm_source=analytics_progress'
 const DEFAULT_PROBE_COUNT = 5
 const DEFAULT_TIMEOUT_MS = 5_000
-const DEFAULT_GITHUB_TIMEOUT_MS = 15_000
+const DEFAULT_GITHUB_TIMEOUT_MS = 30_000
 const GITHUB_API_URL = 'https://api.github.com'
 const GITHUB_REPOSITORY = 'creepyblues/kstorybridge-integrated'
 const RELEASE_PR_NUMBER = 144
@@ -39,6 +39,34 @@ const BILLING_LOCK_MESSAGE = 'The job was not started because your account is lo
 const execFileAsync = promisify(execFile)
 
 let localGithubTokenPromise
+
+async function localGithubApiRequest(path, {
+  execFileImpl = execFileAsync,
+  timeoutMs = DEFAULT_GITHUB_TIMEOUT_MS,
+} = {}) {
+  for (const binary of ['/opt/homebrew/bin/gh', '/usr/local/bin/gh', 'gh']) {
+    try {
+      const { stdout } = await execFileImpl(binary, [
+        'api',
+        path.replace(/^\//, ''),
+        '--method',
+        'GET',
+        '--header',
+        'Accept: application/vnd.github+json',
+        '--header',
+        'X-GitHub-Api-Version: 2022-11-28',
+      ], {
+        encoding: 'utf8',
+        timeout: timeoutMs,
+        maxBuffer: 5 * 1024 * 1024,
+      })
+      return { status: 200, data: JSON.parse(stdout) }
+    } catch {
+      // Try the next known CLI location, then fall back to HTTPS.
+    }
+  }
+  return { status: 0, data: null }
+}
 
 async function resolveGithubToken(explicitToken) {
   if (explicitToken !== undefined) return explicitToken
@@ -192,31 +220,57 @@ export async function checkWwwCanonicalGate({
 }
 
 async function githubRequest(path, {
+  execFileImpl = execFileAsync,
   fetchImpl = fetch,
   githubToken,
+  preferLocalCli = githubToken === undefined
+    && !process.env.GITHUB_TOKEN
+    && !process.env.GH_TOKEN,
   timeoutMs = DEFAULT_GITHUB_TIMEOUT_MS,
 } = {}) {
+  if (preferLocalCli && fetchImpl === fetch) {
+    const cliResult = await localGithubApiRequest(path, { execFileImpl, timeoutMs })
+    if (cliResult.status === 200) return cliResult
+  }
+
+  const controller = new AbortController()
+  let timeoutHandle
+
   try {
     const resolvedGithubToken = await resolveGithubToken(githubToken)
-    const response = await fetchImpl(`${GITHUB_API_URL}${path}`, {
-      headers: {
-        Accept: 'application/vnd.github+json',
-        'User-Agent': 'kstorybridge-analytics-progress',
-        ...(resolvedGithubToken ? { Authorization: `Bearer ${resolvedGithubToken}` } : {}),
-        'X-GitHub-Api-Version': '2022-11-28',
-      },
-      signal: AbortSignal.timeout(timeoutMs),
-    })
-
-    let data = null
-    try {
-      data = await response.json()
-    } catch {
-      data = null
+    const endpoint = `${GITHUB_API_URL}${path}`
+    const headers = {
+      Accept: 'application/vnd.github+json',
+      'User-Agent': 'kstorybridge-analytics-progress',
+      ...(resolvedGithubToken ? { Authorization: `Bearer ${resolvedGithubToken}` } : {}),
+      'X-GitHub-Api-Version': '2022-11-28',
     }
-    return { status: response.status, data }
+    return await Promise.race([
+      (async () => {
+        const response = await fetchImpl(endpoint, {
+          headers,
+          signal: controller.signal,
+        })
+
+        let data = null
+        try {
+          data = await response.json()
+        } catch {
+          data = null
+        }
+        return { status: response.status, data }
+      })(),
+      new Promise((_, reject) => {
+        timeoutHandle = setTimeout(() => {
+          controller.abort()
+          reject(new Error('GitHub request deadline exceeded'))
+        }, timeoutMs)
+      }),
+    ])
   } catch {
     return { status: 0, data: null }
+  } finally {
+    clearTimeout(timeoutHandle)
   }
 }
 

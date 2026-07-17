@@ -5,6 +5,7 @@ import {
   checkAnalyticsDeliveryGate,
   checkBrevoCampaignGate,
   checkGaInternalFilterGate,
+  checkReleasePrGate,
   checkWwwCanonicalGate,
   summarizeAnalyticsDeliveryGate,
   summarizeDefaultBranchWorkflow,
@@ -251,6 +252,56 @@ test('preserves tracked merged-scope evidence when live GitHub is unavailable', 
   assert.equal(summarizeReleaseRecoveryEvidence(
     '<!-- analytics-release-recovery:status=RECOVERED -->'
   ).status, 'UNAVAILABLE')
+})
+
+test('applies the GitHub deadline to a response body that never settles', async () => {
+  const startedAt = Date.now()
+  const gate = await checkReleasePrGate({
+    fetchImpl: async () => ({
+      status: 200,
+      json: async () => new Promise(() => {}),
+    }),
+    githubToken: 'test-token',
+    timeoutMs: 10,
+    readFileImpl: async () => '<!-- analytics-release-recovery:status=RECOVERY_REQUIRED -->',
+  })
+
+  assert.equal(gate.status, 'MERGED_SCOPE_DRIFT')
+  assert.ok(Date.now() - startedAt < 500)
+})
+
+test('uses the local GitHub CLI transport to classify the recovery PR', async () => {
+  const responses = new Map([
+    ['repos/creepyblues/kstorybridge-integrated/pulls/144', {
+      state: 'open',
+      draft: true,
+      merged_at: null,
+      changed_files: 1,
+      head: { sha: 'head-sha' },
+    }],
+    ['repos/creepyblues/kstorybridge-integrated/commits/head-sha/check-runs?per_page=100', {
+      check_runs: [actionCheck(81, 'failure')],
+    }],
+    ['repos/creepyblues/kstorybridge-integrated/pulls/144/files?per_page=100&page=1', [
+      { filename: 'apps/dashboard/vercel.json' },
+    ]],
+    ['repos/creepyblues/kstorybridge-integrated/check-runs/81/annotations?per_page=100', [
+      { message: 'The job was not started because your account is locked due to a billing issue.' },
+    ]],
+  ])
+  const requested = []
+  const gate = await checkReleasePrGate({
+    preferLocalCli: true,
+    execFileImpl: async (_binary, args) => {
+      const endpoint = args[1]
+      requested.push(endpoint)
+      if (!responses.has(endpoint)) throw new Error('unexpected endpoint')
+      return { stdout: JSON.stringify(responses.get(endpoint)) }
+    },
+  })
+
+  assert.equal(gate.status, 'BILLING_LOCKED')
+  assert.deepEqual(requested, [...responses.keys()])
 })
 
 test('accepts a complete allowlisted recovery scope before classifying CI', () => {

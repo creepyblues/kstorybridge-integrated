@@ -97,6 +97,8 @@ test('activity outside the window is ignored', () => {
 test('isInternalEmail matches team patterns only', () => {
   assert.equal(isInternalEmail('someone@kstorybridge.com'), true)
   assert.equal(isInternalEmail('sleekr21@gmail.com'), true)
+  assert.equal(isInternalEmail('neo.e2e.signup@mailinator.com'), true)
+  assert.equal(isInternalEmail('test-creator@kstorybridge-test.com'), true)
   assert.equal(isInternalEmail('buyer@warnerbros.com'), false)
   assert.equal(isInternalEmail(null), false)
 })

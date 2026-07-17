@@ -19,6 +19,9 @@ export const INTERNAL_EMAIL_PATTERNS: RegExp[] = [
   /^kevin@sandstoneartists\.com$/i,
   /^sleekr21@gmail\.com$/i,
   /^creepyblues@gmail\.com$/i,
+  // QA / automated-test accounts — never real signups
+  /@mailinator\.com$/i,
+  /@kstorybridge-test\.com$/i,
 ]
 
 export function isInternalEmail(email: string | null | undefined): boolean {

@@ -1,6 +1,6 @@
 # Session-Based Cache Policy
 
-**Last Updated**: 2025-10-03
+**Last Updated**: 2026-08-20
 
 This document defines the caching strategy for KStoryBridge Dashboard application.
 
@@ -44,10 +44,17 @@ clearCache();
 ## ⚙️ Configuration
 
 ### Session Settings
-- **Session Duration**: 1 hour of inactivity (Supabase default)
+- **Auth Inactivity Timeout**: 1 hour, enforced by the dashboard client as a sliding timeout
+- **Supabase Token Lifetime**: Independent of the inactivity timeout; token refresh does not count as user activity
 - **Cache Size Limit**: 0.5MB (reduced for session-based storage)
 - **Max Titles Cached**: 30 (reduced from 100)
 - **Auto-Expiry Check**: Every 5 minutes
+
+The auth timeout and data-cache lifetime are separate controls. The auth clock is
+stored under a dashboard-specific `localStorage` key and is reset only by genuine
+browser interaction or a new sign-in. After one hour without activity, the app
+performs a local-scope Supabase sign-out, clears authenticated state and cache via
+the existing signed-out lifecycle, and asks the user to sign in again.
 
 ### Storage Strategy
 - **No Cross-Session Persistence**: Cache cleared between sessions

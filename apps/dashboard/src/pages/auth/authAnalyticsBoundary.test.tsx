@@ -3,6 +3,7 @@ import { MemoryRouter } from 'react-router-dom';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import SignIn from './SignIn';
 import SignUp from './SignUp';
+import { SESSION_EXPIRED_REASON_KEY } from '@/lib/sessionInactivity';
 
 const mocks = vi.hoisted(() => ({
   navigate: vi.fn(),
@@ -13,6 +14,7 @@ const mocks = vi.hoisted(() => ({
   checkBuyerProfileExists: vi.fn(),
   trackSignup: vi.fn(),
   trackSignin: vi.fn(),
+  notifyUserSignin: vi.fn(),
 }));
 
 vi.mock('react-router-dom', async () => {
@@ -39,7 +41,7 @@ vi.mock('@/utils/analytics', () => ({
 vi.mock('@/services/emailService', () => ({ sendWelcomeEmail: vi.fn().mockResolvedValue(undefined) }));
 vi.mock('@/utils/slack', () => ({
   notifyBuyerSignup: vi.fn().mockResolvedValue(undefined),
-  notifyUserSignin: vi.fn().mockResolvedValue(undefined),
+  notifyUserSignin: mocks.notifyUserSignin,
 }));
 vi.mock('@/contexts/TrialContext', () => ({ getTrialSessionId: () => null }));
 vi.mock('@/utils/onboarding', () => ({ completeOnboardingStep: vi.fn() }));
@@ -63,7 +65,21 @@ const submitSignin = () => {
 describe('buyer auth analytics outcome boundaries', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    sessionStorage.clear();
     mocks.checkBuyerProfileExists.mockResolvedValue(true);
+    mocks.notifyUserSignin.mockResolvedValue(undefined);
+  });
+
+  it('shows and consumes the one-time inactivity expiry message', () => {
+    sessionStorage.setItem(SESSION_EXPIRED_REASON_KEY, 'inactivity');
+
+    renderSignIn();
+
+    expect(mocks.toast).toHaveBeenCalledWith({
+      title: 'Session expired',
+      description: 'Your session expired after one hour of inactivity. Please sign in again.',
+    });
+    expect(sessionStorage.getItem(SESSION_EXPIRED_REASON_KEY)).toBeNull();
   });
 
   it('emits signup completion exactly once after signup succeeds', async () => {
@@ -106,6 +122,11 @@ describe('buyer auth analytics outcome boundaries', () => {
     expect(mocks.trackSignin).toHaveBeenNthCalledWith(1, 'viewed', 'email');
     expect(mocks.trackSignin).toHaveBeenNthCalledWith(2, 'attempted', 'email');
     expect(mocks.trackSignin).toHaveBeenNthCalledWith(3, 'completed', 'email');
+    expect(mocks.notifyUserSignin).toHaveBeenCalledOnce();
+    expect(mocks.notifyUserSignin).toHaveBeenCalledWith({
+      email: 'buyer@example.com',
+      authType: 'email',
+    });
   });
 
   it('emits no signin completion when the buyer profile does not exist', async () => {

@@ -1,6 +1,6 @@
 # KStoryBridge Authentication Documentation
 
-**Last Updated:** 2025-11-04
+**Last Updated:** 2026-08-20
 **Version:** 4.0 - Dashboard Buyer-Only Simplification (BREAKING CHANGE)
 **Working Auth Commit:** `26f6fef0eb6a6cd15177e1d218eca3db4a1028d5` (WORKING VER - 2025-10-11)
 
@@ -24,6 +24,25 @@ This is the single source of truth for all authentication-related information in
 
 **Added:** 2025-10-05
 **Purpose:** Prevent future code changes from breaking authentication
+
+### One-Hour Inactivity Policy
+
+Dashboard and creator sessions use a client-enforced, sliding one-hour inactivity
+timeout. Each app keeps an origin-specific last-activity timestamp in
+`localStorage`, synchronizes activity and expiry across its own open tabs, and
+checks the timestamp before exposing a persisted Supabase session.
+
+- Browser interaction and authenticated route changes extend the timeout.
+- Background time counts toward inactivity; returning to an expired tab signs out immediately.
+- Supabase token refreshes do not extend the timeout.
+- Expiration uses `supabase.auth.signOut({ scope: 'local' })`, preserving sessions on other devices.
+- The protected pathname and query string are restored after successful email or OAuth sign-in.
+- The sign-in page consumes a one-time expiry reason and tells the user to sign in again.
+- Manual sign-out clears inactivity state without creating an expiry message or restore route.
+
+Every successful sign-in path must also invoke its app's filtered, fire-and-forget
+Slack notification helper exactly once. Notification delivery failures must never
+block or roll back authentication.
 
 ### Profile Existence Check Philosophy
 

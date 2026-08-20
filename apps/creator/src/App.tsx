@@ -6,6 +6,7 @@ import { AdminProtectedRoute } from '@/components/AdminProtectedRoute'
 import ErrorBoundary from '@/components/ErrorBoundary'
 import AnalyticsProvider from '@/components/AnalyticsProvider'
 import { Toaster } from '@/components/ui/toaster'
+import { SessionInactivityMonitor } from '@/components/SessionInactivityMonitor'
 
 // Create QueryClient instance
 const queryClient = new QueryClient({
@@ -50,6 +51,7 @@ function App() {
         <AuthProvider>
           <Router>
             <AnalyticsProvider />
+            <SessionInactivityMonitor />
             <Toaster />
             <Routes>
             {/* Public routes */}

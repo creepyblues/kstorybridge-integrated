@@ -8,6 +8,7 @@ import { Toaster } from '@/components/ui/toaster';
 import { ProtectedRoute } from '@/components/ProtectedRoute';
 import ErrorBoundary from '@/components/ErrorBoundary';
 import { PageViewLogger } from '@/components/PageViewLogger';
+import { SessionInactivityMonitor } from '@/components/SessionInactivityMonitor';
 
 // Create a client for TanStack Query
 const queryClient = new QueryClient({
@@ -95,6 +96,7 @@ function App() {
             <SessionCacheInitializer>
               <BrowserRouter>
             <PageViewLogger />
+            <SessionInactivityMonitor />
             <Routes>
           {/* Public routes - No TierProvider (auth isolated) */}
           <Route path="/" element={<Navigate to="/signin" replace />} />

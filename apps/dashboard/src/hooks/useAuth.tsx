@@ -6,6 +6,12 @@ import {
   clearAnalyticsUser,
   isInternalTrafficMetadata,
 } from '@/utils/analytics';
+import {
+  clearSessionActivity,
+  initializeSessionActivity,
+  markSessionExpired,
+  SESSION_EXPIRED_EVENT,
+} from '@/lib/sessionInactivity';
 
 interface AuthContextType {
   user: User | null;
@@ -50,6 +56,29 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     let mounted = true;
+    let inactivitySignOutStarted = false;
+
+    const handleForcedExpiry = () => {
+      if (!mounted) return;
+      clearAnalyticsUser();
+      setSession(null);
+      setUser(null);
+      setLoading(false);
+      setError(null);
+    };
+
+    window.addEventListener(SESSION_EXPIRED_EVENT, handleForcedExpiry);
+
+    const expireInactiveSession = () => {
+      if (inactivitySignOutStarted) return;
+      inactivitySignOutStarted = true;
+      markSessionExpired();
+      void supabase.auth.signOut({ scope: 'local' }).then(({ error }) => {
+        if (error) console.error('[AuthProvider] Inactivity sign-out failed:', error);
+      }).catch((error) => {
+        console.error('[AuthProvider] Inactivity sign-out failed:', error);
+      });
+    };
 
     // Get initial session with timeout protection
     const initializeAuth = async () => {
@@ -61,6 +90,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         );
 
         if (sessionError) throw sessionError;
+
+        if (session && initializeSessionActivity() === 'expired') {
+          expireInactiveSession();
+          return;
+        }
 
         if (mounted) {
           setSession(session);
@@ -99,6 +133,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {
       if (mounted) {
+        if (session && initializeSessionActivity() === 'expired') {
+          expireInactiveSession();
+          return;
+        }
+        if (session) inactivitySignOutStarted = false;
         setSession(session);
         setUser(session?.user ?? null);
         setLoading(false);
@@ -118,6 +157,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     return () => {
       mounted = false;
+      window.removeEventListener(SESSION_EXPIRED_EVENT, handleForcedExpiry);
       subscription.unsubscribe();
     };
   }, []);
@@ -125,6 +165,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const signOut = async () => {
     try {
       clearAnalyticsUser(); // Clear GA4 user before sign out
+      clearSessionActivity();
       await supabase.auth.signOut();
       setUser(null);
       setSession(null);

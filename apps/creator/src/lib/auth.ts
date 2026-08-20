@@ -1,4 +1,5 @@
 import { supabase } from './supabase'
+import { recordSessionActivity } from './sessionInactivity'
 import { createCreatorViaEdgeFunction } from '../services/emailSignupEdgeFunction'
 import { sendWelcomeEmail } from '../services/emailService'
 import { notifyCreatorSignup } from '../utils/slack'
@@ -152,6 +153,7 @@ export async function signUpWithEmail(data: SignUpData) {
 export async function signInWithEmail(email: string, password: string) {
   const isDev = import.meta.env.DEV
   console.log('🔐 Starting email signin for:', isDev ? email : email.substring(0, 3) + '***')
+  recordSessionActivity()
 
   const { data, error } = await supabase.auth.signInWithPassword({
     email,
@@ -177,6 +179,7 @@ export async function signInWithEmail(email: string, password: string) {
  */
 export async function signInWithOAuth(flow: 'signup' | 'signin') {
   console.log('🔐 Starting OAuth flow:', flow)
+  recordSessionActivity()
 
   // Store flow type for callback handler
   sessionStorage.setItem('oauth_flow', flow)
@@ -242,7 +245,7 @@ export async function completeOAuthProfile(profileData: CreatorProfile) {
     error: userError,
   } = await supabase.auth.getUser()
 
-  if (userError || !user) {
+  if (userError || !user?.email) {
     console.error('❌ No authenticated user found:', userError)
     throw new Error('No authenticated user')
   }
@@ -317,7 +320,7 @@ export async function checkCreatorProfileExists(): Promise<boolean> {
   const { data, error } = await supabase
     .from('user_creators')
     .select('id')
-    .eq('id', user.id)
+    .eq('email', user.email.toLowerCase())
     .single()
 
   if (error && error.code !== 'PGRST116') {

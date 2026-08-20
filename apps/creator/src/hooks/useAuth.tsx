@@ -6,6 +6,12 @@ import {
   clearAnalyticsUser,
   isInternalTrafficMetadata,
 } from '@/utils/analytics'
+import {
+  clearSessionActivity,
+  initializeSessionActivity,
+  markSessionExpired,
+  SESSION_EXPIRED_EVENT,
+} from '@/lib/sessionInactivity'
 
 interface AuthContextType {
   user: User | null
@@ -28,6 +34,29 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     console.log('🎯 AuthProvider: Initializing')
+    let mounted = true
+    let inactivitySignOutStarted = false
+
+    const handleForcedExpiry = () => {
+      if (!mounted) return
+      clearAnalyticsUser()
+      setSession(null)
+      setUser(null)
+      setLoading(false)
+    }
+
+    window.addEventListener(SESSION_EXPIRED_EVENT, handleForcedExpiry)
+
+    const expireInactiveSession = () => {
+      if (inactivitySignOutStarted) return
+      inactivitySignOutStarted = true
+      markSessionExpired()
+      void supabase.auth.signOut({ scope: 'local' }).then(({ error }) => {
+        if (error) console.error('[AuthProvider] Inactivity sign-out failed:', error)
+      }).catch((error) => {
+        console.error('[AuthProvider] Inactivity sign-out failed:', error)
+      })
+    }
 
     // Distinguish between OAuth (Google) and email verification callbacks
     // OAuth: has 'code=' + oauth_flow in sessionStorage → needs PKCE exchange
@@ -53,6 +82,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     } else {
       // Get initial session for normal page loads
       supabase.auth.getSession().then(({ data: { session } }) => {
+        if (session && initializeSessionActivity() === 'expired') {
+          expireInactiveSession()
+          return
+        }
+        if (!mounted) return
         console.log('🎯 Initial session:', session ? 'Found' : 'None')
         setSession(session)
         setUser(session?.user ?? null)
@@ -76,6 +110,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {
       console.log('🎯 Auth state change:', _event, session ? 'Session exists' : 'No session')
+      if (session && initializeSessionActivity() === 'expired') {
+        expireInactiveSession()
+        return
+      }
+      if (!mounted) return
+      if (session) inactivitySignOutStarted = false
       setSession(session)
       setUser(session?.user ?? null)
       setLoading(false)
@@ -94,6 +134,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     // Cleanup on unmount
     return () => {
       console.log('🎯 AuthProvider: Cleaning up auth listener')
+      mounted = false
+      window.removeEventListener(SESSION_EXPIRED_EVENT, handleForcedExpiry)
       subscription.unsubscribe()
     }
   }, [])
@@ -101,6 +143,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const signOut = async () => {
     console.log('🔐 Signing out...')
     clearAnalyticsUser() // Clear GA4 user before sign out
+    clearSessionActivity()
     await supabase.auth.signOut()
     setUser(null)
     setSession(null)

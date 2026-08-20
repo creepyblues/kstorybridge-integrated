@@ -1,6 +1,11 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, waitFor, act } from '@testing-library/react';
 import { AuthProvider, useAuth } from './useAuth';
+import {
+  AUTH_INACTIVITY_TIMEOUT_MS,
+  LAST_ACTIVITY_KEY,
+  SESSION_EXPIRED_REASON_KEY,
+} from '@/lib/sessionInactivity';
 
 // Mock Supabase
 vi.mock('@/lib/supabase', () => ({
@@ -76,6 +81,9 @@ describe('useAuth', () => {
     vi.clearAllMocks();
     authStateChangeCallback = null;
     unsubscribeMock = vi.fn();
+    localStorage.clear();
+    sessionStorage.clear();
+    window.history.replaceState({}, '', '/buyers/home');
 
     // Default mock: onAuthStateChange captures the callback
     vi.mocked(supabase.auth.onAuthStateChange).mockImplementation((callback) => {
@@ -104,6 +112,32 @@ describe('useAuth', () => {
   });
 
   describe('AuthProvider initialization', () => {
+    it('locally signs out an already-inactive persisted session before exposing it', async () => {
+      localStorage.setItem(
+        LAST_ACTIVITY_KEY,
+        String(Date.now() - AUTH_INACTIVITY_TIMEOUT_MS)
+      );
+      vi.mocked(supabase.auth.getSession).mockResolvedValue({
+        data: { session: mockSession },
+        error: null,
+      });
+      vi.mocked(supabase.auth.signOut).mockResolvedValue({ error: null });
+
+      render(
+        <AuthProvider>
+          <TestComponent />
+        </AuthProvider>
+      );
+
+      await waitFor(() => {
+        expect(screen.getByTestId('loading').textContent).toBe('false');
+      });
+
+      expect(screen.getByTestId('user').textContent).toBe('null');
+      expect(supabase.auth.signOut).toHaveBeenCalledWith({ scope: 'local' });
+      expect(sessionStorage.getItem(SESSION_EXPIRED_REASON_KEY)).toBe('inactivity');
+    });
+
     it('should set user and session on successful initialization', async () => {
       vi.mocked(supabase.auth.getSession).mockResolvedValue({
         data: { session: mockSession },
@@ -212,6 +246,35 @@ describe('useAuth', () => {
   });
 
   describe('Auth state change listener', () => {
+    it.each(['INITIAL_SESSION', 'SIGNED_IN']) (
+      'rejects an expired session from the %s auth event before exposing it',
+      async (event) => {
+        localStorage.setItem(
+          LAST_ACTIVITY_KEY,
+          String(Date.now() - AUTH_INACTIVITY_TIMEOUT_MS)
+        );
+        vi.mocked(supabase.auth.getSession).mockImplementation(
+          () => new Promise(() => {})
+        );
+        vi.mocked(supabase.auth.signOut).mockResolvedValue({ error: null });
+
+        render(
+          <AuthProvider>
+            <TestComponent />
+          </AuthProvider>
+        );
+
+        await waitFor(() => expect(authStateChangeCallback).toBeTypeOf('function'));
+        await act(async () => {
+          authStateChangeCallback?.(event, mockSession);
+        });
+
+        expect(screen.getByTestId('user').textContent).toBe('null');
+        expect(supabase.auth.signOut).toHaveBeenCalledWith({ scope: 'local' });
+        expect(sessionStorage.getItem(SESSION_EXPIRED_REASON_KEY)).toBe('inactivity');
+      }
+    );
+
     it('should subscribe to auth state changes', async () => {
       vi.mocked(supabase.auth.getSession).mockResolvedValue({
         data: { session: null },

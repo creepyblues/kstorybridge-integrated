@@ -5,6 +5,8 @@ import SignIn from '../SignIn'
 import * as auth from '@/lib/auth'
 import * as supabaseLib from '@/lib/supabase'
 import * as analytics from '@/utils/analytics'
+import { notifyCreatorSignin } from '@/utils/slack'
+import { SESSION_EXPIRED_REASON_KEY } from '@/lib/sessionInactivity'
 
 // Mock modules
 vi.mock('@/lib/auth')
@@ -12,6 +14,7 @@ vi.mock('@/lib/supabase', () => ({
   supabase: {
     auth: {
       resend: vi.fn(),
+      signOut: vi.fn(),
     },
   },
 }))
@@ -30,6 +33,10 @@ vi.mock('@/utils/analytics', () => ({
   trackSignin: vi.fn(),
 }))
 
+vi.mock('@/utils/slack', () => ({
+  notifyCreatorSignin: vi.fn().mockResolvedValue(undefined),
+}))
+
 // Mock i18n
 vi.mock('react-i18next', () => ({
   useTranslation: () => ({
@@ -46,6 +53,7 @@ vi.mock('react-i18next', () => ({
         'auth:signIn.googleButton': 'Continue with Google',
         'auth:signIn.noAccount': "Don't have an account?",
         'auth:signIn.signUpLink': 'Sign up',
+        'auth:messages.sessionExpired': 'Your session has expired. Please sign in again.',
         'auth:oauth.redirect': 'Redirecting...',
       }
       return translations[key] || defaultValue || key
@@ -68,6 +76,26 @@ vi.mock('react-router-dom', async () => {
 describe('SignIn', () => {
   beforeEach(() => {
     vi.clearAllMocks()
+    sessionStorage.clear()
+    vi.mocked(auth.checkCreatorProfileExists).mockResolvedValue(true)
+    vi.mocked(supabaseLib.supabase.auth.signOut).mockResolvedValue({ error: null } as never)
+  })
+
+  it('shows and consumes the one-time inactivity expiry message', () => {
+    sessionStorage.setItem(SESSION_EXPIRED_REASON_KEY, 'inactivity')
+
+    render(
+      <MemoryRouter>
+        <SignIn />
+      </MemoryRouter>
+    )
+
+    expect(mockToast).toHaveBeenCalledWith({
+      title: 'Your session has expired. Please sign in again.',
+      description: 'Your session has expired. Please sign in again.',
+      duration: 5000,
+    })
+    expect(sessionStorage.getItem(SESSION_EXPIRED_REASON_KEY)).toBeNull()
   })
 
   it('should render signin form', () => {
@@ -123,7 +151,63 @@ describe('SignIn', () => {
       expect(analytics.trackSignin).toHaveBeenCalledWith('attempted', 'email')
       expect(analytics.trackSignin).toHaveBeenCalledWith('completed', 'email')
       expect(analytics.trackSignin.mock.calls.filter(([stage]) => stage === 'completed')).toHaveLength(1)
+      expect(notifyCreatorSignin).toHaveBeenCalledOnce()
+      expect(notifyCreatorSignin).toHaveBeenCalledWith({
+        email: 'test@example.com',
+        authType: 'email',
+      })
     })
+  })
+
+  it('does not alert Slack and signs out when the creator profile is missing', async () => {
+    vi.mocked(auth.signInWithEmail).mockResolvedValue()
+    vi.mocked(auth.checkCreatorProfileExists).mockResolvedValue(false)
+
+    render(
+      <BrowserRouter>
+        <SignIn />
+      </BrowserRouter>
+    )
+
+    fireEvent.change(screen.getByLabelText(/email/i), {
+      target: { value: 'buyer-only@example.com' },
+    })
+    fireEvent.change(screen.getByLabelText(/password/i), {
+      target: { value: 'password123' },
+    })
+    fireEvent.click(screen.getByRole('button', { name: /^sign in$/i }))
+
+    await waitFor(() => expect(mockNavigate).toHaveBeenCalledWith('/signup'))
+    expect(supabaseLib.supabase.auth.signOut).toHaveBeenCalledWith({ scope: 'local' })
+    expect(analytics.trackSignin).toHaveBeenCalledWith('failed', 'email', 'profile_not_found')
+    expect(analytics.trackSignin.mock.calls.some(([stage]) => stage === 'completed')).toBe(false)
+    expect(notifyCreatorSignin).not.toHaveBeenCalled()
+  })
+
+  it('fails closed when creator profile verification errors after authentication', async () => {
+    vi.mocked(auth.signInWithEmail).mockResolvedValue()
+    vi.mocked(auth.checkCreatorProfileExists).mockRejectedValue(new Error('Profile lookup failed'))
+
+    render(
+      <BrowserRouter>
+        <SignIn />
+      </BrowserRouter>
+    )
+
+    fireEvent.change(screen.getByLabelText(/email/i), {
+      target: { value: 'creator@example.com' },
+    })
+    fireEvent.change(screen.getByLabelText(/password/i), {
+      target: { value: 'password123' },
+    })
+    fireEvent.click(screen.getByRole('button', { name: /^sign in$/i }))
+
+    await waitFor(() => {
+      expect(supabaseLib.supabase.auth.signOut).toHaveBeenCalledWith({ scope: 'local' })
+    })
+    expect(analytics.trackSignin).toHaveBeenCalledWith('failed', 'email', 'auth_rejected')
+    expect(mockNavigate).not.toHaveBeenCalledWith('/home')
+    expect(notifyCreatorSignin).not.toHaveBeenCalled()
   })
 
   it('should show email verification alert when coming from signup', () => {

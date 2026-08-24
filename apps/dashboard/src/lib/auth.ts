@@ -1,4 +1,5 @@
 import { supabase } from './supabase';
+import { recordSessionActivity } from './sessionInactivity';
 import { debug } from '@/utils/debug';
 
 const DEBUG = import.meta.env.VITE_AUTH_DEBUG === 'true';
@@ -131,6 +132,7 @@ export async function signUpWithEmail(
  */
 export async function signInWithEmail(email: string, password: string) {
   log('Starting email signin', { email });
+  recordSessionActivity();
 
   const { data, error } = await supabase.auth.signInWithPassword({
     email,
@@ -152,6 +154,7 @@ export async function signInWithEmail(email: string, password: string) {
  */
 export async function signInWithOAuth(accountType: 'buyer' = 'buyer', flow: 'signin' | 'signup' = 'signin') {
   log('Starting OAuth flow', { accountType, flow });
+  recordSessionActivity();
 
   // Store context in sessionStorage (survives redirect on same domain)
   sessionStorage.setItem('oauth_account_type', accountType);

@@ -9,6 +9,7 @@ import { signInWithEmail, signInWithOAuth, checkBuyerProfileExists } from '@/lib
 import { Icon } from '@iconify/react';
 import { trackSignin } from '@/utils/analytics';
 import { notifyUserSignin } from '@/utils/slack';
+import { SESSION_EXPIRED_REASON_KEY } from '@/lib/sessionInactivity';
 
 export default function SignIn() {
   const navigate = useNavigate();
@@ -20,7 +21,14 @@ export default function SignIn() {
   // Track form viewed on mount
   useEffect(() => {
     trackSignin('viewed', 'email');
-  }, []);
+    if (sessionStorage.getItem(SESSION_EXPIRED_REASON_KEY)) {
+      sessionStorage.removeItem(SESSION_EXPIRED_REASON_KEY);
+      toast({
+        title: 'Session expired',
+        description: 'Your session expired after one hour of inactivity. Please sign in again.',
+      });
+    }
+  }, [toast]);
 
   const handleEmailSignIn = async (e: React.FormEvent) => {
     e.preventDefault();

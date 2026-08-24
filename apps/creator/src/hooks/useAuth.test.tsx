@@ -3,6 +3,11 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { AuthProvider, useAuth } from './useAuth';
 import { supabase } from '@/lib/supabase';
 import { clearAnalyticsUser, setAnalyticsUser } from '@/utils/analytics';
+import {
+  AUTH_INACTIVITY_TIMEOUT_MS,
+  LAST_ACTIVITY_KEY,
+  SESSION_EXPIRED_REASON_KEY,
+} from '@/lib/sessionInactivity';
 
 vi.mock('@/lib/supabase', () => ({
   supabase: {
@@ -48,6 +53,7 @@ describe('creator analytics identity lifecycle', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     authStateChange = undefined;
+    localStorage.clear();
     sessionStorage.clear();
     window.history.replaceState({}, '', '/home');
 
@@ -56,6 +62,51 @@ describe('creator analytics identity lifecycle', () => {
       return { data: { subscription: { unsubscribe } } } as never;
     });
   });
+
+  it('locally signs out an already-inactive persisted session before exposing it', async () => {
+    localStorage.setItem(
+      LAST_ACTIVITY_KEY,
+      String(Date.now() - AUTH_INACTIVITY_TIMEOUT_MS)
+    );
+    vi.mocked(supabase.auth.getSession).mockResolvedValue({
+      data: { session: externalCreatorSession },
+      error: null,
+    } as never);
+    vi.mocked(supabase.auth.signOut).mockResolvedValue({ error: null } as never);
+
+    render(<AuthProvider><Consumer /></AuthProvider>);
+
+    await waitFor(() => expect(screen.getByTestId('loading')).toHaveTextContent('false'));
+
+    expect(screen.getByTestId('user-id')).toHaveTextContent('none');
+    expect(supabase.auth.signOut).toHaveBeenCalledWith({ scope: 'local' });
+    expect(sessionStorage.getItem(SESSION_EXPIRED_REASON_KEY)).toBe('inactivity');
+  });
+
+  it.each(['INITIAL_SESSION', 'SIGNED_IN'])(
+    'rejects an expired session from the %s auth event before exposing it',
+    async (event) => {
+      localStorage.setItem(
+        LAST_ACTIVITY_KEY,
+        String(Date.now() - AUTH_INACTIVITY_TIMEOUT_MS)
+      );
+      vi.mocked(supabase.auth.getSession).mockImplementation(
+        () => new Promise(() => {})
+      );
+      vi.mocked(supabase.auth.signOut).mockResolvedValue({ error: null } as never);
+
+      render(<AuthProvider><Consumer /></AuthProvider>);
+      await waitFor(() => expect(authStateChange).toBeTypeOf('function'));
+
+      await act(async () => {
+        authStateChange?.(event, externalCreatorSession);
+      });
+
+      expect(screen.getByTestId('user-id')).toHaveTextContent('none');
+      expect(supabase.auth.signOut).toHaveBeenCalledWith({ scope: 'local' });
+      expect(sessionStorage.getItem(SESSION_EXPIRED_REASON_KEY)).toBe('inactivity');
+    }
+  );
 
   it('sets only the Supabase UUID after an authenticated session resolves', async () => {
     vi.mocked(supabase.auth.getSession).mockResolvedValue({

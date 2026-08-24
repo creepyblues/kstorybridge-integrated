@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useNavigate, Link, useSearchParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import { signInWithEmail, signInWithOAuth } from '@/lib/auth'
+import { checkCreatorProfileExists, signInWithEmail, signInWithOAuth } from '@/lib/auth'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -9,6 +9,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { useToast } from '@/hooks/use-toast'
 import { supabase } from '@/lib/supabase'
 import { trackSignin } from '@/utils/analytics'
+import { notifyCreatorSignin } from '@/utils/slack'
+import { SESSION_EXPIRED_REASON_KEY } from '@/lib/sessionInactivity'
 
 export default function SignIn() {
   const { t } = useTranslation(['auth', 'common'])
@@ -20,6 +22,7 @@ export default function SignIn() {
   const [showEmailVerificationAlert, setShowEmailVerificationAlert] = useState(false)
   const [unverifiedEmail, setUnverifiedEmail] = useState('')
   const [isResendingVerification, setIsResendingVerification] = useState(false)
+  const sessionExpiredMessage = t('auth:messages.sessionExpired')
 
   const [formData, setFormData] = useState({
     email: '',
@@ -29,6 +32,14 @@ export default function SignIn() {
   // Check if user is coming from signup or email verification
   useEffect(() => {
     trackSignin('viewed', 'email')
+    if (sessionStorage.getItem(SESSION_EXPIRED_REASON_KEY)) {
+      sessionStorage.removeItem(SESSION_EXPIRED_REASON_KEY)
+      toast({
+        title: sessionExpiredMessage,
+        description: sessionExpiredMessage,
+        duration: 5000,
+      })
+    }
     const fromSignup = searchParams.get('from') === 'signup'
     const emailParam = searchParams.get('email')
     const verified = searchParams.get('verified') === 'true'
@@ -48,7 +59,7 @@ export default function SignIn() {
       setFormData(prev => ({ ...prev, email: emailParam }))
       setShowEmailVerificationAlert(true)
     }
-  }, [searchParams, toast])
+  }, [searchParams, sessionExpiredMessage, toast])
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({
@@ -61,6 +72,7 @@ export default function SignIn() {
     e.preventDefault()
     setError(null)
     trackSignin('attempted', 'email')
+    let authenticated = false
 
     if (!formData.email || !formData.password) {
       setError('Please enter both email and password')
@@ -72,13 +84,34 @@ export default function SignIn() {
 
     try {
       await signInWithEmail(formData.email, formData.password)
+      authenticated = true
+      const profileExists = await checkCreatorProfileExists()
+      if (!profileExists) {
+        trackSignin('failed', 'email', 'profile_not_found')
+        await supabase.auth.signOut({ scope: 'local' })
+        setError("Your creator account doesn't exist. Please sign up first.")
+        navigate('/signup')
+        return
+      }
       console.log('✅ Signin successful, redirecting to home')
       trackSignin('completed', 'email')
+      notifyCreatorSignin({
+        email: formData.email.toLowerCase(),
+        authType: 'email',
+      }).catch(console.warn)
       const redirectUrl = sessionStorage.getItem('redirect_after_login') || '/home'
       sessionStorage.removeItem('redirect_after_login')
       navigate(redirectUrl)
     } catch (err: any) {
       console.error('❌ Signin error:', err)
+
+      if (authenticated) {
+        try {
+          await supabase.auth.signOut({ scope: 'local' })
+        } catch (signOutError) {
+          console.error('❌ Failed to clear invalid creator session:', signOutError)
+        }
+      }
 
       // Check for email not confirmed error (robust detection)
       const isEmailNotConfirmed =

@@ -24,12 +24,12 @@ export function ProtectedRoute({ children }: ProtectedRouteProps) {
       sessionStorage.setItem('redirect_after_login', intendedPath);
     }
 
-    // Title pages: redirect to public page on website instead of signin
-    const titleMatch = location.pathname.match(/^\/buyers\/titles\/([0-9a-f-]+)$/);
+    // Title pages: send anonymous visitors to the in-app public preview
+    // (/titles/:slug) instead of a bare sign-in form. redirect_after_login is
+    // already stashed above, so the preview's CTAs bring them back here.
+    const titleMatch = location.pathname.match(/^\/buyers\/titles\/([^/]+)\/?$/);
     if (titleMatch) {
-      const websiteUrl = import.meta.env.VITE_WEBSITE_URL || 'https://kstorybridge.com';
-      window.location.href = `${websiteUrl}/title/${titleMatch[1]}`;
-      return null;
+      return <Navigate to={`/titles/${titleMatch[1]}`} replace />;
     }
 
     return <Navigate to="/signin" replace />;

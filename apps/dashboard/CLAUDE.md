@@ -416,8 +416,15 @@ npx supabase secrets set DASHBOARD_URL=http://localhost:8081
 3. Welcome email sent (non-blocking)
 4. If Supabase returns a session (email confirmation off): auto-login →
    `redirect_after_login` or `/buyers/home?first_run=1` (first-run nudge banner)
-5. If email confirmation required: verification link lands on `/auth/callback`
-   (via `emailRedirectTo`), which restores `redirect_after_login`
+5. Email confirmation is ON in the hosted project (`mailer_autoconfirm=false`), so
+   step 4 does not happen today: the user sees "Check your email" → `/signin`.
+   The verification link opens in a NEW tab (empty sessionStorage), so signup also
+   stores the destination in auth user metadata (`redirect_after_login`).
+   `/auth/callback` resolves it via `@/lib/postAuthRedirect` (session first, then
+   metadata, only `/buyers/*` paths) and clears the metadata copy after use.
+   Supabase redirect allowlist must include the app origin — production and
+   localhost:8081/8082 are allowlisted; `dashboard-staging` is NOT (links fall back
+   to the Site URL, creator.kstorybridge.com)
 6. Trial users see a "Pick up where you left off" card on `/buyers/home`
    that re-runs their last trial search (comps/mandate/chat)
 
@@ -427,6 +434,10 @@ npx supabase secrets set DASHBOARD_URL=http://localhost:8081
    `/titles/:slug` (never a bare `/signin`)
 2. Public preview shows locked sections + "Unlock — Free" CTAs → `/signup` (or `/signin`)
 3. After signup/signin, `redirect_after_login` sends the user back to `/buyers/titles/:slug`
+   (email signups: via user metadata, since the verification link opens a new tab)
+   E2E coverage: `e2e/newsletter-title-journey.e2e.ts` (creates + deletes real
+   `@kstorybridge-test.com` accounts via `e2e/helpers/testUsers.ts`; needs
+   `SUPABASE_SERVICE_ROLE_KEY` in repo-root `.env.local`; run with `TEST_ENV=local`)
 4. Marketing-site links on the public page use `@/lib/websiteUrl` (`WEBSITE_URL`), which
    normalizes `VITE_WEBSITE_URL` (adds `https://` if missing) so a bad env value can't
    produce relative links like `/titles/kstorybridge.com`

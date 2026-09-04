@@ -12,6 +12,7 @@ import { sendWelcomeEmail } from '@/services/emailService';
 import { notifyBuyerSignup } from '@/utils/slack';
 import { getTrialSessionId } from '@/contexts/TrialContext';
 import { trackSignup } from '@/utils/analytics';
+import { consumePostAuthRedirect } from '@/lib/postAuthRedirect';
 
 // 🚨 AUTH ISOLATION BOUNDARY
 // This page handles profile completion only - no business logic
@@ -131,9 +132,7 @@ export default function CompleteProfile() {
         description: 'Welcome to KStoryBridge',
       });
 
-      const redirectUrl = sessionStorage.getItem('redirect_after_login') || '/buyers/home';
-      sessionStorage.removeItem('redirect_after_login');
-      navigate(redirectUrl);
+      navigate(consumePostAuthRedirect(undefined));
     } catch (error: any) {
       // Track signup error
       trackSignup('failed', 'google', { failure_reason: 'profile_creation_failed' });

@@ -12,6 +12,7 @@ import { sendWelcomeEmail } from '@/services/emailService';
 import { notifyBuyerSignup } from '@/utils/slack';
 import { getTrialSessionId } from '@/contexts/TrialContext';
 import { completeOnboardingStep } from '@/utils/onboarding';
+import { REDIRECT_KEY, isSafeRedirectPath, consumePostAuthRedirect } from '@/lib/postAuthRedirect';
 
 export default function SignUp() {
   const navigate = useNavigate();
@@ -100,6 +101,9 @@ export default function SignUp() {
     try {
       // Get trial session ID if user came from trial
       const trialSessionId = getTrialSessionId();
+      // Where the user was headed (e.g. a shared title page) — only internal paths
+      const stashed = sessionStorage.getItem(REDIRECT_KEY);
+      const pendingRedirect = isSafeRedirectPath(stashed) ? stashed : null;
 
       const { session } = await signUpWithEmail(formData.email, formData.password, {
         full_name: formData.full_name,
@@ -108,6 +112,7 @@ export default function SignUp() {
         linkedin_url: formData.linkedin_url || undefined,
         trial_session_id: trialSessionId || undefined,
         newsletter_consent: formData.newsletter_consent,
+        redirect_after_login: pendingRedirect ?? undefined,
       });
 
       // Track successful signup
@@ -139,8 +144,7 @@ export default function SignUp() {
 
       if (session) {
         // Email confirmation disabled: user is already signed in, land them activated
-        const redirectUrl = sessionStorage.getItem('redirect_after_login');
-        sessionStorage.removeItem('redirect_after_login');
+        const redirectUrl = consumePostAuthRedirect(pendingRedirect, '/buyers/home?first_run=1');
 
         toast({
           title: 'Welcome to KStoryBridge!',
@@ -148,7 +152,7 @@ export default function SignUp() {
           variant: 'success',
         });
 
-        navigate(redirectUrl || '/buyers/home?first_run=1');
+        navigate(redirectUrl);
       } else {
         // Email confirmation required: verification link lands on /auth/callback,
         // which restores redirect_after_login

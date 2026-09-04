@@ -57,6 +57,8 @@ export async function signUpWithEmail(
     linkedin_url?: string;
     trial_session_id?: string; // From trial flow
     newsletter_consent?: boolean;
+    /** Internal path to land on after auth (survives the email-verification tab switch) */
+    redirect_after_login?: string;
   }
 ) {
   log('Starting email signup for buyer', { email });
@@ -72,6 +74,9 @@ export async function signUpWithEmail(
         account_type: 'buyer', // ✅ Set during signup
         full_name: metadata.full_name,
         newsletter_consent: metadata.newsletter_consent ?? false,
+        // The verification link opens in a new tab where sessionStorage is empty,
+        // so the intended destination rides along in user metadata too.
+        ...(metadata.redirect_after_login ? { redirect_after_login: metadata.redirect_after_login } : {}),
       },
     },
   });

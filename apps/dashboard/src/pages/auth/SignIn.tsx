@@ -10,6 +10,7 @@ import { Icon } from '@iconify/react';
 import { trackSignin } from '@/utils/analytics';
 import { notifyUserSignin } from '@/utils/slack';
 import { SESSION_EXPIRED_REASON_KEY } from '@/lib/sessionInactivity';
+import { consumePostAuthRedirect } from '@/lib/postAuthRedirect';
 
 export default function SignIn() {
   const navigate = useNavigate();
@@ -78,9 +79,7 @@ export default function SignIn() {
         variant: 'success',
       });
 
-      const redirectUrl = sessionStorage.getItem('redirect_after_login') || '/buyers/home';
-      sessionStorage.removeItem('redirect_after_login');
-      navigate(redirectUrl);
+      navigate(consumePostAuthRedirect(undefined));
     } catch (error: any) {
       trackSignin('failed', 'email', { failure_reason: 'auth_rejected' });
 

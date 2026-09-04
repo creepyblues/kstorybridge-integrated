@@ -6,6 +6,7 @@ import { checkBuyerProfileExists } from '@/lib/auth';
 import { Icon } from '@iconify/react';
 import { notifyUserSignin } from '@/utils/slack';
 import { trackSignin, trackSignup } from '@/utils/analytics';
+import { consumePostAuthRedirect } from '@/lib/postAuthRedirect';
 
 // 🚨 AUTH ISOLATION BOUNDARY
 // This page handles OAuth callback only - no business logic
@@ -110,8 +111,14 @@ export default function AuthCallback() {
           description: 'Successfully signed in',
           variant: 'success',
         });
-        const redirectUrl = sessionStorage.getItem('redirect_after_login') || '/buyers/home';
-        sessionStorage.removeItem('redirect_after_login');
+        // Email-verification links open in a new tab (empty sessionStorage), so fall
+        // back to the destination stored in user metadata at signup.
+        const metaRedirect = user.user_metadata?.redirect_after_login;
+        const redirectUrl = consumePostAuthRedirect(metaRedirect);
+        if (metaRedirect) {
+          // One-shot: don't send them back to that title on every future sign-in
+          supabase.auth.updateUser({ data: { redirect_after_login: null } }).catch(console.warn);
+        }
         navigate(redirectUrl);
       } else {
         // Signup flow - store user data in sessionStorage for CompleteProfile page

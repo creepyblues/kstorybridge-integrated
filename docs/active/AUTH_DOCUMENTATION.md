@@ -682,12 +682,13 @@ if (finalFlow === 'signin') {
   const profileExists = await checkProfileExists(user.id, finalAccountType);
 
   if (!profileExists) {
-    toast({
-      title: "Account Not Found",
-      description: "Your account doesn't exist. Please sign up first.",
-      variant: "destructive"
-    });
-    navigate(`/signup/${finalAccountType}`);
+    // Dashboard (buyer) behaviour since 2026-09-04: the provider already
+    // authenticated this user, so continue into profile completion instead of
+    // erroring — same path as the signup flow (stash oauth_user_id/email,
+    // navigate('/signup/complete')). Bouncing to /signup for a second OAuth
+    // click read as a site bug to newsletter visitors.
+    toast({ title: "Almost there", description: "Tell us a bit about yourself to finish creating your account." });
+    continueAsSignup(user);
     return;
   }
 

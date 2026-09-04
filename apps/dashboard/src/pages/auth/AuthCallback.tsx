@@ -41,6 +41,19 @@ export default function AuthCallback() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  /**
+   * Hand an authenticated-but-profileless Google user to CompleteProfile.
+   * Used by the signup flow and by sign-in when no buyer profile exists yet.
+   * redirect_after_login is intentionally left in place for CompleteProfile.
+   */
+  function continueAsSignup(user: { id: string; email?: string | null }) {
+    sessionStorage.setItem('oauth_user_id', user.id);
+    sessionStorage.setItem('oauth_user_email', user.email || '');
+    clearOAuthStorage();
+    // Navigate without URL parameters
+    navigate('/signup/complete');
+  }
+
   async function handleOAuthCallback() {
     const accountType = sessionStorage.getItem('oauth_account_type');
     const flow = sessionStorage.getItem('oauth_flow');
@@ -84,15 +97,14 @@ export default function AuthCallback() {
         const profileExists = await checkBuyerProfileExists(user.id);
 
         if (!profileExists) {
-          trackSignin('failed', 'google', { failure_reason: 'profile_not_found' });
-          clearOAuthStorage();
+          // Google already authenticated them; bouncing to /signup for a second
+          // Google click looks like a bug. Continue straight into profile completion.
+          trackSignup('attempted', 'google');
           toast({
-            title: 'Account Not Found',
-            description: 'Your account doesn\'t exist. Please sign up first.',
-            variant: 'destructive',
+            title: 'Almost there',
+            description: 'Tell us a bit about yourself to finish creating your account.',
           });
-          // Immediate navigation - no setTimeout
-          navigate('/signup');
+          continueAsSignup(user);
           return;
         }
 
@@ -121,15 +133,7 @@ export default function AuthCallback() {
         }
         navigate(redirectUrl);
       } else {
-        // Signup flow - store user data in sessionStorage for CompleteProfile page
-        sessionStorage.setItem('oauth_user_id', user.id);
-        sessionStorage.setItem('oauth_user_email', user.email || '');
-
-        // Clear OAuth flow storage
-        clearOAuthStorage();
-
-        // Navigate without URL parameters
-        navigate('/signup/complete');
+        continueAsSignup(user);
       }
     } catch (error: any) {
       console.error('❌ OAuth callback error', error);

@@ -422,9 +422,10 @@ npx supabase secrets set DASHBOARD_URL=http://localhost:8081
    stores the destination in auth user metadata (`redirect_after_login`).
    `/auth/callback` resolves it via `@/lib/postAuthRedirect` (session first, then
    metadata, only `/buyers/*` paths) and clears the metadata copy after use.
-   Supabase redirect allowlist must include the app origin — production and
-   localhost:8081/8082 are allowlisted; `dashboard-staging` is NOT (links fall back
-   to the Site URL, creator.kstorybridge.com)
+   Supabase redirect allowlist (Auth → URL Configuration) must include the app
+   origin — production, dashboard-staging (added 2026-09-04) and localhost:8081/8082
+   are allowlisted. A non-allowlisted origin falls back to the Site URL
+   (creator.kstorybridge.com)
 6. Trial users see a "Pick up where you left off" card on `/buyers/home`
    that re-runs their last trial search (comps/mandate/chat)
 

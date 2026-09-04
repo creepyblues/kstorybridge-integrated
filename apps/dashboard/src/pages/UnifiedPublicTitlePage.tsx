@@ -16,7 +16,7 @@ import { Button } from '@/components/ui/button';
 import { UnifiedTitleDetail, type PublicTitle } from '@/components/unified-title-detail';
 import { type Title } from '@/services/titlesService';
 
-const WEBSITE_URL = import.meta.env.VITE_WEBSITE_URL || 'https://kstorybridge.com';
+import { WEBSITE_URL } from '@/lib/websiteUrl';
 
 // GA4 event helper
 function trackPublicTitleEvent(eventName: string, params: Record<string, string>) {

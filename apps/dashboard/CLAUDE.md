@@ -421,6 +421,16 @@ npx supabase secrets set DASHBOARD_URL=http://localhost:8081
 6. Trial users see a "Pick up where you left off" card on `/buyers/home`
    that re-runs their last trial search (comps/mandate/chat)
 
+### Anonymous Visitor → Title Page (shared links)
+1. Anonymous visit to `/buyers/titles/:slug` → `ProtectedRoute` stashes the path in
+   `sessionStorage.redirect_after_login` and redirects to the in-app public preview
+   `/titles/:slug` (never a bare `/signin`)
+2. Public preview shows locked sections + "Unlock — Free" CTAs → `/signup` (or `/signin`)
+3. After signup/signin, `redirect_after_login` sends the user back to `/buyers/titles/:slug`
+4. Marketing-site links on the public page use `@/lib/websiteUrl` (`WEBSITE_URL`), which
+   normalizes `VITE_WEBSITE_URL` (adds `https://` if missing) so a bad env value can't
+   produce relative links like `/titles/kstorybridge.com`
+
 ### Express Interest (buyer → team)
 1. Logged-in buyer clicks "Express Interest" on a title detail page
    (`components/unified-title-detail/ExpressInterestButton.tsx`)

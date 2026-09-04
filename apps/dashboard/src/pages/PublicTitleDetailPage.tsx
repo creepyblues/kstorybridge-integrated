@@ -20,7 +20,7 @@ import { CompsAnalysisCard } from '@/components/title-detail/CompsAnalysisCard';
 import { FormatFitDetailPanel } from '@/components/format-fit/FormatFitDetailPanel';
 import { type SuggestedComp } from '@/services/compsGeneratorService';
 
-const WEBSITE_URL = import.meta.env.VITE_WEBSITE_URL || 'https://kstorybridge.com';
+import { WEBSITE_URL } from '@/lib/websiteUrl';
 
 type PublicTitle = {
   title_id: string;

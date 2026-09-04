@@ -57,18 +57,18 @@ describe('buyer OAuth callback analytics boundary', () => {
     expect(mocks.navigate).toHaveBeenCalledWith('/buyers/home');
   });
 
-  it('emits no signin completion when the buyer profile is absent', async () => {
+  it('continues a profile-less Google sign-in into profile completion instead of erroring', async () => {
     mocks.checkBuyerProfileExists.mockResolvedValue(false);
 
     await renderAndSettle();
 
-    expect(mocks.trackSignin).toHaveBeenCalledWith(
-      'failed',
-      'google',
-      { failure_reason: 'profile_not_found' }
-    );
+    // Not a failed sign-in: the provider authenticated them, so this becomes a signup
     expect(mocks.trackSignin.mock.calls.some(([stage]) => stage === 'completed')).toBe(false);
-    expect(mocks.navigate).toHaveBeenCalledWith('/signup');
+    expect(mocks.trackSignin.mock.calls.some(([stage]) => stage === 'failed')).toBe(false);
+    expect(mocks.trackSignup).toHaveBeenCalledWith('attempted', 'google');
+    expect(mocks.navigate).not.toHaveBeenCalledWith('/signup');
+    expect(mocks.navigate).toHaveBeenCalledWith('/signup/complete');
+    expect(sessionStorage.getItem('oauth_user_id')).toBeTruthy();
   });
 
   it('defers signup completion to the profile-persistence page', async () => {

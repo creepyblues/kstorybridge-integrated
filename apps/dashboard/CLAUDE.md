@@ -455,9 +455,12 @@ npx supabase secrets set DASHBOARD_URL=http://localhost:8081
 ### OAuth Signup
 1. Click "Sign in with Google" → OAuth consent
 2. Callback to `/auth/callback` (context stored in sessionStorage)
-3. If new user → `/signup/complete` → Fill profile
+3. If new user → `/signup/complete` → Fill profile. This also applies when the user
+   started from **Sign In**: a Google-authenticated user with no `user_buyers` row is
+   continued into `/signup/complete` ("Almost there" toast), never bounced to `/signup`
+   with "Account Not Found" — Google already said yes, a second click looks like a bug
 4. Edge function creates profile → Welcome email sent (non-blocking)
-5. Redirect to `/buyers/home`
+5. Redirect to `redirect_after_login` (e.g. a shared title) or `/buyers/home`
 
 ### Title Discovery
 1. Browse at `/buyers/titles` → Search/filter

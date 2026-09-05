@@ -126,8 +126,11 @@ gated like any basic buyer.
   - Dashboard: `/auth/callback` → `lookupBuyerProfile` = `missing` → `createBuyerProfileFromPending()`
     → `created|exists` continue to `consumePostAuthRedirect(...)`; `conflict` → error page;
     `no_data` → `/signup/complete` (Google-first user). `SignIn` does the same before onboarding.
-  - Creator: `/auth/callback` email-verification branch → `lookupCreatorProfile` = `missing` →
-    `createCreatorProfileFromPending()` (welcome email on `created`) → `/signin?verified=true`.
+  - Creator: `/auth/callback` email-verification branch establishes the session itself from the
+    hash tokens (`setSession`; the client's `flowType: 'pkce'` means supabase-js ignores implicit
+    hash tokens) → `lookupCreatorProfile` = `missing` → `createCreatorProfileFromPending()`
+    (welcome email on `created`) → lands in the app via `consumePostAuthRedirect()`.
+    `no_data` → `/auth/complete-profile`; failure → local sign-out → `/signin?verified=true`.
     OAuth branch and `SignIn` try pending first, then `/auth/complete-profile`.
 - OAuth CompleteProfile in both apps calls the same functions with the form fields in the body
   (session token attached automatically by `supabase.functions.invoke`; creator sends

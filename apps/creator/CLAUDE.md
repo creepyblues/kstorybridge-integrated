@@ -87,6 +87,17 @@ React-based creator dashboard built from scratch to eliminate OAuth authenticati
   "Check your email" toast + `/signin?from=signup` as a real signup and never calls `create-creator-profile`
 - Post-auth navigation goes through `src/lib/postAuthRedirect.ts` (`consumePostAuthRedirect()`,
   same-origin non-auth paths only, default `/home`)
+- **Gate 2 (2026-09-05)**: email signup no longer calls `create-creator-profile` from the browser
+  (no JWT yet). Fields go into `options.data.pending_creator_profile`; the `/auth/callback`
+  email-verification branch creates the profile via `createCreatorProfileFromPending()` (edge
+  function reads the pending namespace, identity from the JWT).
+  **Verification landing detail**: this client uses `flowType: 'pkce'`, and supabase-js does NOT
+  consume the implicit `#access_token=…` tokens that verification links carry — the callback
+  reads them from the hash and calls `supabase.auth.setSession(...)` itself. After the profile is
+  created the user lands in the app (`consumePostAuthRedirect()` → `/home`), no longer on
+  `/signin?verified=true`; `no_data` → `/auth/complete-profile`; failure → local sign-out + `/signin`. `callCreatorProfileFunction`
+  sends `Authorization: Bearer <session.access_token>`; the anon-key path is gone.
+  `EMAIL_CONFLICT` → `EmailConflictError`, user is signed out locally and never enters the app.
 - Single auth listener: `src/hooks/useAuth.tsx` (55 lines)
 - Supabase client: `src/lib/supabase.ts` (17 lines)
 - account_type='creator' set **during** signup (not after)

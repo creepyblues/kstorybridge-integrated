@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
-import { signInWithEmail, signInWithOAuth, lookupBuyerProfile } from '@/lib/auth';
+import { signInWithEmail, signInWithOAuth, lookupBuyerProfile, createBuyerProfileFromPending, EmailConflictError } from '@/lib/auth';
 import { Icon } from '@iconify/react';
 import { trackSignin, trackSignup } from '@/utils/analytics';
 import { notifyUserSignin } from '@/utils/slack';
@@ -59,6 +59,18 @@ export default function SignIn() {
       }
 
       if (profile === 'missing') {
+        // Pending signup data in metadata (e.g. verified elsewhere, profile not yet created)?
+        const pending = await createBuyerProfileFromPending();
+        if (pending.status === 'conflict') {
+          trackSignin('failed', 'email', { failure_reason: 'profile_creation_failed' });
+          toast({ title: 'Account conflict', description: new EmailConflictError().message, variant: 'destructive' });
+          return;
+        }
+        if (pending.status === 'created' || pending.status === 'exists') {
+          trackSignup('completed', 'email');
+          navigate(consumePostAuthRedirect(user.user_metadata?.redirect_after_login));
+          return;
+        }
         // Authenticated (e.g. creator-only or Google-first account) but no buyer
         // profile yet: onboard them here instead of bouncing to /signup.
         trackSignup('attempted', 'email');

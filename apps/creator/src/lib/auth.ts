@@ -1,6 +1,6 @@
 import { supabase } from './supabase'
 import { recordSessionActivity } from './sessionInactivity'
-import { createCreatorViaEdgeFunction } from '../services/emailSignupEdgeFunction'
+import { callCreatorProfileFunction } from '../services/emailSignupEdgeFunction'
 import { sendWelcomeEmail } from '../services/emailService'
 import { notifyCreatorSignup } from '../utils/slack'
 
@@ -90,6 +90,17 @@ export async function signUpWithEmail(data: SignUpData) {
         account_type: 'creator', // ✅ Set during signup, not after
         full_name: sanitizedData.full_name,
         newsletter_consent: data.newsletter_consent ?? false,
+        // Gate 2 handoff: confirmation is ON so there is no session here; the profile
+        // is created by create-creator-profile at the first authenticated moment
+        // (verification landing) from this namespace. Revalidated server-side.
+        [PENDING_CREATOR_PROFILE_KEY]: {
+          full_name: sanitizedData.full_name,
+          pen_name: sanitizedData.pen_name,
+          ip_owner_role: sanitizedData.ip_owner_role,
+          ip_owner_company: sanitizedData.ip_owner_company || null,
+          website_url: sanitizedData.website_url || null,
+          newsletter_consent: data.newsletter_consent ?? false,
+        },
       },
     },
   })
@@ -117,41 +128,27 @@ export async function signUpWithEmail(data: SignUpData) {
 
   console.log('✅ Auth signup successful, user ID:', isDev ? authData.user.id : authData.user.id.substring(0, 8) + '...')
 
-  // Step 2: Create creator profile via edge function
-  // Edge function uses service role key to bypass RLS timing issues
-  try {
-    const result = await createCreatorViaEdgeFunction({
-      id: authData.user.id,
-      email: normalizedEmail,
-      full_name: sanitizedData.full_name,
-      pen_name: sanitizedData.pen_name,
-      ip_owner_role: sanitizedData.ip_owner_role,
-      ip_owner_company: sanitizedData.ip_owner_company || null,
-      website_url: sanitizedData.website_url || null,
-      newsletter_consent: data.newsletter_consent ?? false,
-    })
+  // Slack notification (fire-and-forget) — signup intent, profile follows at verification
+  notifyCreatorSignup({
+    fullName: sanitizedData.full_name,
+    email: normalizedEmail,
+    penName: sanitizedData.pen_name,
+    ipOwnerRole: sanitizedData.ip_owner_role,
+    company: sanitizedData.ip_owner_company,
+    authType: 'email',
+  }).catch(() => {}) // Silently ignore errors
 
-    if (!result.success) {
-      throw new Error(result.error || 'Profile creation failed')
+  if (authData.session) {
+    // Confirmation off (not the hosted default): authenticated now, create immediately.
+    const result = await createCreatorProfileFromPending()
+    if (result.status !== 'created' && result.status !== 'exists') {
+      console.error('❌ Profile creation failed:', result)
+      throw new Error(`Profile creation failed: ${(result as { error?: string }).error || result.status}`)
     }
-
-    console.log('✅ Creator profile created successfully via edge function')
-
-    // Send Slack notification (fire-and-forget)
-    notifyCreatorSignup({
-      fullName: sanitizedData.full_name,
-      email: normalizedEmail,
-      penName: sanitizedData.pen_name,
-      ipOwnerRole: sanitizedData.ip_owner_role,
-      company: sanitizedData.ip_owner_company,
-      authType: 'email',
-    }).catch(() => {}) // Silently ignore errors
-  } catch (profileError) {
-    console.error('❌ Profile creation failed:', profileError)
-    console.warn('⚠️ Orphaned auth user may exist. User should retry signup with same email.')
-    // Note: Cannot delete auth user from client (requires service role key)
-    // Supabase will return "User already exists" on retry, which is handled gracefully
-    throw profileError
+  } else {
+    // Confirmation on: no JWT yet. AuthCallback creates the profile from
+    // pending_creator_profile when the verification link lands.
+    console.log('ℹ️ Creator profile deferred to email verification')
   }
 
   // Note: Welcome email will be sent after email verification (in AuthCallback)
@@ -284,29 +281,22 @@ export async function completeOAuthProfile(profileData: CreatorProfile) {
   const isDev = import.meta.env.DEV
   console.log('👤 User found:', isDev ? user.id : user.id.substring(0, 8) + '...')
 
-  // Step 1: Create creator profile via edge function
-  // Edge function uses service role key to bypass any RLS issues
-  try {
-    const result = await createCreatorViaEdgeFunction({
-      id: user.id,
-      email: user.email!,
-      full_name: sanitizedData.full_name,
-      pen_name: sanitizedData.pen_name,
-      ip_owner_role: sanitizedData.ip_owner_role,
-      ip_owner_company: sanitizedData.ip_owner_company || null,
-      website_url: sanitizedData.website_url || null,
-      newsletter_consent: profileData.newsletter_consent ?? false,
-    })
-
-    if (!result.success) {
-      throw new Error(result.error || 'Profile creation failed')
-    }
-
-    console.log('✅ Creator profile created via edge function')
-  } catch (profileError) {
-    console.error('❌ Profile creation failed:', profileError)
-    throw profileError
+  // Step 1: Create creator profile via the JWT-bound edge function (identity from
+  // the session token; only form fields in the body).
+  const result = await createCreatorProfileFromPending({
+    full_name: sanitizedData.full_name,
+    pen_name: sanitizedData.pen_name,
+    ip_owner_role: sanitizedData.ip_owner_role,
+    ip_owner_company: sanitizedData.ip_owner_company || null,
+    website_url: sanitizedData.website_url || null,
+    newsletter_consent: profileData.newsletter_consent ?? false,
+  })
+  if (result.status === 'conflict') throw new EmailConflictError()
+  if (result.status !== 'created' && result.status !== 'exists') {
+    console.error('❌ Profile creation failed:', result)
+    throw new Error(`Profile creation failed: ${(result as { error?: string }).error || result.status}`)
   }
+  console.log('✅ Creator profile created via edge function')
 
   // Step 2: Set account_type in user metadata
   // This is a SINGLE updateUser call, no race conditions
@@ -334,6 +324,40 @@ export async function completeOAuthProfile(profileData: CreatorProfile) {
 // ============================================================================
 // HELPER FUNCTIONS
 // ============================================================================
+
+export const PENDING_CREATOR_PROFILE_KEY = 'pending_creator_profile'
+
+/** Another auth user already owns this email in user_creators. The UI must not enter the app. */
+export class EmailConflictError extends Error {
+  code = 'EMAIL_CONFLICT' as const
+  constructor() {
+    super("This email is already attached to a different KStoryBridge account. Sign in with that account's method, or contact support.")
+    this.name = 'EmailConflictError'
+  }
+}
+
+export type ProfileCreateOutcome =
+  | { status: 'created' | 'exists'; profile?: Record<string, unknown> }
+  | { status: 'conflict' }
+  | { status: 'no_data' }
+  | { status: 'error'; error?: string }
+
+/**
+ * Create the CURRENT user's creator profile via the JWT-bound edge function.
+ * `fields` empty ⇒ the function reads user_metadata.pending_creator_profile.
+ * Never throws; callers branch on `status`.
+ */
+export async function createCreatorProfileFromPending(fields: Record<string, unknown> = {}): Promise<ProfileCreateOutcome> {
+  const { data: { session } } = await supabase.auth.getSession()
+  if (!session?.access_token) return { status: 'error', error: 'No session' }
+  const result = await callCreatorProfileFunction(fields, session.access_token)
+  if (result.success) {
+    return { status: result.status === 'exists' ? 'exists' : 'created', profile: result.profile as Record<string, unknown> | undefined }
+  }
+  if (result.code === 'EMAIL_CONFLICT') return { status: 'conflict' }
+  if (result.code === 'NO_PROFILE_DATA') return { status: 'no_data' }
+  return { status: 'error', error: result.error }
+}
 
 /** Result of a profile-existence lookup. Never collapse 'error' into 'missing'. */
 export type ProfileLookup = 'exists' | 'missing' | 'error'

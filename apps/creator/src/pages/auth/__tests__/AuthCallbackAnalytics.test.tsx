@@ -7,6 +7,7 @@ const mocks = vi.hoisted(() => ({
   navigate: vi.fn(),
   getSession: vi.fn(),
   lookupCreatorProfile: vi.fn(),
+  createCreatorProfileFromPending: vi.fn(),
   trackSignup: vi.fn(),
   trackSignin: vi.fn(),
 }));
@@ -17,11 +18,17 @@ vi.mock('react-router-dom', async () => {
 });
 vi.mock('@/lib/supabase', () => ({
   supabase: {
-    auth: { getSession: mocks.getSession, verifyOtp: vi.fn() },
+    auth: { getSession: mocks.getSession, verifyOtp: vi.fn(), setSession: vi.fn(), signOut: vi.fn().mockResolvedValue({ error: null }) },
     from: vi.fn(),
   },
 }));
-vi.mock('@/lib/auth', () => ({ lookupCreatorProfile: mocks.lookupCreatorProfile }));
+vi.mock('@/lib/auth', () => ({
+  lookupCreatorProfile: mocks.lookupCreatorProfile,
+  createCreatorProfileFromPending: mocks.createCreatorProfileFromPending,
+  EmailConflictError: class EmailConflictError extends Error {
+    constructor() { super('This email is already attached to a different KStoryBridge account.'); }
+  },
+}));
 vi.mock('@/utils/analytics', () => ({
   trackSignup: mocks.trackSignup,
   trackSignin: mocks.trackSignin,
@@ -51,6 +58,7 @@ describe('creator OAuth callback analytics boundary', () => {
     sessionStorage.setItem('oauth_flow', 'signin');
     mocks.getSession.mockResolvedValue({ data: { session }, error: null });
     mocks.lookupCreatorProfile.mockResolvedValue('exists');
+    mocks.createCreatorProfileFromPending.mockResolvedValue({ status: 'no_data' });
   });
 
   afterEach(() => {

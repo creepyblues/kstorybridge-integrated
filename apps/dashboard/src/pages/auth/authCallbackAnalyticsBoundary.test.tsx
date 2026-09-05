@@ -8,6 +8,7 @@ const mocks = vi.hoisted(() => ({
   toast: vi.fn(),
   getSession: vi.fn(),
   lookupBuyerProfile: vi.fn(),
+  createBuyerProfileFromPending: vi.fn(),
   trackSignup: vi.fn(),
   trackSignin: vi.fn(),
   sendWelcomeEmail: vi.fn().mockResolvedValue(undefined),
@@ -19,7 +20,13 @@ vi.mock('react-router-dom', async () => {
 });
 vi.mock('@/hooks/use-toast', () => ({ useToast: () => ({ toast: mocks.toast }) }));
 vi.mock('@/lib/supabase', () => ({ supabase: { auth: { getSession: mocks.getSession } } }));
-vi.mock('@/lib/auth', () => ({ lookupBuyerProfile: mocks.lookupBuyerProfile }));
+vi.mock('@/lib/auth', () => ({
+  lookupBuyerProfile: mocks.lookupBuyerProfile,
+  createBuyerProfileFromPending: mocks.createBuyerProfileFromPending,
+  EmailConflictError: class EmailConflictError extends Error {
+    constructor() { super('This email is already attached to a different KStoryBridge account.'); }
+  },
+}));
 vi.mock('@/utils/analytics', () => ({
   trackSignup: mocks.trackSignup,
   trackSignin: mocks.trackSignin,
@@ -44,6 +51,7 @@ describe('buyer OAuth callback analytics boundary', () => {
     sessionStorage.setItem('oauth_flow', 'signin');
     mocks.getSession.mockResolvedValue({ data: { session }, error: null });
     mocks.lookupBuyerProfile.mockResolvedValue('exists');
+    mocks.createBuyerProfileFromPending.mockResolvedValue({ status: 'no_data' });
   });
 
   afterEach(() => {
@@ -71,6 +79,28 @@ describe('buyer OAuth callback analytics boundary', () => {
     expect(mocks.navigate).not.toHaveBeenCalledWith('/signup');
     expect(mocks.navigate).toHaveBeenCalledWith('/signup/complete');
     expect(sessionStorage.getItem('oauth_user_id')).toBeTruthy();
+  });
+
+  it('creates the profile from pending metadata on the verification landing and continues to the destination', async () => {
+    mocks.lookupBuyerProfile.mockResolvedValue('missing');
+    mocks.createBuyerProfileFromPending.mockResolvedValue({ status: 'created' });
+
+    await renderAndSettle();
+
+    expect(mocks.createBuyerProfileFromPending).toHaveBeenCalledTimes(1);
+    expect(mocks.trackSignup).toHaveBeenCalledWith('completed', 'email');
+    expect(mocks.navigate).not.toHaveBeenCalledWith('/signup/complete');
+    expect(mocks.navigate).toHaveBeenCalledWith('/buyers/home');
+  });
+
+  it('stops with an account-conflict error when the email belongs to another account', async () => {
+    mocks.lookupBuyerProfile.mockResolvedValue('missing');
+    mocks.createBuyerProfileFromPending.mockResolvedValue({ status: 'conflict' });
+
+    await renderAndSettle();
+
+    expect(mocks.navigate).not.toHaveBeenCalled();
+    expect(screen.getByText(/already attached to a different/i)).toBeInTheDocument();
   });
 
   it('sends the welcome email only when an email-signup verification link lands', async () => {

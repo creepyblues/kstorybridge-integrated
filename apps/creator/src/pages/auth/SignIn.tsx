@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useNavigate, Link, useSearchParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import { lookupCreatorProfile, signInWithEmail, signInWithOAuth } from '@/lib/auth'
+import { lookupCreatorProfile, signInWithEmail, signInWithOAuth, createCreatorProfileFromPending, EmailConflictError } from '@/lib/auth'
 import { consumePostAuthRedirect } from '@/lib/postAuthRedirect'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -96,6 +96,19 @@ export default function SignIn() {
         return
       }
       if (profile === 'missing') {
+        // Pending signup data in metadata (verified elsewhere, profile not yet created)?
+        const created = await createCreatorProfileFromPending()
+        if (created.status === 'conflict') {
+          trackSignin('failed', 'email', 'profile_creation_failed')
+          await supabase.auth.signOut({ scope: 'local' })
+          setError(new EmailConflictError().message)
+          return
+        }
+        if (created.status === 'created' || created.status === 'exists') {
+          trackSignup('completed', 'email')
+          navigate(consumePostAuthRedirect())
+          return
+        }
         // Authenticated (e.g. buyer-only or Google-first account) but no creator
         // profile yet: onboard them here instead of "account doesn't exist".
         trackSignup('attempted', 'email')

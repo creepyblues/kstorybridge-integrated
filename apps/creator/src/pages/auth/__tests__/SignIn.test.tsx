@@ -79,6 +79,7 @@ describe('SignIn', () => {
     vi.clearAllMocks()
     sessionStorage.clear()
     vi.mocked(auth.lookupCreatorProfile).mockResolvedValue('exists')
+    vi.mocked(auth.createCreatorProfileFromPending).mockResolvedValue({ status: 'no_data' })
     vi.mocked(supabaseLib.supabase.auth.signOut).mockResolvedValue({ error: null } as never)
   })
 

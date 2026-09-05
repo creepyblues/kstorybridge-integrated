@@ -66,3 +66,6 @@ teamworkpm_final_output/
 packages/storybook/storybook-static/
 supabase/.temp/
 .env*
+
+# Local table snapshots from scripts/backup-critical-tables.mjs
+backups/

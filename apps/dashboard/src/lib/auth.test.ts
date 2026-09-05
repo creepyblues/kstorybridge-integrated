@@ -75,14 +75,15 @@ describe('Auth Service', () => {
         data: { user: mockUser, session: mockSession },
         error: null,
       });
-      mockInvoke.mockResolvedValue({ error: null });
+      mockInvoke.mockResolvedValue({ data: { success: true, status: 'created' }, error: null });
 
       const result = await signUpWithEmail(testEmail, testPassword, testMetadata);
 
+      expect(result.status).toBe('created');
       expect(result.user).toEqual(mockUser);
       expect(result.session).toEqual(mockSession);
 
-      // Verify signUp was called with correct parameters
+      // Profile fields ride along in metadata (Gate 2 handoff) — never ids/emails
       expect(mockSignUp).toHaveBeenCalledWith({
         email: testEmail,
         password: testPassword,
@@ -92,24 +93,21 @@ describe('Auth Service', () => {
             account_type: 'buyer',
             full_name: testMetadata.full_name,
             newsletter_consent: false,
+            pending_buyer_profile: {
+              full_name: testMetadata.full_name,
+              buyer_company: testMetadata.buyer_company,
+              buyer_role: testMetadata.buyer_role,
+              linkedin_url: null,
+              newsletter_consent: false,
+              trial_session_id: null,
+            },
           },
         },
       });
 
-      // Verify profile creation was called
-      expect(mockInvoke).toHaveBeenCalledWith('create-buyer-profile', {
-        body: {
-          user_id: mockUser.id,
-          email: testEmail.toLowerCase(),
-          full_name: testMetadata.full_name,
-          buyer_company: testMetadata.buyer_company,
-          buyer_role: testMetadata.buyer_role,
-          linkedin_url: undefined,
-          tier: 'basic',
-          trial_session_id: undefined,
-          newsletter_consent: false,
-        },
-      });
+      // Session present (confirmation off) → profile created now, from metadata, as the
+      // authenticated user: no ids/emails in the body.
+      expect(mockInvoke).toHaveBeenCalledWith('create-buyer-profile', { body: {} });
     });
 
     it('should throw error when signup fails', async () => {
@@ -133,10 +131,10 @@ describe('Auth Service', () => {
       );
     });
 
-    it('should throw error when profile creation fails', async () => {
+    it('should throw error when immediate profile creation fails (session present)', async () => {
       const mockUser = { id: 'user-123', email: testEmail };
       mockSignUp.mockResolvedValue({
-        data: { user: mockUser, session: null },
+        data: { user: mockUser, session: { access_token: 't' } },
         error: null,
       });
       mockInvoke.mockResolvedValue({
@@ -146,6 +144,21 @@ describe('Auth Service', () => {
       await expect(signUpWithEmail(testEmail, testPassword, testMetadata)).rejects.toThrow(
         'Profile creation failed'
       );
+    });
+
+    it('defers profile creation to the verification landing when there is no session', async () => {
+      const mockUser = { id: 'user-123', email: testEmail, identities: [{ provider: 'email' }] };
+      mockSignUp.mockResolvedValue({
+        data: { user: mockUser, session: null },
+        error: null,
+      });
+
+      const result = await signUpWithEmail(testEmail, testPassword, testMetadata);
+
+      expect(result.status).toBe('created');
+      expect(result.session).toBeNull();
+      // No JWT yet → the edge function is NOT called from the browser
+      expect(mockInvoke).not.toHaveBeenCalled();
     });
 
     it('should allow all email domains (no work email restriction)', async () => {
@@ -246,8 +259,8 @@ describe('Auth Service', () => {
       buyer_role: 'producer',
     };
 
-    it('should create profile via edge function', async () => {
-      mockInvoke.mockResolvedValue({ error: null });
+    it('should create profile via the JWT-bound edge function with form fields only (no ids/emails)', async () => {
+      mockInvoke.mockResolvedValue({ data: { success: true, status: 'created' }, error: null });
       mockUpdateUser.mockResolvedValue({ error: null });
 
       const result = await completeOAuthProfile(testUserId, testEmail, testMetadata, {
@@ -257,21 +270,27 @@ describe('Auth Service', () => {
       expect(result.success).toBe(true);
       expect(mockInvoke).toHaveBeenCalledWith('create-buyer-profile', {
         body: {
-          user_id: testUserId,
-          email: testEmail.toLowerCase(),
           full_name: testMetadata.full_name,
           buyer_company: testMetadata.buyer_company,
           buyer_role: testMetadata.buyer_role,
-          linkedin_url: undefined,
-          tier: 'basic',
-          trial_session_id: undefined,
+          linkedin_url: null,
+          trial_session_id: null,
           newsletter_consent: false,
         },
       });
     });
 
+    it('throws EmailConflictError when the email belongs to another account', async () => {
+      mockInvoke.mockResolvedValue({ data: { success: false, code: 'EMAIL_CONFLICT' }, error: null });
+
+      await expect(
+        completeOAuthProfile(testUserId, testEmail, testMetadata, { access_token: 'token-123' })
+      ).rejects.toMatchObject({ code: 'EMAIL_CONFLICT' });
+      expect(mockUpdateUser).not.toHaveBeenCalled();
+    });
+
     it('should update user metadata when session is available', async () => {
-      mockInvoke.mockResolvedValue({ error: null });
+      mockInvoke.mockResolvedValue({ data: { success: true, status: 'created' }, error: null });
       mockUpdateUser.mockResolvedValue({ error: null });
 
       await completeOAuthProfile(testUserId, testEmail, testMetadata, {
@@ -284,7 +303,7 @@ describe('Auth Service', () => {
     });
 
     it('should NOT update metadata when no session', async () => {
-      mockInvoke.mockResolvedValue({ error: null });
+      mockInvoke.mockResolvedValue({ data: { success: true, status: 'exists' }, error: null });
 
       await completeOAuthProfile(testUserId, testEmail, testMetadata);
 
@@ -292,7 +311,7 @@ describe('Auth Service', () => {
     });
 
     it('should handle updateUser error gracefully (non-blocking)', async () => {
-      mockInvoke.mockResolvedValue({ error: null });
+      mockInvoke.mockResolvedValue({ data: { success: true, status: 'created' }, error: null });
       mockUpdateUser.mockResolvedValue({
         error: { message: 'Failed to update user' },
       });
@@ -396,17 +415,16 @@ describe('Auth Service', () => {
       expect(mockInvoke).not.toHaveBeenCalled();
     });
 
-    it("treats a real confirmation-required signup (identities present, no session) as 'created'", async () => {
+    it("treats a real confirmation-required signup (identities present, no session) as 'created' and defers the profile", async () => {
       mockSignUp.mockResolvedValue({
         data: { user: { id: 'real-id', email: 'new@example.com', identities: [{ provider: 'email' }] }, session: null },
         error: null,
       });
-      mockInvoke.mockResolvedValue({ error: null });
 
       const result = await signUpWithEmail('new@example.com', 'password123', meta);
 
       expect(result.status).toBe('created');
-      expect(mockInvoke).toHaveBeenCalledTimes(1);
+      expect(mockInvoke).not.toHaveBeenCalled();
     });
   });
 

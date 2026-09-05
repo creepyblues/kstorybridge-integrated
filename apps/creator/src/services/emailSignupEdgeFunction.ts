@@ -169,16 +169,48 @@ export async function createBuyerViaEdgeFunction(
  * @returns Profile creation result
  */
 export async function createCreatorViaEdgeFunction(
-  profileData: CreatorProfileData
+  profileData: CreatorProfileData,
+  accessToken: string
 ): Promise<EdgeFunctionResult> {
+  return callCreatorProfileFunction(
+    {
+      fullName: profileData.full_name,
+      penName: profileData.pen_name,
+      ipOwnerRole: profileData.ip_owner_role,
+      ipOwnerCompany: profileData.ip_owner_company || null,
+      websiteUrl: profileData.website_url || null,
+      newsletterConsent: profileData.newsletter_consent ?? false,
+    },
+    accessToken
+  );
+}
+
+export type ProfileFunctionStatus = 'created' | 'exists';
+export type ProfileFunctionCode = 'EMAIL_CONFLICT' | 'AUTH_REQUIRED' | 'INVALID_INPUT' | 'NO_PROFILE_DATA' | 'INSERT_FAILED' | 'INTERNAL' | string;
+
+export interface ProfileFunctionResult extends EdgeFunctionResult {
+  status?: ProfileFunctionStatus;
+  code?: ProfileFunctionCode;
+}
+
+/**
+ * Call create-creator-profile as the AUTHENTICATED user (Gate 2).
+ *
+ * The edge function derives id/email from the JWT. `fields` may be empty — the
+ * function then reads user_metadata.pending_creator_profile (email signup handoff).
+ * 409 EMAIL_CONFLICT means another auth user already owns this email; callers must
+ * not proceed into the app on that.
+ */
+export async function callCreatorProfileFunction(
+  fields: Record<string, unknown>,
+  accessToken: string
+): Promise<ProfileFunctionResult> {
   try {
     const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
     const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
-
-    console.log('🚀 Email Signup: Creating creator profile via edge function', {
-      userId: profileData.id.substring(0, 8),
-      email: profileData.email
-    });
+    if (!accessToken) {
+      return { success: false, code: 'AUTH_REQUIRED', error: 'No session' };
+    }
 
     const response = await fetchWithRetry(
       `${supabaseUrl}/functions/v1/create-creator-profile`,
@@ -187,44 +219,27 @@ export async function createCreatorViaEdgeFunction(
         headers: {
           'apikey': supabaseAnonKey,
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${supabaseAnonKey}`
+          'Authorization': `Bearer ${accessToken}`
         },
-        body: JSON.stringify({
-          userId: profileData.id,
-          email: profileData.email,
-          fullName: profileData.full_name,
-          penName: profileData.pen_name,
-          ipOwnerRole: profileData.ip_owner_role,
-          ipOwnerCompany: profileData.ip_owner_company || null,
-          websiteUrl: profileData.website_url || null,
-          newsletterConsent: profileData.newsletter_consent ?? false
-        })
+        body: JSON.stringify(fields)
       }
     );
 
+    const result = await response.json().catch(() => ({}));
+
     if (!response.ok) {
-      const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
-      console.error('❌ Email Signup: Edge function failed:', errorData);
-      throw new Error(errorData.error || `HTTP ${response.status}`);
+      console.error('❌ Creator profile edge function failed:', response.status, result?.code);
+      return {
+        success: false,
+        code: result?.code || `HTTP_${response.status}`,
+        error: result?.error || `HTTP ${response.status}`
+      };
     }
 
-    const result = await response.json();
-
-    console.log('✅ Email Signup: Creator profile created successfully via edge function', {
-      success: result.success,
-      message: result.message
-    });
-
-    return {
-      success: true,
-      profile: result.profile,
-      message: result.message
-    };
+    console.log('✅ Creator profile edge function:', result.status);
+    return { success: true, status: result.status, profile: result.profile, message: result.message };
   } catch (error) {
-    console.error('❌ Email Signup: Creator edge function error:', error);
-    return {
-      success: false,
-      error: error instanceof Error ? error.message : 'Unknown error'
-    };
+    console.error('❌ Creator profile edge function error:', error);
+    return { success: false, code: 'NETWORK', error: error instanceof Error ? error.message : 'Unknown error' };
   }
 }

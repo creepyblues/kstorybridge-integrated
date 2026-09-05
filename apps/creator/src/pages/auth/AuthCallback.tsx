@@ -107,10 +107,16 @@ export default function AuthCallback() {
           console.log('✅ Email verified successfully')
           verifiedSession = result.data.session
         } else {
-          // Let detectSessionInUrl handle automatic verification
+          // Let detectSessionInUrl handle automatic verification. It runs asynchronously
+          // after page load, so poll briefly instead of reading the session once — a
+          // single early read returned null and skipped profile creation (seen 2026-09-05).
           console.log('📧 Email verification (automatic)')
-          const { data: { session } } = await supabase.auth.getSession()
-          verifiedSession = session
+          for (let attempt = 0; attempt < 10 && !verifiedSession; attempt++) {
+            const { data: { session } } = await supabase.auth.getSession()
+            verifiedSession = session
+            if (!verifiedSession) await new Promise(r => setTimeout(r, 500))
+          }
+          if (!verifiedSession) console.warn('⚠️ No session after verification redirect; profile creation deferred to sign-in')
         }
 
         if (verifiedSession?.user) {

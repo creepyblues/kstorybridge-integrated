@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '@/lib/supabase'
-import { checkCreatorProfileExists } from '@/lib/auth'
+import { lookupCreatorProfile } from '@/lib/auth'
+import { consumePostAuthRedirect } from '@/lib/postAuthRedirect'
 import { trackSignin, trackSignup } from '@/utils/analytics'
 import { sendWelcomeEmail } from '@/services/emailService'
 import { notifyCreatorSignup, notifyCreatorSignin } from '@/utils/slack'
@@ -167,10 +168,19 @@ export default function AuthCallback() {
       // Clean up session storage
       sessionStorage.removeItem('oauth_flow')
 
-      // Check if profile exists
-      const profileExists = await checkCreatorProfileExists()
+      const profile = await lookupCreatorProfile()
 
-      if (profileExists) {
+      if (profile === 'error') {
+        // Lookup failed (timeout / query error). The user may well have a profile;
+        // never send them into profile creation on a guess.
+        console.error('❌ Creator profile lookup failed')
+        trackSignin('failed', 'google', 'profile_lookup_failed')
+        setStatus("We couldn't verify your creator profile just now. Please try signing in again.")
+        setTimeout(() => navigate('/signin'), 3000)
+        return
+      }
+
+      if (profile === 'exists') {
         // Check if this is a new user returning from profile completion
         const justCompletedProfile = sessionStorage.getItem('profile_completed')
 
@@ -213,12 +223,12 @@ export default function AuthCallback() {
           }).catch(() => {})
         }
         setStatus('Welcome back! Redirecting...')
-        const redirectUrl = sessionStorage.getItem('redirect_after_login') || '/home'
-        sessionStorage.removeItem('redirect_after_login')
-        navigate(redirectUrl)
+        navigate(consumePostAuthRedirect())
       } else {
-        // New user - redirect to profile completion
-        console.log('📝 New user, redirecting to profile completion')
+        // No creator profile yet (new user, or a buyer-only / Google-first account
+        // signing in here). Onboard as a creator regardless of which button they used.
+        console.log('📝 No creator profile, redirecting to profile completion')
+        if (oauthFlowIntent !== 'signup') trackSignup('attempted', 'google')
         setStatus('Please complete your profile...')
         navigate('/auth/complete-profile')
       }

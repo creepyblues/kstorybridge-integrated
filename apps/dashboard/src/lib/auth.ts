@@ -43,9 +43,35 @@ async function extractEdgeFunctionError(functionError: any): Promise<string> {
   return functionError?.message || 'Unknown error';
 }
 
+/** Result of a profile-existence lookup. Never collapse 'error' into 'missing'. */
+export type ProfileLookup = 'exists' | 'missing' | 'error';
+
+/**
+ * Supabase auth error for an email that already has an account.
+ * Only seen when enumeration protection is OFF; hosted currently has it ON.
+ */
+export function isDuplicateSignupError(error: { code?: string; message?: string } | null | undefined): boolean {
+  if (!error) return false;
+  return error.code === 'user_already_exists' || /already (registered|exists)/i.test(error.message || '');
+}
+
+/**
+ * With enumeration protection ON, signUp() for an existing confirmed email returns
+ * a fake user: random id, `identities: []`, no session, no error. A real
+ * confirmation-required signup returns `identities.length === 1` (verified against
+ * the hosted project 2026-09-05). `session === null` is NOT a discriminator.
+ */
+export function isObfuscatedDuplicateSignup(user: { identities?: unknown[] | null } | null | undefined): boolean {
+  return !!user && Array.isArray(user.identities) && user.identities.length === 0;
+}
+
 /**
  * Email/Password Signup for Buyers
  * Sets account_type='buyer' during signup (not after)
+ *
+ * Returns `{ status: 'duplicate' }` when the email already has an account
+ * (explicit error or obfuscated response). The caller must show the same
+ * generic copy as a real signup — never reveal that the email exists.
  */
 export async function signUpWithEmail(
   email: string,
@@ -82,12 +108,26 @@ export async function signUpWithEmail(
   });
 
   if (error) {
+    if (isDuplicateSignupError(error)) {
+      // Never surface "this email exists" to the browser; the UI shows the same
+      // generic "check your email" copy as a real signup.
+      log('Email signup: duplicate email (explicit error)');
+      return { status: 'duplicate' as const, user: null, session: null };
+    }
     log('Email signup error', error);
     throw error;
   }
 
   if (!data.user) {
     throw new Error('Signup failed - no user returned');
+  }
+
+  if (isObfuscatedDuplicateSignup(data.user)) {
+    // Hosted Supabase (enumeration protection on) returns a fake user with a random
+    // id and identities: [] for an existing email. Do NOT call the profile edge
+    // function with that id.
+    log('Email signup: duplicate email (obfuscated response)');
+    return { status: 'duplicate' as const, user: null, session: null };
   }
 
   log('Email signup successful', { userId: data.user.id });
@@ -125,7 +165,7 @@ export async function signUpWithEmail(
     }
 
     log('Buyer profile created successfully');
-    return { user: data.user, session: data.session };
+    return { status: 'created' as const, user: data.user, session: data.session };
   } catch (profileError: any) {
     log('Profile creation failed', profileError);
     throw new Error(profileError.message || 'Failed to create buyer profile');
@@ -283,7 +323,7 @@ export async function signOut() {
  * Check if profile exists in user_buyers table
  * With timeout protection to prevent OAuth callback hangs
  */
-export async function checkBuyerProfileExists(userId: string): Promise<boolean> {
+export async function lookupBuyerProfile(userId: string): Promise<ProfileLookup> {
   log('Checking buyer profile existence', { userId });
 
   try {
@@ -300,18 +340,20 @@ export async function checkBuyerProfileExists(userId: string): Promise<boolean> 
     const { data, error } = result as any;
 
     if (error) {
+      // NOT "missing": callers must show a retry UI, never route an existing
+      // user into profile creation on a failed query.
       log('Profile check error', error);
-      return false;
+      return 'error';
     }
 
-    const exists = !!data;
+    const exists: ProfileLookup = data ? 'exists' : 'missing';
     log('Profile existence check', { exists });
     return exists;
   } catch (error: any) {
+    // Timeout or network failure. This is NOT "missing": callers must show a
+    // retry UI, never route an existing user into profile creation.
     log('Profile check failed', error);
-    // Fail-safe: Return false on timeout or error
-    // OAuth flow will treat user as new and redirect to signup
-    return false;
+    return 'error';
   }
 }
 

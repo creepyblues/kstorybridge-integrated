@@ -95,12 +95,24 @@ export async function signUpWithEmail(data: SignUpData) {
   })
 
   if (authError) {
+    if (isDuplicateSignupError(authError)) {
+      // Never tell the browser the email exists; SignUp shows the same generic copy.
+      console.log('ℹ️ Email signup: duplicate email (explicit error)')
+      return { status: 'duplicate' as const, user: null, session: null }
+    }
     console.error('❌ Auth signup error:', authError)
     throw authError
   }
 
   if (!authData.user) {
     throw new Error('No user returned from signup')
+  }
+
+  if (isObfuscatedDuplicateSignup(authData.user)) {
+    // Hosted Supabase (enumeration protection on) returns a fake user with a random
+    // id and identities: [] for an existing email. Do NOT create a profile for it.
+    console.log('ℹ️ Email signup: duplicate email (obfuscated response)')
+    return { status: 'duplicate' as const, user: null, session: null }
   }
 
   console.log('✅ Auth signup successful, user ID:', isDev ? authData.user.id : authData.user.id.substring(0, 8) + '...')
@@ -144,7 +156,26 @@ export async function signUpWithEmail(data: SignUpData) {
 
   // Note: Welcome email will be sent after email verification (in AuthCallback)
   // See AuthCallback.tsx for centralized welcome email logic
-  return { user: authData.user, session: authData.session }
+  return { status: 'created' as const, user: authData.user, session: authData.session }
+}
+
+/**
+ * Supabase auth error for an email that already has an account.
+ * Only seen when enumeration protection is OFF; hosted currently has it ON.
+ */
+export function isDuplicateSignupError(error: { code?: string; message?: string } | null | undefined): boolean {
+  if (!error) return false
+  return error.code === 'user_already_exists' || /already (registered|exists)/i.test(error.message || '')
+}
+
+/**
+ * With enumeration protection ON, signUp() for an existing confirmed email returns
+ * a fake user: random id, `identities: []`, no session, no error. A real
+ * confirmation-required signup returns `identities.length === 1` (verified against
+ * the hosted project 2026-09-05). `session === null` is NOT a discriminator.
+ */
+export function isObfuscatedDuplicateSignup(user: { identities?: unknown[] | null } | null | undefined): boolean {
+  return !!user && Array.isArray(user.identities) && user.identities.length === 0
 }
 
 /**
@@ -304,31 +335,48 @@ export async function completeOAuthProfile(profileData: CreatorProfile) {
 // HELPER FUNCTIONS
 // ============================================================================
 
+/** Result of a profile-existence lookup. Never collapse 'error' into 'missing'. */
+export type ProfileLookup = 'exists' | 'missing' | 'error'
+
+const PROFILE_LOOKUP_TIMEOUT_MS = 10000
+
 /**
- * Check if creator profile exists for the currently authenticated user
- * SECURITY: Uses authenticated user's ID only, no external userId parameter
+ * Look up the creator profile for the currently authenticated user.
+ * SECURITY: id-scoped (`user_creators.id = auth user id`), never by email —
+ * a Google identity auto-linked onto an existing auth user shares the id.
+ *
+ * 'error' covers no-session, query errors and timeouts. Callers must treat it
+ * as "unknown" (retry UI), never as "missing" (which would push an existing
+ * creator into profile creation).
  */
-export async function checkCreatorProfileExists(): Promise<boolean> {
-  // Get current authenticated user
-  const { data: { user }, error: userError } = await supabase.auth.getUser()
+export async function lookupCreatorProfile(): Promise<ProfileLookup> {
+  try {
+    const { data: { user }, error: userError } = await supabase.auth.getUser()
+    if (userError || !user) {
+      console.error('Error getting authenticated user:', userError)
+      return 'error'
+    }
 
-  if (userError || !user) {
-    console.error('Error getting authenticated user:', userError)
-    throw new Error('Not authenticated')
+    const query = supabase
+      .from('user_creators')
+      .select('id')
+      .eq('id', user.id)
+      .maybeSingle() as unknown as Promise<{ data: unknown; error: { message: string } | null }>
+
+    const timeout = new Promise<never>((_, reject) =>
+      setTimeout(() => reject(new Error('Profile lookup timed out')), PROFILE_LOOKUP_TIMEOUT_MS),
+    )
+    const { data, error } = await Promise.race([query, timeout])
+
+    if (error) {
+      console.error('Error checking profile:', error)
+      return 'error'
+    }
+    return data ? 'exists' : 'missing'
+  } catch (err) {
+    console.error('Profile lookup failed:', err)
+    return 'error'
   }
-
-  const { data, error } = await supabase
-    .from('user_creators')
-    .select('id')
-    .eq('email', user.email.toLowerCase())
-    .single()
-
-  if (error && error.code !== 'PGRST116') {
-    // PGRST116 = not found
-    console.error('Error checking profile:', error)
-  }
-
-  return !!data
 }
 
 /**

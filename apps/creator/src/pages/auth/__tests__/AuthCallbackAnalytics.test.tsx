@@ -6,7 +6,7 @@ import AuthCallback from '../AuthCallback';
 const mocks = vi.hoisted(() => ({
   navigate: vi.fn(),
   getSession: vi.fn(),
-  checkCreatorProfileExists: vi.fn(),
+  lookupCreatorProfile: vi.fn(),
   trackSignup: vi.fn(),
   trackSignin: vi.fn(),
 }));
@@ -21,7 +21,7 @@ vi.mock('@/lib/supabase', () => ({
     from: vi.fn(),
   },
 }));
-vi.mock('@/lib/auth', () => ({ checkCreatorProfileExists: mocks.checkCreatorProfileExists }));
+vi.mock('@/lib/auth', () => ({ lookupCreatorProfile: mocks.lookupCreatorProfile }));
 vi.mock('@/utils/analytics', () => ({
   trackSignup: mocks.trackSignup,
   trackSignin: mocks.trackSignin,
@@ -50,7 +50,7 @@ describe('creator OAuth callback analytics boundary', () => {
     window.history.replaceState({}, '', '/auth/callback');
     sessionStorage.setItem('oauth_flow', 'signin');
     mocks.getSession.mockResolvedValue({ data: { session }, error: null });
-    mocks.checkCreatorProfileExists.mockResolvedValue(true);
+    mocks.lookupCreatorProfile.mockResolvedValue('exists');
   });
 
   afterEach(() => {
@@ -67,13 +67,39 @@ describe('creator OAuth callback analytics boundary', () => {
   });
 
   it('emits no completion for a new OAuth user before profile persistence', async () => {
-    mocks.checkCreatorProfileExists.mockResolvedValue(false);
+    mocks.lookupCreatorProfile.mockResolvedValue('missing');
 
     await renderAndSettle();
 
     expect(mocks.trackSignin.mock.calls.some(([stage]) => stage === 'completed')).toBe(false);
     expect(mocks.trackSignup.mock.calls.some(([stage]) => stage === 'completed')).toBe(false);
     expect(mocks.navigate).toHaveBeenCalledWith('/auth/complete-profile');
+  });
+
+  it('onboards a sign-in user with no creator profile instead of rejecting them', async () => {
+    // oauth_flow is 'signin' (set in beforeEach): button intent never blocks onboarding
+    mocks.lookupCreatorProfile.mockResolvedValue('missing');
+
+    await renderAndSettle();
+
+    expect(mocks.trackSignin.mock.calls.some(([stage]) => stage === 'failed')).toBe(false);
+    expect(mocks.trackSignup).toHaveBeenCalledWith('attempted', 'google');
+    expect(mocks.navigate).toHaveBeenCalledWith('/auth/complete-profile');
+    expect(mocks.navigate).not.toHaveBeenCalledWith('/signup');
+  });
+
+  it('fails closed to /signin when the profile lookup errors (never profile completion)', async () => {
+    mocks.lookupCreatorProfile.mockResolvedValue('error');
+
+    await renderAndSettle();
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(3000);
+    });
+
+    expect(mocks.trackSignin).toHaveBeenCalledWith('failed', 'google', 'profile_lookup_failed');
+    expect(mocks.trackSignin.mock.calls.some(([stage]) => stage === 'completed')).toBe(false);
+    expect(mocks.navigate).not.toHaveBeenCalledWith('/auth/complete-profile');
+    expect(mocks.navigate).toHaveBeenCalledWith('/signin');
   });
 
   it('emits one failure and no completion when the OAuth session is missing', async () => {

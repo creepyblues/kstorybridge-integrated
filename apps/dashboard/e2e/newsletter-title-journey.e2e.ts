@@ -166,15 +166,21 @@ test.describe('Newsletter deep link → new user journey', () => {
     }
   });
 
-  test('5a. signup with an email that already has an account tells the user clearly', async ({ page }) => {
+  test('5a. signup with an email that already has an account is indistinguishable from a new signup', async ({ page }) => {
+    // Enumeration safety: same toast, same navigation, and NO profile edge-function call
+    // (the hosted project returns an obfuscated fake user for duplicates).
     const email = testEmail('dupe');
     await createConfirmedBuyer(email);
     try {
       await deepLinkToSignUp(page);
+      const profileCalls: string[] = [];
+      page.on('request', r => { if (/functions\/v1\/create-buyer-profile/.test(r.url())) profileCalls.push(r.url()); });
+
       await fillSignup(page, email);
-      // Must NOT pretend a new account was created ("Check your email") for an existing user
-      await expect(page.getByText(/already|sign up failed/i).first()).toBeVisible({ timeout: 15000 });
-      await expect(page.getByText('Check your email', { exact: true })).toHaveCount(0);
+      await expectToast(page, 'Check your email');
+      await expect(page.getByText(/already (registered|exists|has an account)|sign up failed/i)).toHaveCount(0);
+      await expect(page).toHaveURL(/\/signin$/, { timeout: 10000 });
+      expect(profileCalls, 'must not call create-buyer-profile with the fake user id').toHaveLength(0);
     } finally {
       await deleteTestUser(email);
     }

@@ -103,10 +103,10 @@ gated like any basic buyer.
 **Edge functions** `create-buyer-profile`, `create-creator-profile`, `create-oauth-profile`
 (shared code in `supabase/functions/_shared/profile-create.ts` + pure `profile-input.ts`):
 - Identity (`id`, `email`) comes ONLY from the caller's user JWT (`Authorization: Bearer <access_token>`).
-  Body `user_id` / `email` are ignored. Anonymous callers (no token or the anon key) get
-  `401 AUTH_REQUIRED` — except while the rollout secret `ALLOW_ANON_PROFILE_CREATE=true` is set,
-  which accepts the pre-Gate-2 body contract for clients not yet upgraded. Set it to `false`
-  once both apps are live with the new clients.
+  Body `user_id` / `email` are ignored. Anonymous callers (no token, the anon/publishable key,
+  or any JWT whose role is not `authenticated`) get `401 AUTH_REQUIRED`. The rollout secret
+  `ALLOW_ANON_PROFILE_CREATE` (temporarily `true` during the 2026-09-05 rollout to accept the
+  pre-Gate-2 body contract) is now `false`; leave it that way.
 - Profile fields come from the body (OAuth CompleteProfile form) or, when the body has none,
   from `user_metadata.pending_buyer_profile` / `pending_creator_profile`. Both are revalidated
   server-side (name/company length, role enum, URL shape, `trial_session_id` token shape).

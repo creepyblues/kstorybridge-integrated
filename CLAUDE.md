@@ -159,8 +159,9 @@ apps/{app}/src/
   NEVER run a plain `npx supabase db push`. Apply a single file with
   `npx supabase db query --linked -f supabase/migrations/<file>.sql`, verify in `pg_catalog`, then
   `npx supabase migration repair --status applied <version>`. Check the live catalog before
-  assuming a file's objects exist (as of 2026-09-05 the 2026-07 analytics/page_view_events
-  migrations are NOT applied). Snapshot first: `node scripts/backup-critical-tables.mjs <tables>`
+  assuming a file's objects exist. As of 2026-09-05 the remote history is fully reconciled
+  (every local file is recorded and verified present). Snapshot first:
+  `node scripts/backup-critical-tables.mjs <tables>`
 - See [Migration Safety Guide](docs/guides/MIGRATION_SAFETY_GUIDE.md)
 
 ### Authentication

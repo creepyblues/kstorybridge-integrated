@@ -10,6 +10,7 @@ import {
   summarizeDefaultBranchWorkflow,
   summarizeGaInternalFilterGate,
   summarizeReleasePrGate,
+  summarizeReleaseRecoveryEvidence,
   summarizeWwwCanonicalGate,
 } from './analytics-external-gates.mjs'
 import { REQUIRED_BREVO_SEND_DATES } from './brevo-campaign-evidence.mjs'
@@ -209,14 +210,14 @@ test('reports a closed unmerged release PR as a release-path failure', () => {
   assert.match(result.alert, /closed without merge/)
 })
 
-test('fails the release gate when Wave 1 scope drifts or cannot be fully inventoried', () => {
+test('fails the release gate when recovery scope drifts or cannot be fully inventoried', () => {
   const drift = summarizeReleasePrGate({
     pr: { ...openPr, changed_files: 1 },
     checkRuns: [actionCheck(1, 'success')],
     files: [{ filename: 'supabase/migrations/20260715000000_unapproved.sql' }],
   })
   assert.equal(drift.status, 'SCOPE_DRIFT')
-  assert.match(drift.summary, /migration-free Wave 1 allowlist/)
+  assert.match(drift.summary, /focused recovery allowlist/)
   assert.doesNotMatch(drift.alert, /20260715000000/)
 
   const incomplete = summarizeReleasePrGate({
@@ -228,13 +229,37 @@ test('fails the release gate when Wave 1 scope drifts or cannot be fully invento
   assert.match(incomplete.summary, /1\/2 files loaded/)
 })
 
-test('accepts a complete allowlisted Wave 1 scope before classifying CI', () => {
+test('reports an already-merged scope violation as a recovery incident', () => {
+  const result = summarizeReleasePrGate({
+    pr: { ...openPr, merged_at: '2026-07-15T23:31:31Z', changed_files: 1 },
+    checkRuns: [actionCheck(1, 'success')],
+    files: [{ filename: 'supabase/migrations/20260714011558_analytics_event_outbox.sql' }],
+  })
+  assert.equal(result.status, 'MERGED_SCOPE_DRIFT')
+  assert.match(result.summary, /^merged;/)
+  assert.match(result.alert, /repair the recovery scope/)
+})
+
+test('preserves tracked merged-scope evidence when live GitHub is unavailable', () => {
+  const tracked = summarizeReleaseRecoveryEvidence(
+    '<!-- analytics-release-recovery:status=RECOVERY_REQUIRED -->'
+  )
+  assert.equal(tracked.status, 'MERGED_SCOPE_DRIFT')
+  assert.match(tracked.summary, /live verification is unavailable/)
+
+  assert.equal(summarizeReleaseRecoveryEvidence(null).status, 'UNAVAILABLE')
+  assert.equal(summarizeReleaseRecoveryEvidence(
+    '<!-- analytics-release-recovery:status=RECOVERED -->'
+  ).status, 'UNAVAILABLE')
+})
+
+test('accepts a complete allowlisted recovery scope before classifying CI', () => {
   const result = summarizeReleasePrGate({
     pr: { ...openPr, changed_files: 2 },
     checkRuns: [actionCheck(1, 'success')],
     files: [
-      { filename: 'package.json' },
-      { filename: 'supabase/functions/funnel-report-cron/index.ts' },
+      { filename: 'apps/dashboard/vercel.json' },
+      { filename: 'scripts/vercel-build-contract.test.mjs' },
     ],
   })
   assert.equal(result.status, 'HEALTHY')

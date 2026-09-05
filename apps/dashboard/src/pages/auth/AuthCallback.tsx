@@ -7,11 +7,28 @@ import { Icon } from '@iconify/react';
 import { notifyUserSignin } from '@/utils/slack';
 import { trackSignin, trackSignup } from '@/utils/analytics';
 import { consumePostAuthRedirect } from '@/lib/postAuthRedirect';
+import { sendWelcomeEmail } from '@/services/emailService';
 
 // 🚨 AUTH ISOLATION BOUNDARY
 // This page handles OAuth callback only - no business logic
 
 const CALLBACK_TIMEOUT_MS = 15000; // 15 seconds max for entire callback flow
+const FIRST_VERIFICATION_WINDOW_MS = 5 * 60 * 1000;
+
+/**
+ * True when this callback is the landing of an email-signup verification link:
+ * password provider and the email was confirmed within the last few minutes.
+ * Google users are confirmed by the provider at creation, but their provider is
+ * 'google', so they never match.
+ */
+export function isFirstEmailVerification(user: {
+  app_metadata?: { provider?: string };
+  email_confirmed_at?: string | null;
+}): boolean {
+  if (user.app_metadata?.provider !== 'email') return false;
+  const confirmedAt = user.email_confirmed_at ? Date.parse(user.email_confirmed_at) : NaN;
+  return Number.isFinite(confirmedAt) && Date.now() - confirmedAt < FIRST_VERIFICATION_WINDOW_MS;
+}
 
 /**
  * Clear OAuth sessionStorage
@@ -116,21 +133,38 @@ export default function AuthCallback() {
           return;
         }
 
-        // Profile exists - redirect to homepage
-        trackSignin('completed', 'google');
+        // Profile exists - redirect to destination
         clearOAuthStorage();
 
-        // Send Slack notification (non-blocking)
-        notifyUserSignin({
-          email: user.email || '',
-          authType: 'google',
-        }).catch(console.warn);
-
-        toast({
-          title: 'Welcome back!',
-          description: 'Successfully signed in',
-          variant: 'success',
-        });
+        if (isFirstEmailVerification(user)) {
+          // Email signup whose verification link just landed here: this is the moment
+          // to send the welcome email (deferred from SignUp so it never arrives next to
+          // the "Confirm your signup" email). sendWelcomeEmail dedupes per session.
+          sendWelcomeEmail({
+            userName: user.user_metadata?.full_name || user.email || 'there',
+            userEmail: (user.email || '').toLowerCase(),
+            accountType: 'buyer',
+            dashboardUrl: `${window.location.origin}/buyers/home`,
+            loginUrl: `${window.location.origin}/signin`,
+          }).catch(console.warn);
+          toast({
+            title: 'Email verified — welcome to KStoryBridge!',
+            description: 'Your account is ready.',
+            variant: 'success',
+          });
+        } else {
+          trackSignin('completed', 'google');
+          // Send Slack notification (non-blocking)
+          notifyUserSignin({
+            email: user.email || '',
+            authType: 'google',
+          }).catch(console.warn);
+          toast({
+            title: 'Welcome back!',
+            description: 'Successfully signed in',
+            variant: 'success',
+          });
+        }
         // Email-verification links open in a new tab (empty sessionStorage), so fall
         // back to the destination stored in user metadata at signup.
         const metaRedirect = user.user_metadata?.redirect_after_login;

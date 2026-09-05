@@ -14,6 +14,16 @@ import { getTrialSessionId } from '@/contexts/TrialContext';
 import { completeOnboardingStep } from '@/utils/onboarding';
 import { REDIRECT_KEY, isSafeRedirectPath, consumePostAuthRedirect } from '@/lib/postAuthRedirect';
 
+/**
+ * Shown for BOTH a real confirmation-required signup and a duplicate email.
+ * Keep them identical: any difference is an account-enumeration leak.
+ */
+export const CHECK_EMAIL_TOAST = {
+  title: 'Check your email',
+  description:
+    'We sent you a verification link. If you already have a KStoryBridge account, sign in with your existing method instead (use Forgot password if needed).',
+} as const;
+
 export default function SignUp() {
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -105,7 +115,7 @@ export default function SignUp() {
       const stashed = sessionStorage.getItem(REDIRECT_KEY);
       const pendingRedirect = isSafeRedirectPath(stashed) ? stashed : null;
 
-      const { session } = await signUpWithEmail(formData.email, formData.password, {
+      const result = await signUpWithEmail(formData.email, formData.password, {
         full_name: formData.full_name,
         buyer_company: formData.buyer_company || undefined,
         buyer_role: formData.buyer_role || undefined,
@@ -114,6 +124,17 @@ export default function SignUp() {
         newsletter_consent: formData.newsletter_consent,
         redirect_after_login: pendingRedirect ?? undefined,
       });
+
+      if (result.status === 'duplicate') {
+        // The email already has an account. Show EXACTLY the same copy and
+        // navigation as a real confirmation-required signup so nothing observable
+        // reveals that the address exists. No welcome email, no Slack, no profile call.
+        trackSignup('failed', 'email', { failure_reason: 'duplicate_email' });
+        toast(CHECK_EMAIL_TOAST);
+        setTimeout(() => navigate('/signin'), 2000);
+        return;
+      }
+      const { session } = result;
 
       // Track successful signup
       trackSignup('completed', 'email', { role: formData.buyer_role });
@@ -155,11 +176,8 @@ export default function SignUp() {
         navigate(redirectUrl);
       } else {
         // Email confirmation required: verification link lands on /auth/callback,
-        // which restores redirect_after_login
-        toast({
-          title: 'Check your email',
-          description: 'We sent you a verification link. Click it and you\'ll land right in your dashboard.',
-        });
+        // which restores redirect_after_login (from user metadata)
+        toast(CHECK_EMAIL_TOAST);
 
         setTimeout(() => {
           navigate('/signin');

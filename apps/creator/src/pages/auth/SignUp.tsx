@@ -67,7 +67,7 @@ export default function SignUp() {
     setLoading(true)
 
     try {
-      await signUpWithEmail({
+      const result = await signUpWithEmail({
         email: formData.email,
         password: formData.password,
         full_name: formData.full_name,
@@ -78,16 +78,17 @@ export default function SignUp() {
         newsletter_consent: formData.newsletter_consent,
       })
 
-      console.log('✅ Signup successful, showing confirmation message')
+      if (result.status === 'duplicate') {
+        // Email already has an account: identical copy + navigation to a real signup
+        // so nothing observable reveals that the address exists.
+        trackSignup('failed', 'email', 'duplicate_email')
+      } else {
+        console.log('✅ Signup successful, showing confirmation message')
+        trackSignup('completed', 'email')
+      }
 
-      // Track successful signup
-      trackSignup('completed', 'email')
-
-      // Show success toast
-      toast({
-        title: "Account Created!",
-        description: "Please check your email to confirm your account.",
-      })
+      // Same toast for new and duplicate signups (enumeration safety)
+      toast(CHECK_EMAIL_TOAST)
 
       // Sign out to force email verification
       await supabase.auth.signOut()
@@ -101,6 +102,14 @@ export default function SignUp() {
     } finally {
       setLoading(false)
     }
+  }
+
+  // Shown for BOTH a real signup and a duplicate email. Keep identical:
+  // any difference is an account-enumeration leak.
+  const CHECK_EMAIL_TOAST = {
+    title: 'Check your email',
+    description:
+      'We sent you a verification link. If you already have a KStoryBridge account, sign in with your existing method instead (use Forgot password if needed).',
   }
 
   const handleOAuthSignUp = async () => {

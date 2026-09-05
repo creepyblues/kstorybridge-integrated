@@ -24,6 +24,8 @@ export const AUTH_FAILURE_REASONS = [
   'validation_password_length',
   'email_not_confirmed',
   'profile_not_found',
+  'profile_lookup_failed', // three-state lookup returned 'error' (timeout / query failure)
+  'duplicate_email', // signup for an email that already has an account (internal only; UI copy is generic)
   'profile_creation_failed',
   'oauth_start_failed',
   'oauth_session_failed',

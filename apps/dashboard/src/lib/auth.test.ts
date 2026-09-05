@@ -42,7 +42,7 @@ import {
   signInWithOAuth,
   completeOAuthProfile,
   signOut,
-  checkBuyerProfileExists,
+  lookupBuyerProfile,
   getCurrentUser,
   resetPassword,
   updatePassword,
@@ -113,9 +113,10 @@ describe('Auth Service', () => {
     });
 
     it('should throw error when signup fails', async () => {
+      // A non-duplicate auth failure still throws (duplicates are handled separately below)
       mockSignUp.mockResolvedValue({
         data: { user: null, session: null },
-        error: { message: 'Email already registered' },
+        error: { message: 'Network request failed' },
       });
 
       await expect(signUpWithEmail(testEmail, testPassword, testMetadata)).rejects.toThrow();
@@ -338,48 +339,74 @@ describe('Auth Service', () => {
     });
   });
 
-  describe('checkBuyerProfileExists', () => {
-    it('should return true when profile exists', async () => {
-      mockMaybeSingle.mockResolvedValue({
-        data: { id: 'user-123' },
+  describe('lookupBuyerProfile (three-state)', () => {
+    it("returns 'exists' when the profile row is present", async () => {
+      mockMaybeSingle.mockResolvedValue({ data: { id: 'user-123' }, error: null });
+      expect(await lookupBuyerProfile('user-123')).toBe('exists');
+    });
+
+    it("returns 'missing' when there is no row", async () => {
+      mockMaybeSingle.mockResolvedValue({ data: null, error: null });
+      expect(await lookupBuyerProfile('user-123')).toBe('missing');
+    });
+
+    it("returns 'error' (never 'missing') on a database error", async () => {
+      mockMaybeSingle.mockResolvedValue({ data: null, error: { message: 'Database error' } });
+      expect(await lookupBuyerProfile('user-123')).toBe('error');
+    });
+
+    it("returns 'error' (never 'missing') on timeout", async () => {
+      vi.useFakeTimers();
+      try {
+        mockMaybeSingle.mockImplementation(() => new Promise(() => {})); // never resolves
+        const pending = lookupBuyerProfile('user-123');
+        await vi.advanceTimersByTimeAsync(10_001);
+        expect(await pending).toBe('error');
+      } finally {
+        vi.useRealTimers();
+      }
+    });
+  });
+
+  describe('signUpWithEmail duplicate-email handling', () => {
+    const meta = { full_name: 'Dup User' };
+
+    it("returns status 'duplicate' and skips profile creation on the obfuscated fake-user response", async () => {
+      // Hosted shape (enumeration protection on): random id, identities: [], no session, no error
+      mockSignUp.mockResolvedValue({
+        data: { user: { id: 'fake-id', email: 'dup@example.com', identities: [] }, session: null },
         error: null,
       });
 
-      const exists = await checkBuyerProfileExists('user-123');
+      const result = await signUpWithEmail('dup@example.com', 'password123', meta);
 
-      expect(exists).toBe(true);
+      expect(result.status).toBe('duplicate');
+      expect(mockInvoke).not.toHaveBeenCalled();
     });
 
-    it('should return false when profile does not exist', async () => {
-      mockMaybeSingle.mockResolvedValue({
-        data: null,
+    it("returns status 'duplicate' on an explicit user_already_exists error", async () => {
+      mockSignUp.mockResolvedValue({
+        data: { user: null, session: null },
+        error: { code: 'user_already_exists', message: 'User already registered' },
+      });
+
+      const result = await signUpWithEmail('dup@example.com', 'password123', meta);
+
+      expect(result.status).toBe('duplicate');
+      expect(mockInvoke).not.toHaveBeenCalled();
+    });
+
+    it("treats a real confirmation-required signup (identities present, no session) as 'created'", async () => {
+      mockSignUp.mockResolvedValue({
+        data: { user: { id: 'real-id', email: 'new@example.com', identities: [{ provider: 'email' }] }, session: null },
         error: null,
       });
+      mockInvoke.mockResolvedValue({ error: null });
 
-      const exists = await checkBuyerProfileExists('user-123');
+      const result = await signUpWithEmail('new@example.com', 'password123', meta);
 
-      expect(exists).toBe(false);
-    });
-
-    it('should return false on database error (fail-safe)', async () => {
-      mockMaybeSingle.mockResolvedValue({
-        data: null,
-        error: { message: 'Database error' },
-      });
-
-      const exists = await checkBuyerProfileExists('user-123');
-
-      expect(exists).toBe(false);
-    });
-
-    it('should return false on timeout (fail-safe)', async () => {
-      // Simulate timeout by never resolving
-      mockMaybeSingle.mockImplementation(
-        () => new Promise((resolve) => setTimeout(resolve, 15000))
-      );
-
-      // Note: This test would need to wait for timeout, skipping for efficiency
-      // In real scenario, the withTimeout wrapper handles this
+      expect(result.status).toBe('created');
+      expect(mockInvoke).toHaveBeenCalledTimes(1);
     });
   });
 

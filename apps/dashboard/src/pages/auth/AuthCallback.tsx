@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/lib/supabase';
-import { checkBuyerProfileExists } from '@/lib/auth';
+import { lookupBuyerProfile } from '@/lib/auth';
 import { Icon } from '@iconify/react';
 import { notifyUserSignin } from '@/utils/slack';
 import { trackSignin, trackSignup } from '@/utils/analytics';
@@ -93,10 +93,18 @@ export default function AuthCallback() {
 
       // Handle based on flow
       if (effectiveFlow === 'signin') {
-        // Check if buyer profile exists
-        const profileExists = await checkBuyerProfileExists(user.id);
+        const profile = await lookupBuyerProfile(user.id);
 
-        if (!profileExists) {
+        if (profile === 'error') {
+          // Lookup failed (timeout / query error). The user may well have a profile;
+          // never send them into profile creation on a guess.
+          trackSignin('failed', 'google', { failure_reason: 'profile_lookup_failed' });
+          clearOAuthStorage();
+          setError('We couldn\'t verify your account just now. Please try signing in again.');
+          return;
+        }
+
+        if (profile === 'missing') {
           // Google already authenticated them; bouncing to /signup for a second
           // Google click looks like a bug. Continue straight into profile completion.
           trackSignup('attempted', 'google');

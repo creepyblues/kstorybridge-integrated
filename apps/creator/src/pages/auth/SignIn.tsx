@@ -1,14 +1,15 @@
 import { useState, useEffect } from 'react'
 import { useNavigate, Link, useSearchParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import { checkCreatorProfileExists, signInWithEmail, signInWithOAuth } from '@/lib/auth'
+import { lookupCreatorProfile, signInWithEmail, signInWithOAuth } from '@/lib/auth'
+import { consumePostAuthRedirect } from '@/lib/postAuthRedirect'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { useToast } from '@/hooks/use-toast'
 import { supabase } from '@/lib/supabase'
-import { trackSignin } from '@/utils/analytics'
+import { trackSignin, trackSignup } from '@/utils/analytics'
 import { notifyCreatorSignin } from '@/utils/slack'
 import { SESSION_EXPIRED_REASON_KEY } from '@/lib/sessionInactivity'
 
@@ -85,12 +86,20 @@ export default function SignIn() {
     try {
       await signInWithEmail(formData.email, formData.password)
       authenticated = true
-      const profileExists = await checkCreatorProfileExists()
-      if (!profileExists) {
-        trackSignin('failed', 'email', 'profile_not_found')
+      const profile = await lookupCreatorProfile()
+      if (profile === 'error') {
+        // Could not verify the profile (timeout / query error). Fail closed with a
+        // retry message; never route into profile creation on a guess.
+        trackSignin('failed', 'email', 'profile_lookup_failed')
         await supabase.auth.signOut({ scope: 'local' })
-        setError("Your creator account doesn't exist. Please sign up first.")
-        navigate('/signup')
+        setError("We couldn't verify your creator profile just now. Please try signing in again.")
+        return
+      }
+      if (profile === 'missing') {
+        // Authenticated (e.g. buyer-only or Google-first account) but no creator
+        // profile yet: onboard them here instead of "account doesn't exist".
+        trackSignup('attempted', 'email')
+        navigate('/auth/complete-profile')
         return
       }
       console.log('✅ Signin successful, redirecting to home')
@@ -99,9 +108,7 @@ export default function SignIn() {
         email: formData.email.toLowerCase(),
         authType: 'email',
       }).catch(console.warn)
-      const redirectUrl = sessionStorage.getItem('redirect_after_login') || '/home'
-      sessionStorage.removeItem('redirect_after_login')
-      navigate(redirectUrl)
+      navigate(consumePostAuthRedirect())
     } catch (err: any) {
       console.error('❌ Signin error:', err)
 

@@ -107,11 +107,21 @@ export default function AuthCallback() {
           console.log('✅ Email verified successfully')
           verifiedSession = result.data.session
         } else {
-          // Let detectSessionInUrl handle automatic verification. It runs asynchronously
-          // after page load, so poll briefly instead of reading the session once — a
-          // single early read returned null and skipped profile creation (seen 2026-09-05).
+          // Verification links arrive with implicit-grant tokens in the URL hash. This client
+          // is configured with flowType 'pkce', and supabase-js does NOT consume hash tokens in
+          // that mode (observed on staging 2026-09-05: SIGNED_OUT / INITIAL_SESSION: none), so
+          // establish the session ourselves from the hash.
           console.log('📧 Email verification (automatic)')
-          for (let attempt = 0; attempt < 10 && !verifiedSession; attempt++) {
+          const hash = new URLSearchParams(window.location.hash.replace(/^#/, ''))
+          const accessToken = hash.get('access_token')
+          const refreshToken = hash.get('refresh_token')
+          if (accessToken && refreshToken) {
+            const { data, error } = await supabase.auth.setSession({ access_token: accessToken, refresh_token: refreshToken })
+            if (error) console.error('❌ setSession from verification hash failed:', error.message)
+            else verifiedSession = data.session
+            window.history.replaceState({}, '', window.location.pathname)
+          }
+          for (let attempt = 0; attempt < 6 && !verifiedSession; attempt++) {
             const { data: { session } } = await supabase.auth.getSession()
             verifiedSession = session
             if (!verifiedSession) await new Promise(r => setTimeout(r, 500))
@@ -119,19 +129,26 @@ export default function AuthCallback() {
           if (!verifiedSession) console.warn('⚠️ No session after verification redirect; profile creation deferred to sign-in')
         }
 
-        if (verifiedSession?.user) {
-          // Gate 2: the profile is created HERE, at the first authenticated moment, from
-          // user_metadata.pending_creator_profile (the trigger that used to do this is gone).
-          const lookup = await lookupCreatorProfile()
-          if (lookup === 'missing') {
-            const created = await createCreatorProfileFromPending()
-            if (created.status === 'conflict') {
-              trackSignup('failed', 'email', 'profile_creation_failed')
-              setStatus(new EmailConflictError().message)
-              await supabase.auth.signOut({ scope: 'local' })
-              setTimeout(() => navigate('/signin'), 6000)
-              return
-            }
+        if (!verifiedSession?.user) {
+          setStatus('Email verified! Redirecting to signin...')
+          setTimeout(() => navigate('/signin?verified=true'), 1500)
+          return
+        }
+
+        // Gate 2: the profile is created HERE, at the first authenticated moment, from
+        // user_metadata.pending_creator_profile (the trigger that used to do this is gone).
+        let lookup = await lookupCreatorProfile()
+        if (lookup === 'missing') {
+          const created = await createCreatorProfileFromPending()
+          if (created.status === 'conflict') {
+            trackSignup('failed', 'email', 'profile_creation_failed')
+            setStatus(new EmailConflictError().message)
+            await supabase.auth.signOut({ scope: 'local' })
+            setTimeout(() => navigate('/signin'), 6000)
+            return
+          }
+          if (created.status === 'created' || created.status === 'exists') {
+            lookup = 'exists'
             if (created.status === 'created') {
               trackSignup('completed', 'email')
               const fullName = (created.profile?.full_name as string) || verifiedSession.user.user_metadata?.full_name || ''
@@ -139,28 +156,42 @@ export default function AuthCallback() {
                 console.log('📧 New email signup user, sending welcome email')
                 await sendWelcomeEmailOnce(fullName, verifiedSession.user.email)
               }
-            } else if (created.status === 'error') {
-              console.error('❌ Deferred profile creation failed; user can retry by signing in', created)
             }
-            // no_data: nothing pending (e.g. verification of a non-signup link) — SignIn onboards them
-          } else if (lookup === 'exists') {
-            // Profile already present (e.g. re-clicked link): welcome only if brand new
-            const { data: profile } = await supabase
-              .from('user_creators')
-              .select('full_name, created_at')
-              .eq('id', verifiedSession.user.id)
-              .single()
-            if (profile && (Date.now() - new Date(profile.created_at).getTime()) / 60000 < 5) {
-              await sendWelcomeEmailOnce(profile.full_name, verifiedSession.user.email!)
-            }
+          } else if (created.status === 'no_data') {
+            // Nothing pending (e.g. a non-signup verification link): onboard via the form
+            setStatus('Email verified! Please complete your profile...')
+            navigate('/auth/complete-profile')
+            return
+          } else {
+            console.error('❌ Deferred profile creation failed; user can retry by signing in', created)
+            await supabase.auth.signOut({ scope: 'local' })
+            setStatus('Email verified! Please sign in to finish setting up your account.')
+            setTimeout(() => navigate('/signin?verified=true'), 2500)
+            return
+          }
+        } else if (lookup === 'exists') {
+          // Profile already present (e.g. re-clicked link): welcome only if brand new
+          const { data: profile } = await supabase
+            .from('user_creators')
+            .select('full_name, created_at')
+            .eq('id', verifiedSession.user.id)
+            .single()
+          if (profile && (Date.now() - new Date(profile.created_at).getTime()) / 60000 < 5) {
+            await sendWelcomeEmailOnce(profile.full_name, verifiedSession.user.email!)
           }
         }
 
-        // Email verified - redirect to signin
-        setStatus('Email verified! Redirecting to signin...')
-        setTimeout(() => {
-          navigate('/signin?verified=true')
-        }, 1500)
+        if (lookup === 'exists') {
+          // Verified and onboarded: land them in the app (same as the dashboard).
+          setStatus('Email verified! Welcome to KStoryBridge...')
+          navigate(consumePostAuthRedirect())
+          return
+        }
+
+        // lookup === 'error': can't tell — fail closed, let SignIn retry
+        await supabase.auth.signOut({ scope: 'local' })
+        setStatus('Email verified! Please sign in to continue.')
+        setTimeout(() => navigate('/signin?verified=true'), 1500)
         return
       }
 

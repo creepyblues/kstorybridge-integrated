@@ -12,6 +12,7 @@ const mocks = vi.hoisted(() => ({
   signInWithEmail: vi.fn(),
   signInWithOAuth: vi.fn(),
   lookupBuyerProfile: vi.fn(),
+  createBuyerProfileFromPending: vi.fn(),
   trackSignup: vi.fn(),
   trackSignin: vi.fn(),
   notifyUserSignin: vi.fn(),
@@ -32,6 +33,10 @@ vi.mock('@/lib/auth', () => ({
   signInWithEmail: mocks.signInWithEmail,
   signInWithOAuth: mocks.signInWithOAuth,
   lookupBuyerProfile: mocks.lookupBuyerProfile,
+  createBuyerProfileFromPending: mocks.createBuyerProfileFromPending,
+  EmailConflictError: class EmailConflictError extends Error {
+    constructor() { super('This email is already attached to a different KStoryBridge account.'); }
+  },
 }));
 
 vi.mock('@/utils/analytics', () => ({
@@ -68,6 +73,7 @@ describe('buyer auth analytics outcome boundaries', () => {
     vi.clearAllMocks();
     sessionStorage.clear();
     mocks.lookupBuyerProfile.mockResolvedValue('exists');
+    mocks.createBuyerProfileFromPending.mockResolvedValue({ status: 'no_data' });
     mocks.notifyUserSignin.mockResolvedValue(undefined);
   });
 

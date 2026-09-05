@@ -54,12 +54,14 @@ export async function createOrphanAuthUser(email: string, password = TEST_PASSWO
 export async function createConfirmedBuyer(email: string, password = TEST_PASSWORD): Promise<string> {
   const id = await createOrphanAuthUser(email, password);
   const admin = adminClient();
-  await admin
+  // Gate 2: no trigger creates the row any more, so insert it explicitly (id = auth id).
+  const { error } = await admin
     .from('user_buyers')
     .upsert(
-      { email: email.toLowerCase(), full_name: 'E2E Buyer', buyer_company: 'E2E Studios', buyer_role: 'producer', tier: 'basic' },
-      { onConflict: 'email' },
+      { id, email: email.toLowerCase(), full_name: 'E2E Buyer', buyer_company: 'E2E Studios', buyer_role: 'producer', tier: 'basic' },
+      { onConflict: 'id' },
     );
+  if (error) throw error;
   return id;
 }
 

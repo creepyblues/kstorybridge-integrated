@@ -98,6 +98,54 @@ gated like any basic buyer.
 `redirect_after_login` → `/buyers/home`; `/buyers/*` only). Creator: `src/lib/postAuthRedirect.ts`
 (sessionStorage → `/home`; same-origin non-auth paths only).
 
+### Gate 2 (2026-09-05): JWT-bound profile creation, metadata handoff, trigger retired
+
+**Edge functions** `create-buyer-profile`, `create-creator-profile`, `create-oauth-profile`
+(shared code in `supabase/functions/_shared/profile-create.ts` + pure `profile-input.ts`):
+- Identity (`id`, `email`) comes ONLY from the caller's user JWT (`Authorization: Bearer <access_token>`).
+  Body `user_id` / `email` are ignored. Anonymous callers (no token or the anon key) get
+  `401 AUTH_REQUIRED` — except while the rollout secret `ALLOW_ANON_PROFILE_CREATE=true` is set,
+  which accepts the pre-Gate-2 body contract for clients not yet upgraded. Set it to `false`
+  once both apps are live with the new clients.
+- Profile fields come from the body (OAuth CompleteProfile form) or, when the body has none,
+  from `user_metadata.pending_buyer_profile` / `pending_creator_profile`. Both are revalidated
+  server-side (name/company length, role enum, URL shape, `trial_session_id` token shape).
+  After a successful insert only that pending key is nulled; `full_name`, `avatar_url`,
+  `redirect_after_login` etc. are untouched.
+- Outcomes: `200 {status:'created'|'exists'}`, `409 {code:'EMAIL_CONFLICT'}` (another auth id
+  owns this email — pre-check by `ilike(email)` and Postgres 23505 on the email constraint or
+  the new `<table>_email_lower_key` index; any other 23505 is a plain 500), `400 INVALID_INPUT`
+  / `NO_PROFILE_DATA`, `401 AUTH_REQUIRED`. Emails are lowercased before check/insert.
+- `trial_session_id` is attribution only: linked only if the `trial_sessions` row exists and is
+  unconverted; otherwise ignored and logged. It never grants entitlement.
+
+**Clients**
+- Email signup puts the validated form fields into `options.data.pending_*_profile`. With
+  confirmation ON there is no session, so the browser does **not** call the edge function at
+  signup. The profile is created at the first authenticated moment:
+  - Dashboard: `/auth/callback` → `lookupBuyerProfile` = `missing` → `createBuyerProfileFromPending()`
+    → `created|exists` continue to `consumePostAuthRedirect(...)`; `conflict` → error page;
+    `no_data` → `/signup/complete` (Google-first user). `SignIn` does the same before onboarding.
+  - Creator: `/auth/callback` email-verification branch → `lookupCreatorProfile` = `missing` →
+    `createCreatorProfileFromPending()` (welcome email on `created`) → `/signin?verified=true`.
+    OAuth branch and `SignIn` try pending first, then `/auth/complete-profile`.
+- OAuth CompleteProfile in both apps calls the same functions with the form fields in the body
+  (session token attached automatically by `supabase.functions.invoke`; creator sends
+  `Authorization: Bearer <session.access_token>` from `callCreatorProfileFunction`).
+- `EmailConflictError` (both apps) is surfaced verbatim and never lets the user into the app.
+
+**Database**
+- `20260905180202_retire_auth_user_routing_trigger.sql`: drops `on_auth_user_created` /
+  `handle_new_user_routing()` (and the 2025-07 predecessors). No table changes. Profiles are
+  no longer created by a trigger — only by the functions above.
+- `20260905180203_lowercase_email_unique_index.sql`: lowercases any non-lowercase profile emails
+  (audit found none) and adds `user_buyers_email_lower_key` / `user_creators_email_lower_key`
+  unique indexes on `lower(email)`.
+- Rollout order (all against the single shared project): deploy the three functions with
+  `ALLOW_ANON_PROFILE_CREATE=true` → apply both migrations (backup first with
+  `node scripts/backup-critical-tables.mjs user_buyers user_creators`) → ship clients → set the
+  secret to `false`.
+
 ### Profile Existence Check Philosophy
 
 **CORE PRINCIPLE**: Users in `auth.users` without a profile in *this app's* table
@@ -476,7 +524,11 @@ const tierHierarchy = {
 
 ### Database Triggers
 
-**Actual live trigger** (verified 2026-09-05; last defined in
+**RETIRED 2026-09-05** by `20260905180202_retire_auth_user_routing_trigger.sql` (Gate 2).
+There is no longer any trigger on `auth.users`; profiles are created by the JWT-bound
+edge functions (see "Gate 2" above). Historical definition kept for reference:
+
+**Former live trigger** (last defined in
 `supabase/migrations/20250721064746_ensure_enum_types_exist.sql`):
 ```sql
 CREATE TRIGGER on_auth_user_created

@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '@/lib/supabase'
-import { lookupCreatorProfile } from '@/lib/auth'
+import { lookupCreatorProfile, createCreatorProfileFromPending, EmailConflictError } from '@/lib/auth'
 import { consumePostAuthRedirect } from '@/lib/postAuthRedirect'
 import { trackSignin, trackSignup } from '@/utils/analytics'
 import { sendWelcomeEmail } from '@/services/emailService'
@@ -113,22 +113,38 @@ export default function AuthCallback() {
           verifiedSession = session
         }
 
-        // Send welcome email for new email signup users
         if (verifiedSession?.user) {
-          const { data: profile } = await supabase
-            .from('user_creators')
-            .select('full_name, created_at')
-            .eq('email', verifiedSession.user.email)
-            .single()
-
-          // Check if profile was just created (within last 5 minutes = new signup)
-          if (profile) {
-            const createdAt = new Date(profile.created_at)
-            const now = new Date()
-            const minutesSinceCreation = (now.getTime() - createdAt.getTime()) / (1000 * 60)
-
-            if (minutesSinceCreation < 5) {
-              console.log('📧 New email signup user, sending welcome email')
+          // Gate 2: the profile is created HERE, at the first authenticated moment, from
+          // user_metadata.pending_creator_profile (the trigger that used to do this is gone).
+          const lookup = await lookupCreatorProfile()
+          if (lookup === 'missing') {
+            const created = await createCreatorProfileFromPending()
+            if (created.status === 'conflict') {
+              trackSignup('failed', 'email', 'profile_creation_failed')
+              setStatus(new EmailConflictError().message)
+              await supabase.auth.signOut({ scope: 'local' })
+              setTimeout(() => navigate('/signin'), 6000)
+              return
+            }
+            if (created.status === 'created') {
+              trackSignup('completed', 'email')
+              const fullName = (created.profile?.full_name as string) || verifiedSession.user.user_metadata?.full_name || ''
+              if (fullName && verifiedSession.user.email) {
+                console.log('📧 New email signup user, sending welcome email')
+                await sendWelcomeEmailOnce(fullName, verifiedSession.user.email)
+              }
+            } else if (created.status === 'error') {
+              console.error('❌ Deferred profile creation failed; user can retry by signing in', created)
+            }
+            // no_data: nothing pending (e.g. verification of a non-signup link) — SignIn onboards them
+          } else if (lookup === 'exists') {
+            // Profile already present (e.g. re-clicked link): welcome only if brand new
+            const { data: profile } = await supabase
+              .from('user_creators')
+              .select('full_name, created_at')
+              .eq('id', verifiedSession.user.id)
+              .single()
+            if (profile && (Date.now() - new Date(profile.created_at).getTime()) / 60000 < 5) {
               await sendWelcomeEmailOnce(profile.full_name, verifiedSession.user.email!)
             }
           }
@@ -225,8 +241,23 @@ export default function AuthCallback() {
         setStatus('Welcome back! Redirecting...')
         navigate(consumePostAuthRedirect())
       } else {
-        // No creator profile yet (new user, or a buyer-only / Google-first account
-        // signing in here). Onboard as a creator regardless of which button they used.
+        // No creator profile yet. If a pending signup namespace exists (email signup
+        // verified elsewhere), create it now; otherwise onboard via the form regardless
+        // of which button they used (new user, or buyer-only / Google-first account).
+        const created = await createCreatorProfileFromPending()
+        if (created.status === 'conflict') {
+          trackSignin('failed', 'google', 'profile_creation_failed')
+          setStatus(new EmailConflictError().message)
+          await supabase.auth.signOut({ scope: 'local' })
+          setTimeout(() => navigate('/signin'), 6000)
+          return
+        }
+        if (created.status === 'created' || created.status === 'exists') {
+          trackSignup('completed', 'google')
+          setStatus('Welcome! Redirecting...')
+          navigate(consumePostAuthRedirect())
+          return
+        }
         console.log('📝 No creator profile, redirecting to profile completion')
         if (oauthFlowIntent !== 'signup') trackSignup('attempted', 'google')
         setStatus('Please complete your profile...')

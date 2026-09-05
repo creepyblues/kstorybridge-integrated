@@ -103,6 +103,18 @@ export async function signUpWithEmail(
         // The verification link opens in a new tab where sessionStorage is empty,
         // so the intended destination rides along in user metadata too.
         ...(metadata.redirect_after_login ? { redirect_after_login: metadata.redirect_after_login } : {}),
+        // Gate 2 handoff: with email confirmation ON there is no session at signup, so
+        // the profile is created by create-buyer-profile at the first authenticated
+        // moment (verification landing) from this namespace. The edge function
+        // revalidates it and clears only this key.
+        [PENDING_BUYER_PROFILE_KEY]: {
+          full_name: metadata.full_name,
+          buyer_company: metadata.buyer_company ?? null,
+          buyer_role: metadata.buyer_role ?? null,
+          linkedin_url: metadata.linkedin_url ?? null,
+          newsletter_consent: metadata.newsletter_consent ?? false,
+          trial_session_id: metadata.trial_session_id ?? null,
+        },
       },
     },
   });
@@ -132,44 +144,70 @@ export async function signUpWithEmail(
 
   log('Email signup successful', { userId: data.user.id });
 
-  // Create buyer profile via edge function
-  try {
-    const { data: profileData, error: functionError } = await supabase.functions.invoke(
-      'create-buyer-profile',
-      {
-        body: {
-          user_id: data.user.id,
-          email: email.toLowerCase(),
-          full_name: metadata.full_name,
-          buyer_company: metadata.buyer_company,
-          buyer_role: metadata.buyer_role,
-          linkedin_url: metadata.linkedin_url,
-          tier: 'basic', // Default tier
-          trial_session_id: metadata.trial_session_id, // Link trial to signup
-          newsletter_consent: metadata.newsletter_consent ?? false,
-        },
-      }
-    );
+  if (!data.session) {
+    // Email confirmation required: no JWT yet, so the profile cannot be created here.
+    // AuthCallback creates it from pending_buyer_profile when the verification link lands.
+    log('Email signup: confirmation pending, profile deferred to verification');
+    return { status: 'created' as const, user: data.user, session: null };
+  }
 
-    if (functionError) {
-      const serverError = await extractEdgeFunctionError(functionError);
-      log('Profile creation error', { functionError, serverError });
-      throw new Error(`Profile creation failed: ${serverError}`);
-    }
-
-    // Also check for application-level errors (supabase.functions.invoke returns
-    // HTTP 400/500 responses in data, not in error)
-    if (profileData && typeof profileData === 'object' && profileData.success === false) {
-      log('Profile creation returned error', profileData);
-      throw new Error(`Profile creation failed: ${profileData.error || 'Unknown error'}`);
-    }
-
+  // Confirmation off: we are authenticated right now — create the profile immediately.
+  const result = await createBuyerProfileFromPending();
+  if (result.status === 'created' || result.status === 'exists') {
     log('Buyer profile created successfully');
     return { status: 'created' as const, user: data.user, session: data.session };
-  } catch (profileError: any) {
-    log('Profile creation failed', profileError);
-    throw new Error(profileError.message || 'Failed to create buyer profile');
   }
+  log('Profile creation failed', result);
+  if (result.status === 'conflict') throw new EmailConflictError();
+  throw new Error(`Profile creation failed: ${(result as { error?: string }).error || result.status}`);
+}
+
+export const PENDING_BUYER_PROFILE_KEY = 'pending_buyer_profile';
+
+/** Another auth user already owns this email in user_buyers. The UI must not enter the app. */
+export class EmailConflictError extends Error {
+  code = 'EMAIL_CONFLICT' as const;
+  constructor() {
+    super('This email is already attached to a different KStoryBridge account. Sign in with that account\'s method, or contact support.');
+    this.name = 'EmailConflictError';
+  }
+}
+
+export type ProfileCreateOutcome =
+  | { status: 'created' | 'exists'; profile?: Record<string, unknown> }
+  | { status: 'conflict' }
+  | { status: 'no_data' }
+  | { status: 'error'; error?: string };
+
+/**
+ * Create the CURRENT user's buyer profile via the JWT-bound edge function.
+ * `fields` empty ⇒ the function reads user_metadata.pending_buyer_profile.
+ * Never throws; callers branch on `status`.
+ */
+export async function createBuyerProfileFromPending(fields: Record<string, unknown> = {}): Promise<ProfileCreateOutcome> {
+  const { data, error: functionError } = await supabase.functions.invoke('create-buyer-profile', { body: fields });
+
+  if (functionError) {
+    // supabase-js surfaces non-2xx as FunctionsHttpError with the Response in context
+    const ctx: Response | undefined = (functionError as { context?: Response }).context;
+    let payload: { code?: string; error?: string } = {};
+    try { payload = ctx ? await ctx.clone().json() : {}; } catch { /* ignore */ }
+    if (payload.code === 'EMAIL_CONFLICT') return { status: 'conflict' };
+    if (payload.code === 'NO_PROFILE_DATA') return { status: 'no_data' };
+    const serverError = payload.error || (await extractEdgeFunctionError(functionError));
+    log('Profile creation error', { code: payload.code, serverError });
+    return { status: 'error', error: serverError };
+  }
+
+  if (data && typeof data === 'object') {
+    if (data.success === false) {
+      if (data.code === 'EMAIL_CONFLICT') return { status: 'conflict' };
+      if (data.code === 'NO_PROFILE_DATA') return { status: 'no_data' };
+      return { status: 'error', error: data.error };
+    }
+    if (data.status === 'created' || data.status === 'exists') return { status: data.status, profile: data.profile };
+  }
+  return { status: 'error', error: 'Unexpected response' };
 }
 
 /**
@@ -245,35 +283,24 @@ export async function completeOAuthProfile(
 ) {
   log('Completing OAuth profile for buyer', { userId, email });
 
-  // Create buyer profile via edge function
+  // Create buyer profile via the JWT-bound edge function. Identity comes from the
+  // session token; only the form fields travel in the body.
   try {
-    const { data: profileData, error: functionError } = await supabase.functions.invoke(
-      'create-buyer-profile',
-      {
-        body: {
-          user_id: userId,
-          email: email.toLowerCase(),
-          full_name: metadata.full_name,
-          buyer_company: metadata.buyer_company,
-          buyer_role: metadata.buyer_role,
-          linkedin_url: metadata.linkedin_url,
-          tier: 'basic', // Default tier
-          trial_session_id: metadata.trial_session_id, // Link trial to signup
-          newsletter_consent: metadata.newsletter_consent ?? false,
-        },
-      }
-    );
+    const result = await createBuyerProfileFromPending({
+      full_name: metadata.full_name,
+      buyer_company: metadata.buyer_company ?? null,
+      buyer_role: metadata.buyer_role ?? null,
+      linkedin_url: metadata.linkedin_url ?? null,
+      trial_session_id: metadata.trial_session_id ?? null,
+      newsletter_consent: metadata.newsletter_consent ?? false,
+    });
 
-    if (functionError) {
-      const serverError = await extractEdgeFunctionError(functionError);
-      log('OAuth profile creation error', { functionError, serverError });
-      throw new Error(`Profile creation failed: ${serverError}`);
+    if (result.status === 'conflict') {
+      throw new EmailConflictError();
     }
-
-    // Check for application-level errors (HTTP 400/500 returned in data, not error)
-    if (profileData && typeof profileData === 'object' && profileData.success === false) {
-      log('OAuth profile creation returned error', profileData);
-      throw new Error(`Profile creation failed: ${profileData.error || 'Unknown error'}`);
+    if (result.status !== 'created' && result.status !== 'exists') {
+      log('OAuth profile creation error', result);
+      throw new Error(`Profile creation failed: ${(result as { error?: string }).error || result.status}`);
     }
 
     log('OAuth buyer profile created successfully');
@@ -295,6 +322,7 @@ export async function completeOAuthProfile(
     return { success: true };
   } catch (profileError: any) {
     log('OAuth profile creation failed', profileError);
+    if (profileError instanceof EmailConflictError) throw profileError;
     throw new Error(profileError.message || 'Failed to create buyer profile');
   }
 }

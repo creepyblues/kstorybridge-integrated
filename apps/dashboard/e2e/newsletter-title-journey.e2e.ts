@@ -105,17 +105,20 @@ test.describe('Newsletter deep link → new user journey', () => {
     expect(await stashedRedirect(page)).toBe(DEEP_LINK);
   });
 
-  test('2b. auth user created outside the app (no edge-function profile) can sign in to the title', async ({ page }) => {
-    // The DB trigger handle_new_user_routing creates user_buyers from auth metadata,
-    // so an auth user whose create-buyer-profile call failed is still not orphaned.
+  test('2b. auth user with no buyer profile and no pending data is onboarded, not rejected', async ({ page }) => {
+    // Gate 2: the auth trigger is retired, so an auth user with no user_buyers row and no
+    // pending_buyer_profile metadata (e.g. Google-first or creator-only account) stays
+    // profile-less until they complete the buyer form. Sign In must onboard them.
     const email = testEmail('orphan');
     await createOrphanAuthUser(email);
     try {
-      expect(await getBuyerProfile(email), 'trigger should have created a buyer profile').not.toBeNull();
+      expect(await getBuyerProfile(email), 'no trigger should create a profile any more').toBeNull();
       await deepLinkToSignIn(page);
       await signIn(page, email);
-      await expectToast(page, 'Welcome back!');
-      await expectFullTitlePage(page);
+      await expectToast(page, 'Almost there');
+      await expect(page).toHaveURL(/\/signup\/complete$/, { timeout: 15000 });
+      // The return path is still stashed for after profile completion
+      expect(await stashedRedirect(page)).toBe(DEEP_LINK);
     } finally {
       await deleteTestUser(email);
     }
@@ -135,8 +138,8 @@ test.describe('Newsletter deep link → new user journey', () => {
       await expect(page).toHaveURL(/\/signin$/, { timeout: 10000 });
       expect(await stashedRedirect(page), 'redirect must survive until the email link is used').toBe(DEEP_LINK);
 
-      const profile = await getBuyerProfile(email);
-      expect(profile?.tier).toBe('basic');
+      // Gate 2: no profile yet — it is created at the first authenticated moment, not at signup
+      expect(await getBuyerProfile(email), 'profile must NOT exist before verification').toBeNull();
 
       // The user opens the verification link from their mail client: new tab, no sessionStorage
       const link = await generateSignupConfirmLink(email, TEST_PASSWORD, `${new URL(page.url()).origin}/auth/callback`);
@@ -147,6 +150,11 @@ test.describe('Newsletter deep link → new user journey', () => {
       // Journey goal: the newsletter reader lands on the title they clicked
       await expectFullTitlePage(p2);
       await ctx.close();
+
+      // …and the profile was created from pending_buyer_profile with the form's fields
+      const profile = await getBuyerProfile(email);
+      expect(profile?.tier).toBe('basic');
+      expect(profile?.full_name).toBe('E2E Newsletter Producer');
     } finally {
       await deleteTestUser(email);
     }

@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/lib/supabase';
-import { lookupBuyerProfile } from '@/lib/auth';
+import { lookupBuyerProfile, createBuyerProfileFromPending, EmailConflictError } from '@/lib/auth';
 import { Icon } from '@iconify/react';
 import { notifyUserSignin } from '@/utils/slack';
 import { trackSignin, trackSignup } from '@/utils/analytics';
@@ -122,15 +122,34 @@ export default function AuthCallback() {
         }
 
         if (profile === 'missing') {
-          // Google already authenticated them; bouncing to /signup for a second
-          // Google click looks like a bug. Continue straight into profile completion.
-          trackSignup('attempted', 'google');
-          toast({
-            title: 'Almost there',
-            description: 'Tell us a bit about yourself to finish creating your account.',
-          });
-          continueAsSignup(user);
-          return;
+          // Email signup landing from the verification link: the form data travelled in
+          // user_metadata.pending_buyer_profile — create the profile server-side now.
+          const pending = await createBuyerProfileFromPending();
+          if (pending.status === 'conflict') {
+            trackSignup('failed', 'email', { failure_reason: 'profile_creation_failed' });
+            clearOAuthStorage();
+            setError(new EmailConflictError().message);
+            return;
+          }
+          if (pending.status === 'error') {
+            trackSignup('failed', 'email', { failure_reason: 'profile_creation_failed' });
+            clearOAuthStorage();
+            setError('We couldn\'t finish setting up your account. Please sign in again to retry.');
+            return;
+          }
+          if (pending.status === 'no_data') {
+            // Nothing pending (e.g. Google-first user): bouncing to /signup for a second
+            // Google click looks like a bug. Continue straight into profile completion.
+            trackSignup('attempted', 'google');
+            toast({
+              title: 'Almost there',
+              description: 'Tell us a bit about yourself to finish creating your account.',
+            });
+            continueAsSignup(user);
+            return;
+          }
+          // created / exists → fall through to the "profile exists" path below
+          trackSignup('completed', 'email');
         }
 
         // Profile exists - redirect to destination

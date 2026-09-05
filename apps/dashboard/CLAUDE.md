@@ -429,6 +429,11 @@ npx supabase secrets set DASHBOARD_URL=http://localhost:8081
 3. Welcome email sent (non-blocking)
 4. If Supabase returns a session (email confirmation off): auto-login →
    `redirect_after_login` or `/buyers/home?first_run=1` (first-run nudge banner)
+   **Gate 2 (2026-09-05):** the browser no longer calls `create-buyer-profile` at signup
+   (no JWT yet). Form fields go into `options.data.pending_buyer_profile`; `/auth/callback`
+   creates the profile from it via `createBuyerProfileFromPending()` when the verification
+   link lands (`lookupBuyerProfile` = `missing`). The DB trigger that used to create
+   `user_buyers` is retired. `EMAIL_CONFLICT` (409) → `EmailConflictError`, user never enters the app.
 5. Email confirmation is ON in the hosted project (`mailer_autoconfirm=false`), so
    step 4 does not happen today: the user sees "Check your email" → `/signin`.
    The verification link opens in a NEW tab (empty sessionStorage), so signup also

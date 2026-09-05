@@ -11,7 +11,7 @@ const mocks = vi.hoisted(() => ({
   signUpWithEmail: vi.fn(),
   signInWithEmail: vi.fn(),
   signInWithOAuth: vi.fn(),
-  checkBuyerProfileExists: vi.fn(),
+  lookupBuyerProfile: vi.fn(),
   trackSignup: vi.fn(),
   trackSignin: vi.fn(),
   notifyUserSignin: vi.fn(),
@@ -30,7 +30,7 @@ vi.mock('@/lib/auth', () => ({
   signUpWithEmail: mocks.signUpWithEmail,
   signInWithEmail: mocks.signInWithEmail,
   signInWithOAuth: mocks.signInWithOAuth,
-  checkBuyerProfileExists: mocks.checkBuyerProfileExists,
+  lookupBuyerProfile: mocks.lookupBuyerProfile,
 }));
 
 vi.mock('@/utils/analytics', () => ({
@@ -66,7 +66,7 @@ describe('buyer auth analytics outcome boundaries', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     sessionStorage.clear();
-    mocks.checkBuyerProfileExists.mockResolvedValue(true);
+    mocks.lookupBuyerProfile.mockResolvedValue('exists');
     mocks.notifyUserSignin.mockResolvedValue(undefined);
   });
 
@@ -83,7 +83,7 @@ describe('buyer auth analytics outcome boundaries', () => {
   });
 
   it('emits signup completion exactly once after signup succeeds', async () => {
-    mocks.signUpWithEmail.mockResolvedValue({ user: { id: 'buyer-1' }, session: { access_token: 'token' } });
+    mocks.signUpWithEmail.mockResolvedValue({ status: 'created', user: { id: 'buyer-1' }, session: { access_token: 'token' } });
     renderSignUp();
 
     submitSignup();
@@ -129,9 +129,25 @@ describe('buyer auth analytics outcome boundaries', () => {
     });
   });
 
-  it('emits no signin completion when the buyer profile does not exist', async () => {
+  it('onboards an authenticated user with no buyer profile instead of rejecting them', async () => {
+    mocks.signInWithEmail.mockResolvedValue({ user: { id: 'buyer-1', email: 'buyer@example.com' }, session: { access_token: 'token' } });
+    mocks.lookupBuyerProfile.mockResolvedValue('missing');
+    renderSignIn();
+
+    submitSignin();
+
+    await waitFor(() => expect(mocks.navigate).toHaveBeenCalledWith('/signup/complete'));
+    expect(mocks.navigate).not.toHaveBeenCalledWith('/signup');
+    expect(mocks.trackSignup).toHaveBeenCalledWith('attempted', 'email');
+    expect(mocks.trackSignin).not.toHaveBeenCalledWith('completed', expect.anything());
+    expect(mocks.trackSignin.mock.calls.some(([stage]) => stage === 'failed')).toBe(false);
+    expect(mocks.notifyUserSignin).not.toHaveBeenCalled();
+    expect(sessionStorage.getItem('oauth_user_id')).toBe('buyer-1');
+  });
+
+  it('shows a retry toast and never onboards when the profile lookup fails', async () => {
     mocks.signInWithEmail.mockResolvedValue({ user: { id: 'buyer-1' }, session: { access_token: 'token' } });
-    mocks.checkBuyerProfileExists.mockResolvedValue(false);
+    mocks.lookupBuyerProfile.mockResolvedValue('error');
     renderSignIn();
 
     submitSignin();
@@ -139,9 +155,26 @@ describe('buyer auth analytics outcome boundaries', () => {
     await waitFor(() => expect(mocks.trackSignin).toHaveBeenCalledWith(
       'failed',
       'email',
-      { failure_reason: 'profile_not_found' }
+      { failure_reason: 'profile_lookup_failed' }
     ));
+    expect(mocks.toast).toHaveBeenCalledWith(expect.objectContaining({ title: 'Please try again' }));
+    expect(mocks.navigate).not.toHaveBeenCalled();
     expect(mocks.trackSignin).not.toHaveBeenCalledWith('completed', expect.anything());
-    expect(mocks.trackSignin.mock.calls.filter(([stage]) => stage === 'failed')).toHaveLength(1);
+  });
+
+  it('shows the identical generic toast for a duplicate email and never reports completion', async () => {
+    mocks.signUpWithEmail.mockResolvedValue({ status: 'duplicate', user: null, session: null });
+    renderSignUp();
+
+    submitSignup();
+
+    await waitFor(() => expect(mocks.toast).toHaveBeenCalledWith(
+      expect.objectContaining({ title: 'Check your email' })
+    ));
+    expect(mocks.trackSignup).toHaveBeenCalledWith('failed', 'email', { failure_reason: 'duplicate_email' });
+    expect(mocks.trackSignup).not.toHaveBeenCalledWith('completed', expect.anything(), expect.anything());
+    // Nothing observable reveals the address exists: no destructive toast, no home redirect
+    expect(mocks.toast).not.toHaveBeenCalledWith(expect.objectContaining({ variant: 'destructive' }));
+    expect(mocks.navigate).not.toHaveBeenCalledWith(expect.stringMatching(/^\/buyers/));
   });
 });

@@ -193,7 +193,7 @@ describe('SignUp', () => {
 
   it('should call signUpWithEmail and show toast on successful signup', async () => {
     const mockSignUpWithEmail = vi.mocked(auth.signUpWithEmail)
-    mockSignUpWithEmail.mockResolvedValue({ user: { id: '123' }, session: null })
+    mockSignUpWithEmail.mockResolvedValue({ status: 'created', user: { id: '123' }, session: null } as never)
 
     const mockSignOut = vi.mocked(supabaseLib.supabase.auth.signOut)
     mockSignOut.mockResolvedValue({ error: null })
@@ -238,11 +238,8 @@ describe('SignUp', () => {
         newsletter_consent: true,
       })
 
-      // Verify toast was shown
-      expect(mockToast).toHaveBeenCalledWith({
-        title: 'Account Created!',
-        description: 'Please check your email to confirm your account.',
-      })
+      // Verify toast was shown (generic copy shared with the duplicate-email path)
+      expect(mockToast).toHaveBeenCalledWith(expect.objectContaining({ title: 'Check your email' }))
 
       // Verify signOut was called
       expect(mockSignOut).toHaveBeenCalled()
@@ -257,6 +254,39 @@ describe('SignUp', () => {
         { replace: true }
       )
     })
+  })
+
+  it('shows the identical generic toast for a duplicate email and never reports completion', async () => {
+    const mockSignUpWithEmail = vi.mocked(auth.signUpWithEmail)
+    mockSignUpWithEmail.mockResolvedValue({ status: 'duplicate', user: null, session: null } as never)
+    vi.mocked(supabaseLib.supabase.auth.signOut).mockResolvedValue({ error: null } as never)
+
+    render(
+      <BrowserRouter>
+        <SignUp />
+      </BrowserRouter>
+    )
+
+    fireEvent.change(screen.getByLabelText(/email/i), { target: { value: 'existing@example.com' } })
+    fireEvent.change(document.getElementById('password')!, { target: { value: 'password123' } })
+    fireEvent.change(document.getElementById('confirmPassword')!, { target: { value: 'password123' } })
+    fireEvent.change(screen.getByLabelText(/full name/i), { target: { value: 'Test User' } })
+    fireEvent.change(screen.getByLabelText(/pen name/i), { target: { value: 'Test Creator' } })
+    fireEvent.click(screen.getByRole('button', { name: /create account/i }))
+
+    await waitFor(() => {
+      expect(mockToast).toHaveBeenCalledWith(expect.objectContaining({ title: 'Check your email' }))
+    })
+    // Same navigation as a real signup — nothing observable differs
+    expect(mockNavigate).toHaveBeenCalledWith(
+      '/signin?from=signup&email=existing%40example.com',
+      { replace: true }
+    )
+    // No inline error text that could reveal the account exists
+    expect(screen.queryByText(/already (registered|exists|has an account)/i)).toBeNull()
+    expect(screen.queryByRole('alert')).toBeNull()
+    expect(analytics.trackSignup).toHaveBeenCalledWith('failed', 'email', 'duplicate_email')
+    expect(analytics.trackSignup.mock.calls.some(([stage]) => stage === 'completed')).toBe(false)
   })
 
   it('should display error message on signup failure', async () => {

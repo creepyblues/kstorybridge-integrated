@@ -44,9 +44,66 @@ Every successful sign-in path must also invoke its app's filtered, fire-and-forg
 Slack notification helper exactly once. Notification delivery failures must never
 block or roll back authentication.
 
+### Unified accounts: one auth user, per-app profiles (2026-09-05, Gate 1)
+
+**Identity linking.** Supabase auto-links a verified-email Google sign-in onto an existing
+`auth.users` row with the same email (same `id`, a second `auth.identities` row). Manual
+`linkIdentity` stays off. So an email/password account and a Google account with the same address
+are ONE KSB account.
+
+**Dual-role model.** One auth user may hold a buyer profile (`user_buyers`), a creator profile
+(`user_creators`), or both. Role = profile membership. Each app checks only its own table.
+`user_metadata.account_type` is **not** read for authorization (metadata writes still happen at
+signup for analytics; removal is Gate 2 step 10).
+
+**Three-state profile lookup.** `lookupBuyerProfile(userId)` (dashboard) and
+`lookupCreatorProfile()` (creator, id-scoped: `user_creators.id = auth.uid()`) return
+`'exists' | 'missing' | 'error'`. Query errors, timeouts (10 s) and a missing session are
+`'error'`. **`'error'` is never treated as `'missing'`.**
+
+**Profile exists overrides button intent.** After ANY successful authentication (email/password
+sign-in or the OAuth callback), in either app:
+
+| Lookup | Dashboard | Creator |
+|---|---|---|
+| `exists` | `consumePostAuthRedirect(...)` → stashed destination or `/buyers/home` | `consumePostAuthRedirect()` → stashed destination or `/home` |
+| `missing` | "Almost there" toast → `/signup/complete` (onboard as buyer) | `/auth/complete-profile` (onboard as creator) |
+| `error` | retry toast / "Authentication Error" page, no navigation | local sign-out + retry message (SignIn); `/signin` after 3 s (callback) |
+
+`oauth_flow` is kept for analytics wording only; it never decides whether an authenticated user may
+onboard. The former "Your account doesn't exist. Please sign up first." branches are removed. This is
+what lets a buyer-only user add a creator profile through creator **Sign In**, and vice versa.
+It is NOT auto-creation (RULE 1 below still holds): the user completes the profile form.
+
+**Duplicate-email signup (enumeration-safe).** Hosted Supabase has enumeration protection ON:
+`signUp()` for an existing confirmed email returns `error: null` plus a **fake user** with a random
+id, `identities: []`, no session. A real confirmation-required signup returns `identities.length === 1`
+and also `session: null` — so `session === null` is NOT a discriminator. Both apps'
+`signUpWithEmail` return `{ status: 'duplicate' }` when `identities.length === 0` (or on an explicit
+`user_already_exists` error) and **do not call the profile edge function**. The UI then shows the
+identical toast to a real signup:
+
+> Check your email — We sent you a verification link. If you already have a KStoryBridge account,
+> sign in with your existing method instead (use Forgot password if needed).
+
+Duplicate detail is analytics-only (`failure_reason: 'duplicate_email'`), never wire-visible.
+Forgot-password already attaches a password to a Google-only user (`resetPasswordForEmail` →
+`updateUser({ password })`), so no new flow is needed.
+
+**Role membership is not entitlement.** `OptimizedTierGatedContent` gates on the buyer tier only;
+the former `account_type === 'creator'` bypass is deleted. A creator who is also a basic buyer is
+gated like any basic buyer.
+
+**Post-auth redirect.** Dashboard: `src/lib/postAuthRedirect.ts` (sessionStorage → user metadata
+`redirect_after_login` → `/buyers/home`; `/buyers/*` only). Creator: `src/lib/postAuthRedirect.ts`
+(sessionStorage → `/home`; same-origin non-auth paths only).
+
 ### Profile Existence Check Philosophy
 
-**CORE PRINCIPLE**: Users in `auth.users` without profiles in `user_buyers`/`user_creators` are treated as **"no account"**
+**CORE PRINCIPLE**: Users in `auth.users` without a profile in *this app's* table
+(`user_buyers` for the dashboard, `user_creators` for the creator app) are treated as
+**"authenticated, not yet onboarded here"** → they go to this app's profile-completion form.
+(Historical wording "no account" pre-dates the dual-role model above.)
 
 #### RULE 1: NEVER Auto-Create Profiles During Signin
 
@@ -419,17 +476,29 @@ const tierHierarchy = {
 
 ### Database Triggers
 
-**Consolidated Trigger (2025-09-10)**:
+**Actual live trigger** (verified 2026-09-05; last defined in
+`supabase/migrations/20250721064746_ensure_enum_types_exist.sql`):
 ```sql
-CREATE TRIGGER on_auth_user_profile_routing
+CREATE TRIGGER on_auth_user_created
   AFTER INSERT ON auth.users
-  FOR EACH ROW 
-  EXECUTE FUNCTION public.handle_user_profile_routing();
+  FOR EACH ROW
+  EXECUTE FUNCTION public.handle_new_user_routing();
 ```
 
-The trigger automatically creates the appropriate profile based on `account_type` metadata.
+It inserts a `user_buyers` row immediately when signup metadata has `account_type='buyer'`
+(and a legacy `user_ipowners` branch). Consequence today: an email signup arrives at the
+verification callback with a profile already in place, and a buyer auth user can never be
+"orphaned" by a failed `create-buyer-profile` call. **Scheduled for retirement in Gate 2 (6a)**
+together with JWT-bound profile creation (6b) and metadata handoff (6c) — never drop it alone.
+(The previously documented `on_auth_user_profile_routing` / `handle_user_profile_routing()`
+does not exist.)
 
 ### Query Patterns
+
+> **id vs email.** Business queries on `user_buyers` / `user_creators` (profile display, tier,
+> billing) query by lowercased `email`. **Profile-existence lookups used for routing are id-scoped**
+> (`.eq('id', auth.uid())`) in both apps, because a Google identity auto-linked onto an existing
+> auth user shares the id and email casing must not decide whether someone "has an account".
 
 **CRITICAL**: Always query by `email`, never by `user_id`:
 ```typescript

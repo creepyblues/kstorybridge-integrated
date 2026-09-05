@@ -1,6 +1,5 @@
 import React from 'react';
 import { useTierAccess } from '@/contexts/TierContext';
-import { useAuth } from '@/hooks/useAuth';
 
 interface OptimizedTierGatedContentProps {
   children: React.ReactNode;
@@ -16,7 +15,11 @@ interface OptimizedTierGatedContentProps {
  * This component gets tier information from context instead of making
  * individual database queries, improving performance significantly.
  *
- * Note: Creators bypass all tier restrictions automatically.
+ * Access is decided by the buyer tier ONLY. Holding a creator profile (or any
+ * `user_metadata.account_type` value) grants no buyer entitlement: one person
+ * may be both a creator and a buyer, and their buyer plan is what they pay for.
+ * A cross-role benefit, if ever wanted, must be an explicit entitlement on
+ * `user_buyers`, never inferred from role membership or metadata.
  *
  * Usage:
  * 1. Wrap your page/component with <TierProvider>
@@ -30,10 +33,6 @@ const OptimizedTierGatedContent: React.FC<OptimizedTierGatedContentProps> = ({
   fallbackContent
 }) => {
   const { hasAccess, loading } = useTierAccess();
-  const { user } = useAuth();
-
-  // Check if user is a creator - creators bypass tier restrictions
-  const isCreator = user?.user_metadata?.account_type === 'creator';
 
   // Show loading state
   if (loading) {
@@ -42,11 +41,6 @@ const OptimizedTierGatedContent: React.FC<OptimizedTierGatedContentProps> = ({
         <div className="animate-pulse bg-gray-200 h-8 rounded"></div>
       </div>
     );
-  }
-
-  // Creators bypass tier restrictions entirely
-  if (isCreator) {
-    return <div className={className}>{children}</div>;
   }
 
   // User has required tier - show content normally

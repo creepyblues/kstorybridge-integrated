@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { completeOAuthProfile } from '@/lib/auth'
+import { consumePostAuthRedirect } from '@/lib/postAuthRedirect'
 import { useAuth } from '@/hooks/useAuth'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -65,7 +66,7 @@ export default function CompleteProfile() {
       sessionStorage.setItem('profile_completed', 'true')
 
       console.log('📍 Redirecting to home')
-      navigate('/home')
+      navigate(consumePostAuthRedirect())
     } catch (err: any) {
       console.error('❌ Profile completion error:', err)
       setError(err.message || 'Failed to complete profile. Please try again.')

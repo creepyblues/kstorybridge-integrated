@@ -31,6 +31,7 @@ vi.mock('@/hooks/use-toast', () => ({
 // Mock analytics
 vi.mock('@/utils/analytics', () => ({
   trackSignin: vi.fn(),
+  trackSignup: vi.fn(),
 }))
 
 vi.mock('@/utils/slack', () => ({
@@ -77,7 +78,7 @@ describe('SignIn', () => {
   beforeEach(() => {
     vi.clearAllMocks()
     sessionStorage.clear()
-    vi.mocked(auth.checkCreatorProfileExists).mockResolvedValue(true)
+    vi.mocked(auth.lookupCreatorProfile).mockResolvedValue('exists')
     vi.mocked(supabaseLib.supabase.auth.signOut).mockResolvedValue({ error: null } as never)
   })
 
@@ -159,9 +160,9 @@ describe('SignIn', () => {
     })
   })
 
-  it('does not alert Slack and signs out when the creator profile is missing', async () => {
+  it('onboards an authenticated user with no creator profile instead of rejecting them', async () => {
     vi.mocked(auth.signInWithEmail).mockResolvedValue()
-    vi.mocked(auth.checkCreatorProfileExists).mockResolvedValue(false)
+    vi.mocked(auth.lookupCreatorProfile).mockResolvedValue('missing')
 
     render(
       <BrowserRouter>
@@ -177,16 +178,20 @@ describe('SignIn', () => {
     })
     fireEvent.click(screen.getByRole('button', { name: /^sign in$/i }))
 
-    await waitFor(() => expect(mockNavigate).toHaveBeenCalledWith('/signup'))
-    expect(supabaseLib.supabase.auth.signOut).toHaveBeenCalledWith({ scope: 'local' })
-    expect(analytics.trackSignin).toHaveBeenCalledWith('failed', 'email', 'profile_not_found')
+    // A buyer-only (or Google-first) account signing in here gets creator onboarding,
+    // stays signed in, and is never told the account "doesn't exist".
+    await waitFor(() => expect(mockNavigate).toHaveBeenCalledWith('/auth/complete-profile'))
+    expect(mockNavigate).not.toHaveBeenCalledWith('/signup')
+    expect(supabaseLib.supabase.auth.signOut).not.toHaveBeenCalled()
+    expect(analytics.trackSignup).toHaveBeenCalledWith('attempted', 'email')
     expect(analytics.trackSignin.mock.calls.some(([stage]) => stage === 'completed')).toBe(false)
+    expect(analytics.trackSignin.mock.calls.some(([stage]) => stage === 'failed')).toBe(false)
     expect(notifyCreatorSignin).not.toHaveBeenCalled()
   })
 
   it('fails closed when creator profile verification errors after authentication', async () => {
     vi.mocked(auth.signInWithEmail).mockResolvedValue()
-    vi.mocked(auth.checkCreatorProfileExists).mockRejectedValue(new Error('Profile lookup failed'))
+    vi.mocked(auth.lookupCreatorProfile).mockResolvedValue('error')
 
     render(
       <BrowserRouter>
@@ -205,8 +210,10 @@ describe('SignIn', () => {
     await waitFor(() => {
       expect(supabaseLib.supabase.auth.signOut).toHaveBeenCalledWith({ scope: 'local' })
     })
-    expect(analytics.trackSignin).toHaveBeenCalledWith('failed', 'email', 'auth_rejected')
+    expect(analytics.trackSignin).toHaveBeenCalledWith('failed', 'email', 'profile_lookup_failed')
     expect(mockNavigate).not.toHaveBeenCalledWith('/home')
+    // 'error' must never be treated as 'missing'
+    expect(mockNavigate).not.toHaveBeenCalledWith('/auth/complete-profile')
     expect(notifyCreatorSignin).not.toHaveBeenCalled()
   })
 

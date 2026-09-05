@@ -5,9 +5,9 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
-import { signInWithEmail, signInWithOAuth, checkBuyerProfileExists } from '@/lib/auth';
+import { signInWithEmail, signInWithOAuth, lookupBuyerProfile } from '@/lib/auth';
 import { Icon } from '@iconify/react';
-import { trackSignin } from '@/utils/analytics';
+import { trackSignin, trackSignup } from '@/utils/analytics';
 import { notifyUserSignin } from '@/utils/slack';
 import { SESSION_EXPIRED_REASON_KEY } from '@/lib/sessionInactivity';
 import { consumePostAuthRedirect } from '@/lib/postAuthRedirect';
@@ -45,21 +45,30 @@ export default function SignIn() {
         throw new Error('Sign in failed');
       }
 
-      // Check if buyer profile exists
-      const profileExists = await checkBuyerProfileExists(user.id);
+      const profile = await lookupBuyerProfile(user.id);
 
-      if (!profileExists) {
-        trackSignin('failed', 'email', { failure_reason: 'profile_not_found' });
-
+      if (profile === 'error') {
+        // Could not verify the profile (timeout / query error). Retry UI, never onboarding.
+        trackSignin('failed', 'email', { failure_reason: 'profile_lookup_failed' });
         toast({
-          title: 'Account Not Found',
-          description: 'Your account doesn\'t exist. Please sign up first.',
+          title: 'Please try again',
+          description: 'We couldn\'t verify your account just now. Please sign in again.',
           variant: 'destructive',
         });
+        return;
+      }
 
-        setTimeout(() => {
-          navigate('/signup');
-        }, 2000);
+      if (profile === 'missing') {
+        // Authenticated (e.g. creator-only or Google-first account) but no buyer
+        // profile yet: onboard them here instead of bouncing to /signup.
+        trackSignup('attempted', 'email');
+        sessionStorage.setItem('oauth_user_id', user.id);
+        sessionStorage.setItem('oauth_user_email', user.email || '');
+        toast({
+          title: 'Almost there',
+          description: 'Tell us a bit about yourself to finish setting up your producer profile.',
+        });
+        navigate('/signup/complete');
         return;
       }
 

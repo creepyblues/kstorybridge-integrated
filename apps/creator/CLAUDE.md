@@ -74,7 +74,19 @@ React-based creator dashboard built from scratch to eliminate OAuth authenticati
 ### Key Patterns
 
 **Authentication**:
-- Simple auth service: `src/lib/auth.ts` (240 lines)
+- Simple auth service: `src/lib/auth.ts`
+- **Three-state profile lookup** (2026-09-05): `lookupCreatorProfile()` → `'exists' | 'missing' | 'error'`,
+  **id-scoped** (`user_creators.id = auth.uid()`, not email — a Google identity auto-linked onto an
+  existing auth user shares the id). `'error'` (no session / query error / 10s timeout) is never
+  treated as `'missing'`: SignIn signs out locally and shows a retry, AuthCallback returns to `/signin`
+- **Profile exists overrides button intent**: after any successful auth, `missing` →
+  `/auth/complete-profile` (onboard, even from Sign In — e.g. a buyer-only or Google-first account);
+  the old "Your creator account doesn't exist. Please sign up first." branch is gone
+- **Duplicate email signup is silent**: `signUpWithEmail` returns `{ status: 'duplicate' }` on an explicit
+  `user_already_exists` OR the hosted obfuscated fake user (`identities: []`); SignUp shows the same
+  "Check your email" toast + `/signin?from=signup` as a real signup and never calls `create-creator-profile`
+- Post-auth navigation goes through `src/lib/postAuthRedirect.ts` (`consumePostAuthRedirect()`,
+  same-origin non-auth paths only, default `/home`)
 - Single auth listener: `src/hooks/useAuth.tsx` (55 lines)
 - Supabase client: `src/lib/supabase.ts` (17 lines)
 - account_type='creator' set **during** signup (not after)

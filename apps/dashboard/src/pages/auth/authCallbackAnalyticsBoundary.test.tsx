@@ -1,4 +1,4 @@
-import { act, render } from '@testing-library/react';
+import { act, render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import AuthCallback from './AuthCallback';
@@ -7,7 +7,7 @@ const mocks = vi.hoisted(() => ({
   navigate: vi.fn(),
   toast: vi.fn(),
   getSession: vi.fn(),
-  checkBuyerProfileExists: vi.fn(),
+  lookupBuyerProfile: vi.fn(),
   trackSignup: vi.fn(),
   trackSignin: vi.fn(),
 }));
@@ -18,7 +18,7 @@ vi.mock('react-router-dom', async () => {
 });
 vi.mock('@/hooks/use-toast', () => ({ useToast: () => ({ toast: mocks.toast }) }));
 vi.mock('@/lib/supabase', () => ({ supabase: { auth: { getSession: mocks.getSession } } }));
-vi.mock('@/lib/auth', () => ({ checkBuyerProfileExists: mocks.checkBuyerProfileExists }));
+vi.mock('@/lib/auth', () => ({ lookupBuyerProfile: mocks.lookupBuyerProfile }));
 vi.mock('@/utils/analytics', () => ({
   trackSignup: mocks.trackSignup,
   trackSignin: mocks.trackSignin,
@@ -41,7 +41,7 @@ describe('buyer OAuth callback analytics boundary', () => {
     sessionStorage.setItem('oauth_account_type', 'buyer');
     sessionStorage.setItem('oauth_flow', 'signin');
     mocks.getSession.mockResolvedValue({ data: { session }, error: null });
-    mocks.checkBuyerProfileExists.mockResolvedValue(true);
+    mocks.lookupBuyerProfile.mockResolvedValue('exists');
   });
 
   afterEach(() => {
@@ -58,7 +58,7 @@ describe('buyer OAuth callback analytics boundary', () => {
   });
 
   it('continues a profile-less Google sign-in into profile completion instead of erroring', async () => {
-    mocks.checkBuyerProfileExists.mockResolvedValue(false);
+    mocks.lookupBuyerProfile.mockResolvedValue('missing');
 
     await renderAndSettle();
 
@@ -69,6 +69,17 @@ describe('buyer OAuth callback analytics boundary', () => {
     expect(mocks.navigate).not.toHaveBeenCalledWith('/signup');
     expect(mocks.navigate).toHaveBeenCalledWith('/signup/complete');
     expect(sessionStorage.getItem('oauth_user_id')).toBeTruthy();
+  });
+
+  it('shows a retry error and never onboards when the profile lookup fails', async () => {
+    mocks.lookupBuyerProfile.mockResolvedValue('error');
+
+    await renderAndSettle();
+
+    expect(mocks.trackSignin).toHaveBeenCalledWith('failed', 'google', { failure_reason: 'profile_lookup_failed' });
+    expect(mocks.trackSignin.mock.calls.some(([stage]) => stage === 'completed')).toBe(false);
+    expect(mocks.navigate).not.toHaveBeenCalled();
+    expect(screen.getByText('Authentication Error')).toBeInTheDocument();
   });
 
   it('defers signup completion to the profile-persistence page', async () => {

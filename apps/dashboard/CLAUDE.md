@@ -107,7 +107,16 @@ apps/dashboard/
 
 **Key Principles**:
 - ✅ **Query by email, never by user_id**: Database tables don't have `user_id` field
-- ✅ **Profile existence = valid account**: No auto-profile creation
+- ✅ **Three-state profile lookup**: `lookupBuyerProfile(userId)` returns `'exists' | 'missing' | 'error'`.
+  `'error'` (timeout / query failure) is NEVER treated as `'missing'` — show a retry, don't onboard
+- ✅ **Profile exists overrides button intent**: after any successful auth (email or Google),
+  `exists` → destination, `missing` → `/signup/complete` (onboard, even from Sign In), `error` → retry.
+  No "Account Not Found → go sign up" anywhere
+- ✅ **Duplicate email signup is silent**: `signUpWithEmail` returns `{ status: 'duplicate' }` on an
+  explicit `user_already_exists` OR the hosted obfuscated fake user (`identities: []`); UI shows the
+  same `CHECK_EMAIL_TOAST` as a real signup and never calls the profile edge function
+- ✅ **Role ≠ entitlement**: `user_metadata.account_type` is not read for authorization;
+  `OptimizedTierGatedContent` gates on buyer tier only (a creator who is also a basic buyer stays gated)
 - ✅ **Sequential operations**: No race conditions in signup flow
 - ✅ **Single auth listener**: Prevents competing listeners
 - ✅ **OAuth uses sessionStorage**: No URL parameters per CLAUDE.md rules
@@ -412,7 +421,11 @@ npx supabase secrets set DASHBOARD_URL=http://localhost:8081
 
 ### Buyer Signup
 1. Visit `/signup` → Enter email/password, company, role
-2. All email addresses accepted → Profile created via edge function
+2. All email addresses accepted → Profile created via edge function.
+   If the email already has an account (Google-first or email), Supabase returns an obfuscated
+   fake user (`identities: []`, enumeration protection ON) → `signUpWithEmail` returns
+   `status: 'duplicate'` → same "Check your email" toast + `/signin`, no profile call, no
+   welcome email, no Slack. Copy tells existing users to sign in with their existing method
 3. Welcome email sent (non-blocking)
 4. If Supabase returns a session (email confirmation off): auto-login →
    `redirect_after_login` or `/buyers/home?first_run=1` (first-run nudge banner)

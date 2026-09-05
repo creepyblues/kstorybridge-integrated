@@ -68,14 +68,33 @@ export interface Caller {
 }
 
 /**
+ * True for "no user" tokens: empty, the project anon/publishable key (legacy JWT
+ * with role=anon, or the newer non-JWT `sb_publishable_…` form), or any JWT whose
+ * role is not `authenticated`. Projects can rotate/have several anon keys, so
+ * never rely on string equality with a single env value.
+ */
+export function isAnonToken(token: string): boolean {
+  if (!token) return true;
+  const anonKey = Deno.env.get('SUPABASE_ANON_KEY') ?? '';
+  if (anonKey && token === anonKey) return true;
+  const parts = token.split('.');
+  if (parts.length !== 3) return true; // not a JWT (e.g. sb_publishable_…)
+  try {
+    const payload = JSON.parse(atob(parts[1].replace(/-/g, '+').replace(/_/g, '/')));
+    return payload.role !== 'authenticated' || !payload.sub;
+  } catch {
+    return true;
+  }
+}
+
+/**
  * Resolve the caller from the JWT. Rejects anonymous callers unless the rollout
  * switch is on, in which case identity falls back to body.user_id / body.email
  * (the pre-Gate-2 contract) and no metadata is read or cleared.
  */
 export async function requireCaller(req: Request, admin: SupabaseClient, body: Record<string, unknown>): Promise<Caller> {
   const token = (req.headers.get('Authorization') ?? '').replace(/^Bearer\s+/i, '').trim();
-  const anonKey = Deno.env.get('SUPABASE_ANON_KEY') ?? '';
-  const isAnon = !token || token === anonKey;
+  const isAnon = isAnonToken(token);
 
   if (!isAnon) {
     const { data, error } = await admin.auth.getUser(token);

@@ -149,22 +149,24 @@ export default function SignUp() {
         linkedinUrl: formData.linkedin_url,
       }).catch(console.warn);
 
-      // Send welcome email (non-blocking)
-      sendWelcomeEmail({
-        userName: formData.full_name,
-        userEmail: formData.email.toLowerCase(),
-        accountType: 'buyer',
-        dashboardUrl: `${window.location.origin}/buyers/home`,
-        loginUrl: `${window.location.origin}/buyers/home`,
-      }).catch((err) => {
-        // Log but don't block - welcome email is not critical
-        console.warn('Welcome email failed:', err);
-      });
-
       completeOnboardingStep(1);
 
       if (session) {
-        // Email confirmation disabled: user is already signed in, land them activated
+        // Email confirmation disabled: user is already signed in, land them activated.
+        // Welcome email goes out now. (With confirmation ON there is no session here and
+        // AuthCallback sends it after the verification link is used — otherwise the user
+        // gets "Welcome" and "Confirm your signup" side by side in their inbox.)
+        sendWelcomeEmail({
+          userName: formData.full_name,
+          userEmail: formData.email.toLowerCase(),
+          accountType: 'buyer',
+          dashboardUrl: `${window.location.origin}/buyers/home`,
+          loginUrl: `${window.location.origin}/buyers/home`,
+        }).catch((err) => {
+          // Log but don't block - welcome email is not critical
+          console.warn('Welcome email failed:', err);
+        });
+
         const redirectUrl = consumePostAuthRedirect(pendingRedirect, '/buyers/home?first_run=1');
 
         toast({

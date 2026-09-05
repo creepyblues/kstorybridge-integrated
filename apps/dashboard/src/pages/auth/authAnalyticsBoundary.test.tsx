@@ -15,6 +15,7 @@ const mocks = vi.hoisted(() => ({
   trackSignup: vi.fn(),
   trackSignin: vi.fn(),
   notifyUserSignin: vi.fn(),
+  sendWelcomeEmail: vi.fn().mockResolvedValue(undefined),
 }));
 
 vi.mock('react-router-dom', async () => {
@@ -38,7 +39,7 @@ vi.mock('@/utils/analytics', () => ({
   trackSignin: mocks.trackSignin,
 }));
 
-vi.mock('@/services/emailService', () => ({ sendWelcomeEmail: vi.fn().mockResolvedValue(undefined) }));
+vi.mock('@/services/emailService', () => ({ sendWelcomeEmail: mocks.sendWelcomeEmail }));
 vi.mock('@/utils/slack', () => ({
   notifyBuyerSignup: vi.fn().mockResolvedValue(undefined),
   notifyUserSignin: mocks.notifyUserSignin,
@@ -160,6 +161,29 @@ describe('buyer auth analytics outcome boundaries', () => {
     expect(mocks.toast).toHaveBeenCalledWith(expect.objectContaining({ title: 'Please try again' }));
     expect(mocks.navigate).not.toHaveBeenCalled();
     expect(mocks.trackSignin).not.toHaveBeenCalledWith('completed', expect.anything());
+  });
+
+  it('defers the welcome email when confirmation is required (no session at signup)', async () => {
+    mocks.signUpWithEmail.mockResolvedValue({ status: 'created', user: { id: 'buyer-1' }, session: null });
+    renderSignUp();
+
+    submitSignup();
+
+    await waitFor(() => expect(mocks.toast).toHaveBeenCalledWith(
+      expect.objectContaining({ title: 'Check your email' })
+    ));
+    // Welcome must not arrive next to "Confirm your signup"; AuthCallback sends it after verification
+    expect(mocks.sendWelcomeEmail).not.toHaveBeenCalled();
+  });
+
+  it('sends the welcome email immediately when signup returns a session (confirmation off)', async () => {
+    mocks.signUpWithEmail.mockResolvedValue({ status: 'created', user: { id: 'buyer-1' }, session: { access_token: 't' } });
+    renderSignUp();
+
+    submitSignup();
+
+    await waitFor(() => expect(mocks.navigate).toHaveBeenCalled());
+    expect(mocks.sendWelcomeEmail).toHaveBeenCalledTimes(1);
   });
 
   it('shows the identical generic toast for a duplicate email and never reports completion', async () => {

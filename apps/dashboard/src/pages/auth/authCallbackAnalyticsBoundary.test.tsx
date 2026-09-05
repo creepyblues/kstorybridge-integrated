@@ -10,6 +10,7 @@ const mocks = vi.hoisted(() => ({
   lookupBuyerProfile: vi.fn(),
   trackSignup: vi.fn(),
   trackSignin: vi.fn(),
+  sendWelcomeEmail: vi.fn().mockResolvedValue(undefined),
 }));
 
 vi.mock('react-router-dom', async () => {
@@ -24,6 +25,7 @@ vi.mock('@/utils/analytics', () => ({
   trackSignin: mocks.trackSignin,
 }));
 vi.mock('@/utils/slack', () => ({ notifyUserSignin: vi.fn().mockResolvedValue(undefined) }));
+vi.mock('@/services/emailService', () => ({ sendWelcomeEmail: mocks.sendWelcomeEmail }));
 
 const session = { user: { id: 'buyer-1', email: 'buyer@example.com' } };
 
@@ -69,6 +71,32 @@ describe('buyer OAuth callback analytics boundary', () => {
     expect(mocks.navigate).not.toHaveBeenCalledWith('/signup');
     expect(mocks.navigate).toHaveBeenCalledWith('/signup/complete');
     expect(sessionStorage.getItem('oauth_user_id')).toBeTruthy();
+  });
+
+  it('sends the welcome email only when an email-signup verification link lands', async () => {
+    const justVerified = {
+      user: {
+        id: 'buyer-2',
+        email: 'new@example.com',
+        app_metadata: { provider: 'email' },
+        email_confirmed_at: new Date().toISOString(),
+        user_metadata: { full_name: 'New Buyer' },
+      },
+    };
+    mocks.getSession.mockResolvedValue({ data: { session: justVerified }, error: null });
+
+    await renderAndSettle();
+
+    expect(mocks.sendWelcomeEmail).toHaveBeenCalledTimes(1);
+    expect(mocks.sendWelcomeEmail).toHaveBeenCalledWith(expect.objectContaining({ userEmail: 'new@example.com' }));
+    // A verification landing is not a "sign-in" for analytics purposes
+    expect(mocks.trackSignin.mock.calls.some(([stage]) => stage === 'completed')).toBe(false);
+    expect(mocks.navigate).toHaveBeenCalledWith('/buyers/home');
+  });
+
+  it('does not send a welcome email on an ordinary Google sign-in', async () => {
+    await renderAndSettle();
+    expect(mocks.sendWelcomeEmail).not.toHaveBeenCalled();
   });
 
   it('shows a retry error and never onboards when the profile lookup fails', async () => {

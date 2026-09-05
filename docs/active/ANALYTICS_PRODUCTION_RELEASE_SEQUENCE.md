@@ -1,18 +1,26 @@
 # KStoryBridge Analytics Production Release Sequence
 
-**Status:** Active release control
+**Status:** RECOVERY REQUIRED — source wave boundary was violated by merged PR #142
 
 **Prepared:** 2026-07-13
 
-**Current source:** `v2` at or after `78665140`
+**Current main source:** merge commit `43e49ea7`
 
-**Foundation release:** Draft PR [#141](https://github.com/creepyblues/kstorybridge-integrated/pull/141)
+**Planned foundation release:** Draft PR [#141](https://github.com/creepyblues/kstorybridge-integrated/pull/141), now obsolete
+
+**Actual merge:** PR [#142](https://github.com/creepyblues/kstorybridge-integrated/pull/142), 217 files across all planned waves
+
+## Recovery override
+
+The four-wave sequence remains the acceptance and backend-deployment boundary, but it no longer describes source containment on `main`. PR #142 merged all current client, report, migration, and Edge Function source without executable CI. Only the website produced a current production bundle; dashboard and creator builds failed, and read-only production evidence shows the new migrations and later functions were not deployed.
+
+[ANALYTICS_MIXED_RELEASE_RECOVERY_2026-07-16.md](ANALYTICS_MIXED_RELEASE_RECOVERY_2026-07-16.md) is now the controlling runbook. Do not deploy a database migration, Edge Function, dashboard/creator production build, or GA configuration change until its recovery gates pass. Source on `main` is not runtime acceptance.
 
 ## Purpose
 
 The analytics program now contains four different risk classes: client collection controls, canonical client outcomes, authoritative database/server outcomes, and reporting/GA configuration. They must not be released as one undifferentiated merge.
 
-PR #141 intentionally remains the migration-free foundation. Later `v2` commits are not safe leaf cherry-picks: the shared privacy sink depends on the canonical analytics package and app adapters, while the weekly scorecard depends on later report filters, reconciliation modules, live-at gates, and authenticated-delivery work. Database and Edge Function changes additionally require backups, secrets, ordered deployment, and explicit production approval.
+PR #141 was designed as the migration-free foundation. PR #142 superseded that source boundary by merging the complete `v2` branch. The dependency and production-mutation constraints below still apply to runtime rollout and recovery.
 
 No wave is considered live because its source exists, its tests pass, or a preview is healthy. Each wave closes only after the production acceptance evidence below is recorded in the analytics execution plan.
 
@@ -20,7 +28,7 @@ No wave is considered live because its source exists, its tests pass, or a previ
 
 | Wave | Scope | Production mutation | Primary tasks unlocked |
 |---|---|---|---|
-| 1. Collection foundation | PR #141: production-host gating, internal classification, trusted email engagement, scanner filtering, progress workflow | Main merge and three Vercel app releases; no database migration | `AR-014`, `AR-106`, `AR-108`, `AR-110` |
+| 1. Collection foundation | Originally PR #141; source is now on `main`, but dashboard/creator require a focused recovery release | Two remaining Vercel app releases; no database or Edge Function mutation | `AR-106`, `AR-108`, `AR-110` |
 | 2. Canonical client contract | Shared analytics package, website acquisition, auth/title/buyer-product/checkout outcomes, cross-app privacy sink and boundary tests | Three Vercel app releases; no database migration or server live-at gate | `AR-201`–`AR-207`, `AR-209`, client portions of `AR-302`–`AR-304` |
 | 3. Authoritative server outcomes and delivery security | Reconciled migration ledger, title linkage, event outbox, report-delivery ledger/schedule, strict functions, webhook/approval producers, worker and secrets | Database migrations, Vault/secrets, Edge Functions, schedules | Server portions of `AR-205`, `AR-303`, `AR-304`, `AR-405`, `AR-406` |
 | 4. Operating report and GA configuration | Weekly scorecard/app comparison, cutover timestamps, approved custom definitions/key events/retention | Report function, live-at secrets, approved GA Admin writes | `AR-208`, `AR-401`, `AR-403`, `AR-404` |
@@ -43,7 +51,7 @@ No wave is considered live because its source exists, its tests pass, or a previ
 
 ### Entry gates
 
-1. GitHub Actions billing is restored and PR #141's actual jobs pass; zero-step billing failures are not accepted as test results.
+1. GitHub Actions billing is restored and the focused recovery PR's actual jobs pass; zero-step billing failures from PR #142 are not accepted as test results.
 2. The GA internal-traffic data filter is visually verified in **Testing** mode and recorded in [GA4_INTERNAL_TRAFFIC_FILTER_VERIFICATION.md](GA4_INTERNAL_TRAFFIC_FILTER_VERIFICATION.md). The scheduled `AR-108` gate must report healthy. Do not activate the filter during this wave.
 3. The focused PR diff still contains no database migration and no unrelated `v2` product work.
 4. A production release window and rollback owner are confirmed.
@@ -60,11 +68,11 @@ No wave is considered live because its source exists, its tests pass, or a previ
 
 The scheduled progress audit fetches the complete PR file list and compares it with the fixed Wave 1 allowlist. An unknown path fails the release gate as `SCOPE_DRIFT`; an incomplete file inventory fails as `UNAVAILABLE`. The alert reports counts only and does not expose repository path details in email or Slack.
 
-The complete local/staging/preview-referrer exclusion is prepared separately as local release-branch commit `2881f7b8`. It changes only the already-allowlisted shared filter and test and matches canonical `v2` filter behavior. It is not on remote PR #141 because pushing would create new Actions runs while the account is billing locked. Do not push it until billing is restored and a CI run is explicitly approved; do not replace it with the later `v2` report function.
+The former leaf-safe filter commit `2881f7b8` and PR #141 are superseded. Their source is present on `main`, but production `funnel-report-cron` still runs the earlier partial-filter version. Deploying the later report function remains a separate approved operation; do not infer a clean-filter cutover from the source merge.
 
 ### Rollback
 
-Revert PR #141 and redeploy the three apps. Do not modify GA filters to compensate for a broken client release.
+Do not revert all of PR #142 as a single rollback because it contains 217 mixed product, client, migration, function, and documentation paths. Roll back only the affected Vercel deployment to its last verified alias, keep unapplied backend source unapplied, and do not modify GA filters to compensate for a broken client release.
 
 ## Wave 2 — canonical client contract and privacy boundary
 

@@ -289,39 +289,15 @@ describe('Auth Service', () => {
       expect(mockUpdateUser).not.toHaveBeenCalled();
     });
 
-    it('should update user metadata when session is available', async () => {
+    it('never writes account_type to user metadata (role = profile membership)', async () => {
       mockInvoke.mockResolvedValue({ data: { success: true, status: 'created' }, error: null });
-      mockUpdateUser.mockResolvedValue({ error: null });
 
-      await completeOAuthProfile(testUserId, testEmail, testMetadata, {
-        access_token: 'token-123',
-      });
-
-      expect(mockUpdateUser).toHaveBeenCalledWith({
-        data: { account_type: 'buyer', newsletter_consent: false },
-      });
-    });
-
-    it('should NOT update metadata when no session', async () => {
-      mockInvoke.mockResolvedValue({ data: { success: true, status: 'exists' }, error: null });
-
-      await completeOAuthProfile(testUserId, testEmail, testMetadata);
-
-      expect(mockUpdateUser).not.toHaveBeenCalled();
-    });
-
-    it('should handle updateUser error gracefully (non-blocking)', async () => {
-      mockInvoke.mockResolvedValue({ data: { success: true, status: 'created' }, error: null });
-      mockUpdateUser.mockResolvedValue({
-        error: { message: 'Failed to update user' },
-      });
-
-      // Should NOT throw - metadata update errors are logged but don't block
       const result = await completeOAuthProfile(testUserId, testEmail, testMetadata, {
         access_token: 'token-123',
       });
 
       expect(result.success).toBe(true);
+      expect(mockUpdateUser).not.toHaveBeenCalled();
     });
 
     it('should throw error when profile creation fails', async () => {

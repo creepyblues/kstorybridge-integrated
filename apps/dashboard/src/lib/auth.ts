@@ -305,19 +305,9 @@ export async function completeOAuthProfile(
 
     log('OAuth buyer profile created successfully');
 
-    // Update metadata with account_type (use provided session if available)
-    if (session?.access_token) {
-      const { error: updateError } = await supabase.auth.updateUser({
-        data: { account_type: 'buyer', newsletter_consent: metadata.newsletter_consent ?? false },
-      });
-      if (updateError) {
-        // Log but don't throw - profile was created successfully, metadata update is secondary
-        log('Account type metadata update failed', updateError);
-        console.warn('Failed to update account_type metadata:', updateError.message);
-      } else {
-        log('Account type metadata updated');
-      }
-    }
+    // Gate 2 step 10: no `account_type` metadata write. Role = profile membership
+    // (user_buyers row), never metadata. `session` is kept in the signature for callers.
+    void session;
 
     return { success: true };
   } catch (profileError: any) {

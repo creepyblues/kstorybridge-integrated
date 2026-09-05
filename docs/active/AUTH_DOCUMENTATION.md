@@ -53,8 +53,10 @@ are ONE KSB account.
 
 **Dual-role model.** One auth user may hold a buyer profile (`user_buyers`), a creator profile
 (`user_creators`), or both. Role = profile membership. Each app checks only its own table.
-`user_metadata.account_type` is **not** read for authorization (metadata writes still happen at
-signup for analytics; removal is Gate 2 step 10).
+`user_metadata.account_type` is **not** read for authorization anywhere. It is still set once at
+email signup (`options.data`, informational/analytics only); the post-OAuth `updateUser` writes in
+both apps' `completeOAuthProfile` were removed (Gate 2 step 10, 2026-09-05), so a Google-first
+user may legitimately have no `account_type` in metadata.
 
 **Three-state profile lookup.** `lookupBuyerProfile(userId)` (dashboard) and
 `lookupCreatorProfile()` (creator, id-scoped: `user_creators.id = auth.uid()`) return

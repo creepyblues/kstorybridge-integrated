@@ -298,23 +298,8 @@ export async function completeOAuthProfile(profileData: CreatorProfile) {
   }
   console.log('✅ Creator profile created via edge function')
 
-  // Step 2: Set account_type in user metadata
-  // This is a SINGLE updateUser call, no race conditions
-  try {
-    const { error: metadataError } = await supabase.auth.updateUser({
-      data: { account_type: 'creator', newsletter_consent: profileData.newsletter_consent ?? false },
-    })
-
-    if (metadataError) {
-      console.error('❌ Metadata update failed:', metadataError)
-      throw metadataError
-    }
-
-    console.log('✅ Metadata updated successfully')
-  } catch (error) {
-    console.error('❌ OAuth profile completion failed:', error)
-    throw error
-  }
+  // Gate 2 step 10: no `account_type` metadata write. Role = profile membership
+  // (user_creators row), never metadata.
 
   // Note: Welcome email will be sent after returning from CompleteProfile (in AuthCallback)
   // See AuthCallback.tsx for centralized welcome email logic

@@ -18,7 +18,7 @@ vi.mock('react-router-dom', async () => {
 });
 vi.mock('@/lib/supabase', () => ({
   supabase: {
-    auth: { getSession: mocks.getSession, verifyOtp: vi.fn() },
+    auth: { getSession: mocks.getSession, verifyOtp: vi.fn(), setSession: vi.fn(), signOut: vi.fn().mockResolvedValue({ error: null }) },
     from: vi.fn(),
   },
 }));
